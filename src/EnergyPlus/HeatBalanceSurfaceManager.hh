@@ -176,10 +176,10 @@ namespace HeatBalanceSurfaceManager {
 // Formerly EXTERNAL SUBROUTINES (heavily related to HeatBalanceSurfaceManager) but now moved into namespace HeatBalanceSurfaceManager
 
 void
-CalcHeatBalanceOutsideSurf( Optional_int_const ZoneToResimulate = _ ); // if passed in, then only calculate surfaces that have this zone
+CalcHeatBalanceOutsideSurf( int const ZoneToResimulate = -1 ); // if passed in, then only calculate surfaces that have this zone
 
 void
-CalcHeatBalanceInsideSurf( Optional_int_const ZoneToResimulate = _ ); // if passed in, then only calculate surfaces that have this zone
+CalcHeatBalanceInsideSurf( int const ZoneToResimulate = -1 ); // if passed in, then only calculate surfaces that have this zone
 
 void
 CalcOutsideSurfTemp(

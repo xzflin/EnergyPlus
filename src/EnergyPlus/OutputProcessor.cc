@@ -2284,72 +2284,75 @@ namespace OutputProcessor {
 		}
 
 		if ( Found == 0 ) {
-			EnergyMeters.redimension( ++NumEnergyMeters );
-			EnergyMeters( NumEnergyMeters ).Name = Name;
-			EnergyMeters( NumEnergyMeters ).ResourceType = ResourceType;
-			EnergyMeters( NumEnergyMeters ).EndUse = EndUse;
-			EnergyMeters( NumEnergyMeters ).EndUseSub = EndUseSub;
-			EnergyMeters( NumEnergyMeters ).Group = Group;
-			EnergyMeters( NumEnergyMeters ).Units = MtrUnits;
-			EnergyMeters( NumEnergyMeters ).TSValue = 0.0;
-			EnergyMeters( NumEnergyMeters ).CurTSValue = 0.0;
-			EnergyMeters( NumEnergyMeters ).RptTS = false;
-			EnergyMeters( NumEnergyMeters ).RptTSFO = false;
-			AssignReportNumber( EnergyMeters( NumEnergyMeters ).TSRptNum );
-			gio::write( EnergyMeters( NumEnergyMeters ).TSRptNumChr, fmtLD ) << EnergyMeters( NumEnergyMeters ).TSRptNum;
-			strip( EnergyMeters( NumEnergyMeters ).TSRptNumChr );
-			EnergyMeters( NumEnergyMeters ).HRValue = 0.0;
-			EnergyMeters( NumEnergyMeters ).HRMaxVal = MaxSetValue;
-			EnergyMeters( NumEnergyMeters ).HRMaxValDate = 0;
-			EnergyMeters( NumEnergyMeters ).HRMinVal = MinSetValue;
-			EnergyMeters( NumEnergyMeters ).HRMinValDate = 0;
-			EnergyMeters( NumEnergyMeters ).RptHR = false;
-			EnergyMeters( NumEnergyMeters ).RptHRFO = false;
-			AssignReportNumber( EnergyMeters( NumEnergyMeters ).HRRptNum );
-			gio::write( EnergyMeters( NumEnergyMeters ).HRRptNumChr, fmtLD ) << EnergyMeters( NumEnergyMeters ).HRRptNum;
-			strip( EnergyMeters( NumEnergyMeters ).HRRptNumChr );
-			EnergyMeters( NumEnergyMeters ).DYValue = 0.0;
-			EnergyMeters( NumEnergyMeters ).DYMaxVal = MaxSetValue;
-			EnergyMeters( NumEnergyMeters ).DYMaxValDate = 0;
-			EnergyMeters( NumEnergyMeters ).DYMinVal = MinSetValue;
-			EnergyMeters( NumEnergyMeters ).DYMinValDate = 0;
-			EnergyMeters( NumEnergyMeters ).RptDY = false;
-			EnergyMeters( NumEnergyMeters ).RptDYFO = false;
-			AssignReportNumber( EnergyMeters( NumEnergyMeters ).DYRptNum );
-			gio::write( EnergyMeters( NumEnergyMeters ).DYRptNumChr, fmtLD ) << EnergyMeters( NumEnergyMeters ).DYRptNum;
-			strip( EnergyMeters( NumEnergyMeters ).DYRptNumChr );
-			EnergyMeters( NumEnergyMeters ).MNValue = 0.0;
-			EnergyMeters( NumEnergyMeters ).MNMaxVal = MaxSetValue;
-			EnergyMeters( NumEnergyMeters ).MNMaxValDate = 0;
-			EnergyMeters( NumEnergyMeters ).MNMinVal = MinSetValue;
-			EnergyMeters( NumEnergyMeters ).MNMinValDate = 0;
-			EnergyMeters( NumEnergyMeters ).RptMN = false;
-			EnergyMeters( NumEnergyMeters ).RptMNFO = false;
-			AssignReportNumber( EnergyMeters( NumEnergyMeters ).MNRptNum );
-			gio::write( EnergyMeters( NumEnergyMeters ).MNRptNumChr, fmtLD ) << EnergyMeters( NumEnergyMeters ).MNRptNum;
-			strip( EnergyMeters( NumEnergyMeters ).MNRptNumChr );
-			EnergyMeters( NumEnergyMeters ).SMValue = 0.0;
-			EnergyMeters( NumEnergyMeters ).SMMaxVal = MaxSetValue;
-			EnergyMeters( NumEnergyMeters ).SMMaxValDate = 0;
-			EnergyMeters( NumEnergyMeters ).SMMinVal = MinSetValue;
-			EnergyMeters( NumEnergyMeters ).SMMinValDate = 0;
-			EnergyMeters( NumEnergyMeters ).RptSM = false;
-			EnergyMeters( NumEnergyMeters ).RptSMFO = false;
-			AssignReportNumber( EnergyMeters( NumEnergyMeters ).SMRptNum );
-			gio::write( EnergyMeters( NumEnergyMeters ).SMRptNumChr, fmtLD ) << EnergyMeters( NumEnergyMeters ).SMRptNum;
-			strip( EnergyMeters( NumEnergyMeters ).SMRptNumChr );
-			AssignReportNumber( EnergyMeters( NumEnergyMeters ).TSAccRptNum );
-			AssignReportNumber( EnergyMeters( NumEnergyMeters ).HRAccRptNum );
-			AssignReportNumber( EnergyMeters( NumEnergyMeters ).DYAccRptNum );
-			AssignReportNumber( EnergyMeters( NumEnergyMeters ).MNAccRptNum );
-			AssignReportNumber( EnergyMeters( NumEnergyMeters ).SMAccRptNum );
-			EnergyMeters( NumEnergyMeters ).FinYrSMValue = 0.0;
-			EnergyMeters( NumEnergyMeters ).FinYrSMMaxVal = MaxSetValue;
-			EnergyMeters( NumEnergyMeters ).FinYrSMMaxValDate = 0;
-			EnergyMeters( NumEnergyMeters ).FinYrSMMinVal = MinSetValue;
-			EnergyMeters( NumEnergyMeters ).FinYrSMMinValDate = 0;
-		}
-		else {
+			MeterType energy_meter;
+
+			energy_meter.Name = Name;
+			energy_meter.ResourceType = ResourceType;
+			energy_meter.EndUse = EndUse;
+			energy_meter.EndUseSub = EndUseSub;
+			energy_meter.Group = Group;
+			energy_meter.Units = MtrUnits;
+			energy_meter.TSValue = 0.0;
+			energy_meter.CurTSValue = 0.0;
+			energy_meter.RptTS = false;
+			energy_meter.RptTSFO = false;
+			AssignReportNumber( energy_meter.TSRptNum );
+			gio::write( energy_meter.TSRptNumChr, fmtLD ) << energy_meter.TSRptNum;
+			strip( energy_meter.TSRptNumChr );
+			energy_meter.HRValue = 0.0;
+			energy_meter.HRMaxVal = MaxSetValue;
+			energy_meter.HRMaxValDate = 0;
+			energy_meter.HRMinVal = MinSetValue;
+			energy_meter.HRMinValDate = 0;
+			energy_meter.RptHR = false;
+			energy_meter.RptHRFO = false;
+			AssignReportNumber( energy_meter.HRRptNum );
+			gio::write( energy_meter.HRRptNumChr, fmtLD ) << energy_meter.HRRptNum;
+			strip( energy_meter.HRRptNumChr );
+			energy_meter.DYValue = 0.0;
+			energy_meter.DYMaxVal = MaxSetValue;
+			energy_meter.DYMaxValDate = 0;
+			energy_meter.DYMinVal = MinSetValue;
+			energy_meter.DYMinValDate = 0;
+			energy_meter.RptDY = false;
+			energy_meter.RptDYFO = false;
+			AssignReportNumber( energy_meter.DYRptNum );
+			gio::write( energy_meter.DYRptNumChr, fmtLD ) << energy_meter.DYRptNum;
+			strip( energy_meter.DYRptNumChr );
+			energy_meter.MNValue = 0.0;
+			energy_meter.MNMaxVal = MaxSetValue;
+			energy_meter.MNMaxValDate = 0;
+			energy_meter.MNMinVal = MinSetValue;
+			energy_meter.MNMinValDate = 0;
+			energy_meter.RptMN = false;
+			energy_meter.RptMNFO = false;
+			AssignReportNumber( energy_meter.MNRptNum );
+			gio::write( energy_meter.MNRptNumChr, fmtLD ) << energy_meter.MNRptNum;
+			strip( energy_meter.MNRptNumChr );
+			energy_meter.SMValue = 0.0;
+			energy_meter.SMMaxVal = MaxSetValue;
+			energy_meter.SMMaxValDate = 0;
+			energy_meter.SMMinVal = MinSetValue;
+			energy_meter.SMMinValDate = 0;
+			energy_meter.RptSM = false;
+			energy_meter.RptSMFO = false;
+			AssignReportNumber( energy_meter.SMRptNum );
+			gio::write( energy_meter.SMRptNumChr, fmtLD ) << energy_meter.SMRptNum;
+			strip( energy_meter.SMRptNumChr );
+			AssignReportNumber( energy_meter.TSAccRptNum );
+			AssignReportNumber( energy_meter.HRAccRptNum );
+			AssignReportNumber( energy_meter.DYAccRptNum );
+			AssignReportNumber( energy_meter.MNAccRptNum );
+			AssignReportNumber( energy_meter.SMAccRptNum );
+			energy_meter.FinYrSMValue = 0.0;
+			energy_meter.FinYrSMMaxVal = MaxSetValue;
+			energy_meter.FinYrSMMaxValDate = 0;
+			energy_meter.FinYrSMMinVal = MinSetValue;
+			energy_meter.FinYrSMMinValDate = 0;
+
+			EnergyMeters.push_back( energy_meter );
+			++NumEnergyMeters;
+		} else {
 			ShowFatalError( "Requested to Add Meter which was already present=" + Name );
 		}
 		if ( ! ResourceType.empty() ) {
@@ -2422,27 +2425,26 @@ namespace OutputProcessor {
 			ValidateNStandardizeMeterTitles( MtrUnits, ResourceType, EndUse, EndUseSub, Group, ErrorsFound );
 		}
 
-		VarMeterArrays.redimension( ++NumVarMeterArrays );
-		MeterArrayPtr = NumVarMeterArrays;
-		VarMeterArrays( NumVarMeterArrays ).NumOnMeters = 0;
-		VarMeterArrays( NumVarMeterArrays ).RepVariable = RepVarNum;
-		VarMeterArrays( NumVarMeterArrays ).OnMeters = 0;
+		MeterArrayType var_meter;
+		var_meter.NumOnMeters = 0;
+		var_meter.RepVariable = RepVarNum;
+		var_meter.OnMeters = 0;
 		int Found = FindItem( ResourceType + ":Facility", EnergyMeters );
 		if ( Found != 0 ) {
-			++VarMeterArrays( NumVarMeterArrays ).NumOnMeters;
-			VarMeterArrays( NumVarMeterArrays ).OnMeters( VarMeterArrays( NumVarMeterArrays ).NumOnMeters ) = Found;
+			++var_meter.NumOnMeters;
+			var_meter.OnMeters( var_meter.NumOnMeters ) = Found;
 		}
 		if ( ! Group.empty() ) {
 			Found = FindItem( ResourceType + ':' + Group, EnergyMeters );
 			if ( Found != 0 ) {
-				++VarMeterArrays( NumVarMeterArrays ).NumOnMeters;
-				VarMeterArrays( NumVarMeterArrays ).OnMeters( VarMeterArrays( NumVarMeterArrays ).NumOnMeters ) = Found;
+				++var_meter.NumOnMeters;
+				var_meter.OnMeters( var_meter.NumOnMeters ) = Found;
 			}
 			if ( SameString( Group, "Building" ) ) { // Match to Zone
 				Found = FindItem( ResourceType + ":Zone:" + ZoneName, EnergyMeters );
 				if ( Found != 0 ) {
-					++VarMeterArrays( NumVarMeterArrays ).NumOnMeters;
-					VarMeterArrays( NumVarMeterArrays ).OnMeters( VarMeterArrays( NumVarMeterArrays ).NumOnMeters ) = Found;
+					++var_meter.NumOnMeters;
+					var_meter.OnMeters( var_meter.NumOnMeters ) = Found;
 				}
 			}
 		}
@@ -2451,14 +2453,14 @@ namespace OutputProcessor {
 		if ( ! EndUse.empty() ) {
 			Found = FindItem( EndUse + ':' + ResourceType, EnergyMeters );
 			if ( Found != 0 ) {
-				++VarMeterArrays( NumVarMeterArrays ).NumOnMeters;
-				VarMeterArrays( NumVarMeterArrays ).OnMeters( VarMeterArrays( NumVarMeterArrays ).NumOnMeters ) = Found;
+				++var_meter.NumOnMeters;
+				var_meter.OnMeters( var_meter.NumOnMeters ) = Found;
 			}
 			if ( SameString( Group, "Building" ) ) { // Match to Zone
 				Found = FindItem( EndUse + ':' + ResourceType + ":Zone:" + ZoneName, EnergyMeters );
 				if ( Found != 0 ) {
-					++VarMeterArrays( NumVarMeterArrays ).NumOnMeters;
-					VarMeterArrays( NumVarMeterArrays ).OnMeters( VarMeterArrays( NumVarMeterArrays ).NumOnMeters ) = Found;
+					++var_meter.NumOnMeters;
+					var_meter.OnMeters( var_meter.NumOnMeters ) = Found;
 				}
 			}
 
@@ -2466,21 +2468,25 @@ namespace OutputProcessor {
 			if ( ! EndUseSub.empty() ) {
 				Found = FindItem( EndUseSub + ':' + EndUse + ':' + ResourceType, EnergyMeters );
 				if ( Found != 0 ) {
-					++VarMeterArrays( NumVarMeterArrays ).NumOnMeters;
-					VarMeterArrays( NumVarMeterArrays ).OnMeters( VarMeterArrays( NumVarMeterArrays ).NumOnMeters ) = Found;
+					++var_meter.NumOnMeters;
+					var_meter.OnMeters( var_meter.NumOnMeters ) = Found;
 
 					AddEndUseSubcategory( ResourceType, EndUse, EndUseSub );
 				}
 				if ( SameString( Group, "Building" ) ) { // Match to Zone
 					Found = FindItem( EndUseSub + ':' + EndUse + ':' + ResourceType + ":Zone:" + ZoneName, EnergyMeters );
 					if ( Found != 0 ) {
-						++VarMeterArrays( NumVarMeterArrays ).NumOnMeters;
-						VarMeterArrays( NumVarMeterArrays ).OnMeters( VarMeterArrays( NumVarMeterArrays ).NumOnMeters ) = Found;
+						++var_meter.NumOnMeters;
+						var_meter.OnMeters( var_meter.NumOnMeters ) = Found;
 					}
 				}
 			}
 
 		}
+
+		VarMeterArrays.push_back( var_meter );
+		++NumVarMeterArrays;
+		MeterArrayPtr = NumVarMeterArrays;
 
 	}
 
@@ -8316,20 +8322,19 @@ AddToOutputVariableList(
 	int dup = 0;// for duplicate variable name
 	if ( NumVariablesForOutput > 0 ) {
 		dup = FindItemInList( VarName, DDVariableTypes, &VariableTypeForDDOutput::VarNameOnly, NumVariablesForOutput );
-	} else {
-		DDVariableTypes.allocate( LVarAllocInc );
-		MaxVariablesForOutput = LVarAllocInc;
 	}
 	if ( dup == 0 ) {
+		VariableTypeForDDOutput dd_variable_type;
+		dd_variable_type.IndexType = IndexType;
+		dd_variable_type.StoreType = StateType;
+		dd_variable_type.VariableType = VariableType;
+		dd_variable_type.VarNameOnly = VarName;
+		dd_variable_type.UnitsString = UnitsString;
+		DDVariableTypes.push_back( dd_variable_type );
 		++NumVariablesForOutput;
-		if ( NumVariablesForOutput > MaxVariablesForOutput ) {
-			DDVariableTypes.redimension( MaxVariablesForOutput += LVarAllocInc );
-		}
-		DDVariableTypes( NumVariablesForOutput ).IndexType = IndexType;
-		DDVariableTypes( NumVariablesForOutput ).StoreType = StateType;
-		DDVariableTypes( NumVariablesForOutput ).VariableType = VariableType;
-		DDVariableTypes( NumVariablesForOutput ).VarNameOnly = VarName;
-		DDVariableTypes( NumVariablesForOutput ).UnitsString = UnitsString;
+		// if ( NumVariablesForOutput > MaxVariablesForOutput ) {
+		// 	DDVariableTypes.redimension( MaxVariablesForOutput += LVarAllocInc );
+		// }
 	} else if ( UnitsString != DDVariableTypes( dup ).UnitsString ) { // not the same as first units
 		int dup2 = 0;// for duplicate variable name
 		while ( DDVariableTypes( dup ).Next != 0 ) {
@@ -8341,15 +8346,17 @@ AddToOutputVariableList(
 			break;
 		}
 		if ( dup2 == 0 ) {
+			VariableTypeForDDOutput dd_variable_type;
+			dd_variable_type.IndexType = IndexType;
+			dd_variable_type.StoreType = StateType;
+			dd_variable_type.VariableType = VariableType;
+			dd_variable_type.VarNameOnly = VarName;
+			dd_variable_type.UnitsString = UnitsString;
+			DDVariableTypes.push_back( dd_variable_type );
 			++NumVariablesForOutput;
-			if ( NumVariablesForOutput > MaxVariablesForOutput ) {
-				DDVariableTypes.redimension( MaxVariablesForOutput += LVarAllocInc );
-			}
-			DDVariableTypes( NumVariablesForOutput ).IndexType = IndexType;
-			DDVariableTypes( NumVariablesForOutput ).StoreType = StateType;
-			DDVariableTypes( NumVariablesForOutput ).VariableType = VariableType;
-			DDVariableTypes( NumVariablesForOutput ).VarNameOnly = VarName;
-			DDVariableTypes( NumVariablesForOutput ).UnitsString = UnitsString;
+			// if ( NumVariablesForOutput > MaxVariablesForOutput ) {
+			// 	DDVariableTypes.redimension( MaxVariablesForOutput += LVarAllocInc );
+			// }
 			DDVariableTypes( dup ).Next = NumVariablesForOutput;
 		}
 	}

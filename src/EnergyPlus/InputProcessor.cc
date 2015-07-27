@@ -611,11 +611,11 @@ namespace InputProcessor {
 		bool BlankLine( false );
 		std::string::size_type Pos; // Test of scanning position on the current input line
 
-		MaxSectionDefs = SectionDefAllocInc;
-		MaxObjectDefs = ObjectDefAllocInc;
+		// MaxSectionDefs = SectionDefAllocInc;
+		// MaxObjectDefs = ObjectDefAllocInc;
 
-		SectionDef.allocate( MaxSectionDefs );
-		ObjectDef.allocate( MaxObjectDefs );
+		// SectionDef.allocate( MaxSectionDefs );
+		// ObjectDef.allocate( MaxObjectDefs );
 
 		NumObjectDefs = 0;
 		NumSectionDefs = 0;
@@ -642,14 +642,14 @@ namespace InputProcessor {
 			if ( Pos != std::string::npos ) {
 				if ( InputLine[ Pos ] == ';' ) {
 					AddSectionDef( InputLine.substr( 0, Pos ), ErrorsFound );
-					if ( NumSectionDefs == MaxSectionDefs ) {
-						SectionDef.redimension( MaxSectionDefs += SectionDefAllocInc );
-					}
+					// if ( NumSectionDefs == MaxSectionDefs ) {
+					// 	SectionDef.redimension( MaxSectionDefs += SectionDefAllocInc );
+					// }
 				} else {
 					AddObjectDefandParse( idd_stream, InputLine.substr( 0, Pos ), Pos, EndofFile, ErrorsFound );
-					if ( NumObjectDefs == MaxObjectDefs ) {
-						ObjectDef.redimension( MaxObjectDefs += ObjectDefAllocInc );
-					}
+					// if ( NumObjectDefs == MaxObjectDefs ) {
+					// 	ObjectDef.redimension( MaxObjectDefs += ObjectDefAllocInc );
+					// }
 				}
 			} else {
 				ShowSevereError( "IP: IDD line~" + IPTrimSigDigits( NumLines ) + " , or ; expected on this line", EchoInputFile );
@@ -721,9 +721,11 @@ namespace InputProcessor {
 		}
 
 		if ( ! errFlag ) {
+			SectionsDefinition sections_definition;
+			sections_definition.Name = SqueezedSection;
+			sections_definition.NumFound = 0;
+			SectionDef.push_back( sections_definition );
 			++NumSectionDefs;
-			SectionDef( NumSectionDefs ).Name = SqueezedSection;
-			SectionDef( NumSectionDefs ).NumFound = 0;
 		}
 
 	}
@@ -849,18 +851,20 @@ namespace InputProcessor {
 		}
 
 		++NumObjectDefs;
-		ObjectDef( NumObjectDefs ).Name = SqueezedObject;
-		ObjectDef( NumObjectDefs ).NumParams = 0;
-		ObjectDef( NumObjectDefs ).NumAlpha = 0;
-		ObjectDef( NumObjectDefs ).NumNumeric = 0;
-		ObjectDef( NumObjectDefs ).NumFound = 0;
-		ObjectDef( NumObjectDefs ).MinNumFields = 0;
-		ObjectDef( NumObjectDefs ).NameAlpha1 = false;
-		ObjectDef( NumObjectDefs ).ObsPtr = 0;
-		ObjectDef( NumObjectDefs ).UniqueObject = false;
-		ObjectDef( NumObjectDefs ).RequiredObject = false;
-		ObjectDef( NumObjectDefs ).ExtensibleObject = false;
-		ObjectDef( NumObjectDefs ).ExtensibleNum = 0;
+		ObjectsDefinition objects_definition;
+		objects_definition.Name = SqueezedObject;
+		objects_definition.NumParams = 0;
+		objects_definition.NumAlpha = 0;
+		objects_definition.NumNumeric = 0;
+		objects_definition.NumFound = 0;
+		objects_definition.MinNumFields = 0;
+		objects_definition.NameAlpha1 = false;
+		objects_definition.ObsPtr = 0;
+		objects_definition.UniqueObject = false;
+		objects_definition.RequiredObject = false;
+		objects_definition.ExtensibleObject = false;
+		objects_definition.ExtensibleNum = 0;
+		ObjectDef.push_back( objects_definition );
 
 		if ( PrevCount == -1 ) {
 			PrevCount = MaxANArgs;
@@ -1259,13 +1263,13 @@ namespace InputProcessor {
 		bool BlankLine( false );
 		std::string::size_type Pos;
 
-		MaxIDFRecords = ObjectsIDFAllocInc;
+		// MaxIDFRecords = ObjectsIDFAllocInc;
 		NumIDFRecords = 0;
-		MaxIDFSections = SectionsIDFAllocInc;
+		// MaxIDFSections = SectionsIDFAllocInc;
 		NumIDFSections = 0;
 
-		SectionsOnFile.allocate( MaxIDFSections );
-		IDFRecords.allocate( MaxIDFRecords );
+		// SectionsOnFile.allocate( MaxIDFSections );
+		// IDFRecords.allocate( MaxIDFRecords );
 		LineItem.Numbers.allocate( MaxNumericArgsFound );
 		LineItem.NumBlank.allocate( MaxNumericArgsFound );
 		LineItem.Alphas.allocate( MaxAlphaArgsFound );
@@ -1290,14 +1294,14 @@ namespace InputProcessor {
 			if ( Pos != std::string::npos ) {
 				if ( InputLine[ Pos ] == ';' ) {
 					ValidateSection( InputLine.substr( 0, Pos ), NumLines );
-					if ( NumIDFSections == MaxIDFSections ) {
-						SectionsOnFile.redimension( MaxIDFSections += SectionsIDFAllocInc );
-					}
+					// if ( NumIDFSections == MaxIDFSections ) {
+					// 	SectionsOnFile.redimension( MaxIDFSections += SectionsIDFAllocInc );
+					// }
 				} else {
 					ValidateObjectandParse( idf_stream, InputLine.substr( 0, Pos ), Pos, EndofFile );
-					if ( NumIDFRecords == MaxIDFRecords ) {
-						IDFRecords.redimension( MaxIDFRecords += ObjectsIDFAllocInc );
-					}
+					// if ( NumIDFRecords == MaxIDFRecords ) {
+					// 	IDFRecords.redimension( MaxIDFRecords += ObjectsIDFAllocInc );
+					// }
 				}
 			} else { // Error condition, no , or ; on first line
 				ShowMessage( "IP: IDF Line~" + IPTrimSigDigits( NumLines ) + ' ' + InputLine );
@@ -1912,18 +1916,20 @@ namespace InputProcessor {
 			MaxNumericIDFArgsFound = max( MaxNumericIDFArgsFound, LineItem.NumNumbers );
 			MaxAlphaIDFDefArgsFound = max( MaxAlphaIDFDefArgsFound, ObjectDef( Found ).NumAlpha );
 			MaxNumericIDFDefArgsFound = max( MaxNumericIDFDefArgsFound, ObjectDef( Found ).NumNumeric );
-			IDFRecords( NumIDFRecords ).Name = LineItem.Name;
-			IDFRecords( NumIDFRecords ).NumNumbers = LineItem.NumNumbers;
-			IDFRecords( NumIDFRecords ).NumAlphas = LineItem.NumAlphas;
-			IDFRecords( NumIDFRecords ).ObjectDefPtr = LineItem.ObjectDefPtr;
-			IDFRecords( NumIDFRecords ).Alphas.allocate( LineItem.NumAlphas );
-			IDFRecords( NumIDFRecords ).Alphas = LineItem.Alphas( {1,LineItem.NumAlphas} );
-			IDFRecords( NumIDFRecords ).AlphBlank.allocate( LineItem.NumAlphas );
-			IDFRecords( NumIDFRecords ).AlphBlank = LineItem.AlphBlank( {1,LineItem.NumAlphas} );
-			IDFRecords( NumIDFRecords ).Numbers.allocate( LineItem.NumNumbers );
-			IDFRecords( NumIDFRecords ).Numbers = LineItem.Numbers( {1,LineItem.NumNumbers} );
-			IDFRecords( NumIDFRecords ).NumBlank.allocate( LineItem.NumNumbers );
-			IDFRecords( NumIDFRecords ).NumBlank = LineItem.NumBlank( {1,LineItem.NumNumbers} );
+			LineDefinition idf_record;
+			idf_record.Name = LineItem.Name;
+			idf_record.NumNumbers = LineItem.NumNumbers;
+			idf_record.NumAlphas = LineItem.NumAlphas;
+			idf_record.ObjectDefPtr = LineItem.ObjectDefPtr;
+			idf_record.Alphas.allocate( LineItem.NumAlphas );
+			idf_record.Alphas = LineItem.Alphas( {1,LineItem.NumAlphas} );
+			idf_record.AlphBlank.allocate( LineItem.NumAlphas );
+			idf_record.AlphBlank = LineItem.AlphBlank( {1,LineItem.NumAlphas} );
+			idf_record.Numbers.allocate( LineItem.NumNumbers );
+			idf_record.Numbers = LineItem.Numbers( {1,LineItem.NumNumbers} );
+			idf_record.NumBlank.allocate( LineItem.NumNumbers );
+			idf_record.NumBlank = LineItem.NumBlank( {1,LineItem.NumNumbers} );
+			IDFRecords.push_back( idf_record );
 			if ( LineItem.NumNumbers > 0 ) {
 				for ( Count = 1; Count <= LineItem.NumNumbers; ++Count ) {
 					if ( ObjectDef( Found ).NumRangeChks( Count ).MinMaxChk && ! LineItem.NumBlank( Count ) ) {

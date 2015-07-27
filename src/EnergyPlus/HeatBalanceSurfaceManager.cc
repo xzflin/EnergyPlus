@@ -60,6 +60,7 @@
 #include <algorithm>
 #include <cassert>
 #include <cmath>
+#include <numeric>
 
 // ObjexxFCL Headers
 #include <ObjexxFCL/Array.functions.hh>
@@ -4384,7 +4385,7 @@ namespace HeatBalanceSurfaceManager {
 // Formerly EXTERNAL SUBROUTINES (heavily related to HeatBalanceSurfaceManager) now moved into namespace
 
 void
-CalcHeatBalanceOutsideSurf( Optional_int_const ZoneToResimulate ) // if passed in, then only calculate surfaces that have this zone
+CalcHeatBalanceOutsideSurf( int const ZoneToResimulate ) // if passed in, then only calculate surfaces that have this zone
 {
 
 	// SUBROUTINE INFORMATION:
@@ -4499,7 +4500,7 @@ CalcHeatBalanceOutsideSurf( Optional_int_const ZoneToResimulate ) // if passed i
 		if ( Surface( SurfNum ).Area > 0.0 ) QsrcHist( SurfNum, 1 ) += QPVSysSource( SurfNum ) / Surface( SurfNum ).Area; // Make sure we don't divide by zero...
 	}
 
-	if ( present( ZoneToResimulate ) ) {
+	if ( ZoneToResimulate != -1 ) {
 		CalcInteriorRadExchange( TH( 2, 1, _ ), 0, NetLWRadToSurf, ZoneToResimulate, Outside );
 	} else {
 		CalcInteriorRadExchange( TH( 2, 1, _ ), 0, NetLWRadToSurf, _, Outside );
@@ -4509,7 +4510,7 @@ CalcHeatBalanceOutsideSurf( Optional_int_const ZoneToResimulate ) // if passed i
 
 		ZoneNum = Surface( SurfNum ).Zone;
 
-		if ( present( ZoneToResimulate ) ) {
+		if ( ZoneToResimulate != -1 ) {
 			if ( ( ZoneNum != ZoneToResimulate ) && ( AdjacentZoneToSurface( SurfNum ) != ZoneToResimulate ) ) {
 				continue; // skip surfaces that are not associated with this zone
 			}
@@ -4892,7 +4893,7 @@ CalcHeatBalanceOutsideSurf( Optional_int_const ZoneToResimulate ) // if passed i
 
 
 void
-CalcHeatBalanceInsideSurf( Optional_int_const ZoneToResimulate ) // if passed in, then only calculate surfaces that have this zone
+CalcHeatBalanceInsideSurf( int const ZoneToResimulate ) // if passed in, then only calculate surfaces that have this zone
 {
 
 	// SUBROUTINE INFORMATION:
@@ -5071,7 +5072,7 @@ CalcHeatBalanceInsideSurf( Optional_int_const ZoneToResimulate ) // if passed in
 		MyEnvrnFlag = true;
 	}
 
-	bool const PartialResimulate( present( ZoneToResimulate ) );
+	bool const PartialResimulate( ZoneToResimulate != -1 );
 
 	//Tuned Relevant surfaces (set below) for performance/scalability //Do Store this once for all relevant Zones at higher level
 	std::vector< int > SurfToResimulate;
@@ -5202,7 +5203,11 @@ CalcHeatBalanceInsideSurf( Optional_int_const ZoneToResimulate ) // if passed in
 
 		TempInsOld = TempSurfIn; // Keep track of last iteration's temperature values
 
-		CalcInteriorRadExchange( TempSurfIn, InsideSurfIterations, NetLWRadToSurf, ZoneToResimulate, Inside ); // Update the radiation balance
+		if ( PartialResimulate ) {
+			CalcInteriorRadExchange( TempSurfIn, InsideSurfIterations, NetLWRadToSurf, ZoneToResimulate, Inside ); // Update the radiation balance
+		} else {
+			CalcInteriorRadExchange( TempSurfIn, InsideSurfIterations, NetLWRadToSurf, _, Inside ); // Update the radiation balance
+		}
 
 		// Every 30 iterations, recalculate the inside convection coefficients in case
 		// there has been a significant drift in the surface temperatures predicted.
@@ -5211,7 +5216,11 @@ CalcHeatBalanceInsideSurf( Optional_int_const ZoneToResimulate ) // if passed in
 		// The choice of 30 is not significant--just want to do this a couple of
 		// times before the iteration limit is hit.
 		if ( ( InsideSurfIterations > 0 ) && ( mod( InsideSurfIterations, ItersReevalConvCoeff ) == 0 ) ) {
-			InitInteriorConvectionCoeffs( TempSurfIn, ZoneToResimulate );
+			if ( PartialResimulate ) {
+				InitInteriorConvectionCoeffs( TempSurfIn, ZoneToResimulate );
+			} else {
+				InitInteriorConvectionCoeffs( TempSurfIn, _ );
+			}
 		}
 
 		for ( std::vector< int >::size_type iHTSurfToResimulate = 0u; iHTSurfToResimulate < nHTSurfToResimulate; ++iHTSurfToResimulate ) { // Perform a heat balance on all of the relevant inside surfaces...
@@ -5823,7 +5832,7 @@ CalcHeatBalanceInsideSurf( Optional_int_const ZoneToResimulate ) // if passed in
 		if ( ZoneNum == 0 ) continue;
 		ZoneWinHeatGain( ZoneNum ) += WinHeatGain( SurfNum );
 	}
-	for ( int ZoneNum = ( PartialResimulate ? ZoneToResimulate() : 1 ), ZoneNum_end = ( PartialResimulate ? ZoneToResimulate() : NumOfZones ); ZoneNum <= ZoneNum_end; ++ZoneNum ) {
+	for ( int ZoneNum = ( PartialResimulate ? ZoneToResimulate : 1 ), ZoneNum_end = ( PartialResimulate ? ZoneToResimulate : NumOfZones ); ZoneNum <= ZoneNum_end; ++ZoneNum ) {
 		if ( ZoneWinHeatGain( ZoneNum ) >= 0.0 ) {
 			ZoneWinHeatGainRep( ZoneNum ) = ZoneWinHeatGain( ZoneNum );
 			ZoneWinHeatGainRepEnergy( ZoneNum ) = ZoneWinHeatGainRep( ZoneNum ) * TimeStepZoneSec;
@@ -5833,7 +5842,11 @@ CalcHeatBalanceInsideSurf( Optional_int_const ZoneToResimulate ) // if passed in
 		}
 	}
 
-	CalculateZoneMRT( ZoneToResimulate ); // Update here so that the proper value of MRT is available to radiant systems
+	if ( PartialResimulate ) {
+		CalculateZoneMRT( ZoneToResimulate ); // Update here so that the proper value of MRT is available to radiant systems
+	} else {
+		CalculateZoneMRT( _ ); // Update here so that the proper value of MRT is available to radiant systems
+	}
 
 	calcHeatBalanceInsideSurfFirstTime = false;
 

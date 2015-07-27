@@ -934,8 +934,8 @@ namespace OutputReportPredefined {
 		int const tableEntryInt
 	);
 
-	void
-	incrementTableEntry();
+	// void
+	// incrementTableEntry();
 
 	void
 	AddCompSizeTableEntry(

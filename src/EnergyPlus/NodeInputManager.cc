@@ -745,14 +745,13 @@ namespace NodeInputManager {
 				++NumOfUniqueNodeNames;
 				NumOfNodes = NumOfUniqueNodeNames;
 
-				Node.redimension( NumOfNodes );
-				NodeID.redimension( {0,NumOfNodes} );
-				NodeRef.redimension( NumOfNodes );
 				MarkedNode.redimension( NumOfNodes );
 				// Set new item in Node
-				Node( NumOfNodes ).FluidType = NodeFluidType;
-				NodeRef( NumOfNodes ) = 0;
-				NodeID( NumOfUniqueNodeNames ) = Name;
+				NodeData node_data;
+				node_data.FluidType = NodeFluidType;
+				Node.push_back( node_data );
+				NodeRef.push_back( 0 );
+				NodeID.push_back( Name );
 
 				AssignNodeNumber = NumOfUniqueNodeNames;
 			}

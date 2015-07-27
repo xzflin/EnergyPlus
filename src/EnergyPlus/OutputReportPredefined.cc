@@ -2117,7 +2117,7 @@ namespace OutputReportPredefined {
 		std::string stringEntry;
 		int IOS;
 
-		incrementTableEntry();
+		// incrementTableEntry();
 		//check for number of significant digits
 		if ( present( numSigDigits ) ) {
 			if ( ( numSigDigits <= 9 ) && ( numSigDigits >= 0 ) ) {
@@ -2138,12 +2138,15 @@ namespace OutputReportPredefined {
 		}
 		{ IOFlags flags; gio::write( stringEntry, formatConvert, flags ) << tableEntryReal; IOS = flags.ios(); }
 		if ( IOS != 0 ) stringEntry = "  Too Big";
-		tableEntry( numTableEntry ).charEntry = stringEntry;
-		tableEntry( numTableEntry ).objectName = objName;
-		tableEntry( numTableEntry ).indexColumn = columnIndex;
-		tableEntry( numTableEntry ).origRealEntry = tableEntryReal;
-		tableEntry( numTableEntry ).significantDigits = sigDigitCount;
-		tableEntry( numTableEntry ).origEntryIsReal = true;
+		TableEntryType table_entry;
+		table_entry.charEntry = stringEntry;
+		table_entry.objectName = objName;
+		table_entry.indexColumn = columnIndex;
+		table_entry.origRealEntry = tableEntryReal;
+		table_entry.significantDigits = sigDigitCount;
+		table_entry.origEntryIsReal = true;
+		tableEntry.push_back( table_entry );
+		++numTableEntry;
 	}
 
 	void
@@ -2185,10 +2188,13 @@ namespace OutputReportPredefined {
 
 		// SUBROUTINE LOCAL VARIABLE DECLARATIONS:
 
-		incrementTableEntry();
-		tableEntry( numTableEntry ).charEntry = tableEntryChar;
-		tableEntry( numTableEntry ).objectName = objName;
-		tableEntry( numTableEntry ).indexColumn = columnIndex;
+		// incrementTableEntry();
+		TableEntryType table_entry;
+		table_entry.charEntry = tableEntryChar;
+		table_entry.objectName = objName;
+		table_entry.indexColumn = columnIndex;
+		tableEntry.push_back( table_entry );
+		++numTableEntry;
 	}
 
 	void
@@ -2231,59 +2237,63 @@ namespace OutputReportPredefined {
 		// SUBROUTINE LOCAL VARIABLE DECLARATIONS:
 		std::string stringEntry;
 
-		incrementTableEntry();
+		// incrementTableEntry();
 		// convert the integer to a string
 		gio::write( stringEntry, fmtLD ) << tableEntryInt;
-		tableEntry( numTableEntry ).charEntry = stringEntry;
-		tableEntry( numTableEntry ).objectName = objName;
-		tableEntry( numTableEntry ).indexColumn = columnIndex;
+
+		TableEntryType table_entry;
+		table_entry.charEntry = stringEntry;
+		table_entry.objectName = objName;
+		table_entry.indexColumn = columnIndex;
+		tableEntry.push_back( table_entry );
+		++numTableEntry;
 	}
 
-	void
-	incrementTableEntry()
-	{
-		// SUBROUTINE INFORMATION:
-		//       AUTHOR         Jason Glazer
-		//       DATE WRITTEN   August 2006
-		//       MODIFIED
-		//       RE-ENGINEERED  na
+	// void
+	// incrementTableEntry()
+	// {
+	// 	// SUBROUTINE INFORMATION:
+	// 	//       AUTHOR         Jason Glazer
+	// 	//       DATE WRITTEN   August 2006
+	// 	//       MODIFIED
+	// 	//       RE-ENGINEERED  na
 
-		// PURPOSE OF THIS SUBROUTINE:
-		//   Manages the resizing of the TableEntry Array
+	// 	// PURPOSE OF THIS SUBROUTINE:
+	// 	//   Manages the resizing of the TableEntry Array
 
-		// METHODOLOGY EMPLOYED:
-		//   Simple assignments to public variables.
+	// 	// METHODOLOGY EMPLOYED:
+	// 	//   Simple assignments to public variables.
 
-		// REFERENCES:
-		// na
+	// 	// REFERENCES:
+	// 	// na
 
-		// USE STATEMENTS:
+	// 	// USE STATEMENTS:
 
-		// SUBROUTINE ARGUMENT DEFINITIONS:
-		// na
+	// 	// SUBROUTINE ARGUMENT DEFINITIONS:
+	// 	// na
 
-		// SUBROUTINE PARAMETER DEFINITIONS:
-		// na
+	// 	// SUBROUTINE PARAMETER DEFINITIONS:
+	// 	// na
 
-		// INTERFACE BLOCK SPECIFICATIONS:
-		// na
+	// 	// INTERFACE BLOCK SPECIFICATIONS:
+	// 	// na
 
-		// DERIVED TYPE DEFINITIONS:
-		// na
+	// 	// DERIVED TYPE DEFINITIONS:
+	// 	// na
 
-		// SUBROUTINE LOCAL VARIABLE DECLARATIONS:
-		if ( ! allocated( tableEntry ) ) {
-			tableEntry.allocate( sizeIncrement );
-			sizeTableEntry = sizeIncrement;
-			numTableEntry = 1;
-		} else {
-			++numTableEntry;
-			// if larger than current size grow the array
-			if ( numTableEntry > sizeTableEntry ) {
-				tableEntry.redimension( sizeTableEntry *= 2 ); //Tuned Changed += sizeIncrement to *= 2 for reduced heap allocations (at some space cost)
-			}
-		}
-	}
+	// 	// SUBROUTINE LOCAL VARIABLE DECLARATIONS:
+	// 	if ( ! allocated( tableEntry ) ) {
+	// 		tableEntry.allocate( sizeIncrement );
+	// 		sizeTableEntry = sizeIncrement;
+	// 		numTableEntry = 1;
+	// 	} else {
+	// 		++numTableEntry;
+	// 		// if larger than current size grow the array
+	// 		if ( numTableEntry > sizeTableEntry ) {
+	// 			tableEntry.redimension( sizeTableEntry *= 2 ); //Tuned Changed += sizeIncrement to *= 2 for reduced heap allocations (at some space cost)
+	// 		}
+	// 	}
+	// }
 
 	void
 	AddCompSizeTableEntry(
@@ -2324,21 +2334,24 @@ namespace OutputReportPredefined {
 
 		// SUBROUTINE LOCAL VARIABLE DECLARATIONS:
 
-		if ( ! allocated( CompSizeTableEntry ) ) {
-			CompSizeTableEntry.allocate( sizeIncrement );
-			sizeCompSizeTableEntry = sizeIncrement;
-			numCompSizeTableEntry = 1;
-		} else {
-			++numCompSizeTableEntry;
-			// if larger than current size grow the array
-			if ( numCompSizeTableEntry > sizeCompSizeTableEntry ) {
-				CompSizeTableEntry.redimension( sizeCompSizeTableEntry *= 2 ); //Tuned Changed += sizeIncrement to *= 2 for reduced heap allocations (at some space cost)
-			}
-		}
-		CompSizeTableEntry( numCompSizeTableEntry ).typeField = FieldType;
-		CompSizeTableEntry( numCompSizeTableEntry ).nameField = FieldName;
-		CompSizeTableEntry( numCompSizeTableEntry ).description = FieldDescription;
-		CompSizeTableEntry( numCompSizeTableEntry ).valField = FieldValue;
+		// if ( ! allocated( CompSizeTableEntry ) ) {
+		// 	CompSizeTableEntry.allocate( sizeIncrement );
+		// 	sizeCompSizeTableEntry = sizeIncrement;
+		// 	numCompSizeTableEntry = 1;
+		// } else {
+		// 	++numCompSizeTableEntry;
+		// 	// if larger than current size grow the array
+		// 	if ( numCompSizeTableEntry > sizeCompSizeTableEntry ) {
+		// 		CompSizeTableEntry.redimension( sizeCompSizeTableEntry *= 2 ); //Tuned Changed += sizeIncrement to *= 2 for reduced heap allocations (at some space cost)
+		// 	}
+		// }
+		CompSizeTableEntryType comp_size_table_entry;
+		comp_size_table_entry.typeField = FieldType;
+		comp_size_table_entry.nameField = FieldName;
+		comp_size_table_entry.description = FieldDescription;
+		comp_size_table_entry.valField = FieldValue;
+		CompSizeTableEntry.push_back( comp_size_table_entry );
+		++numCompSizeTableEntry;
 	}
 
 	void
@@ -2382,20 +2395,23 @@ namespace OutputReportPredefined {
 
 		// SUBROUTINE LOCAL VARIABLE DECLARATIONS:
 
-		if ( ! allocated( ShadowRelate ) ) {
-			ShadowRelate.allocate( sizeIncrement );
-			sizeShadowRelate = sizeIncrement;
-			numShadowRelate = 1;
-		} else {
-			++numShadowRelate;
-			// if larger than current size grow the array
-			if ( numShadowRelate > sizeShadowRelate ) {
-				ShadowRelate.redimension( sizeShadowRelate *= 2 ); //Tuned Changed += sizeIncrement to *= 2 for reduced heap allocations (at some space cost)
-			}
-		}
-		ShadowRelate( numShadowRelate ).castSurf = castingField;
-		ShadowRelate( numShadowRelate ).recSurf = receivingField;
-		ShadowRelate( numShadowRelate ).recKind = receivingKind;
+		// if ( ! allocated( ShadowRelate ) ) {
+		// 	ShadowRelate.allocate( sizeIncrement );
+		// 	sizeShadowRelate = sizeIncrement;
+		// 	numShadowRelate = 1;
+		// } else {
+		// 	++numShadowRelate;
+		// 	// if larger than current size grow the array
+		// 	if ( numShadowRelate > sizeShadowRelate ) {
+		// 		ShadowRelate.redimension( sizeShadowRelate *= 2 ); //Tuned Changed += sizeIncrement to *= 2 for reduced heap allocations (at some space cost)
+		// 	}
+		// }
+		ShadowRelateType shadow_relate;
+		shadow_relate.castSurf = castingField;
+		shadow_relate.recSurf = receivingField;
+		shadow_relate.recKind = receivingKind;
+		ShadowRelate.push_back( shadow_relate );
+		++numShadowRelate;
 	}
 
 	int
@@ -2423,7 +2439,6 @@ namespace OutputReportPredefined {
 		// USE STATEMENTS:
 
 		// Return value
-		int newPreDefReport;
 
 		// Locals
 		// SUBROUTINE ARGUMENT DEFINITIONS:
@@ -2438,24 +2453,26 @@ namespace OutputReportPredefined {
 		// na
 
 		// SUBROUTINE LOCAL VARIABLE DECLARATIONS:
-		if ( ! allocated( reportName ) ) {
-			reportName.allocate( sizeIncrement );
-			sizeReportName = sizeIncrement;
-			numReportName = 1;
-		} else {
-			++numReportName;
-			// if larger than current size grow the array
-			if ( numReportName > sizeReportName ) {
-				reportName.redimension( sizeReportName *= 2 ); //Tuned Changed += sizeIncrement to *= 2 for reduced heap allocations (at some space cost)
-			}
-		}
+		// if ( ! allocated( reportName ) ) {
+		// 	reportName.allocate( sizeIncrement );
+		// 	sizeReportName = sizeIncrement;
+		// 	numReportName = 1;
+		// } else {
+		// 	++numReportName;
+		// 	// if larger than current size grow the array
+		// 	if ( numReportName > sizeReportName ) {
+		// 		reportName.redimension( sizeReportName *= 2 ); //Tuned Changed += sizeIncrement to *= 2 for reduced heap allocations (at some space cost)
+		// 	}
+		// }
 		// initialize new record
-		reportName( numReportName ).name = inReportName;
-		reportName( numReportName ).abrev = inReportAbrev;
-		reportName( numReportName ).namewithspaces = inReportNamewithSpaces;
-		reportName( numReportName ).show = false;
-		newPreDefReport = numReportName;
-		return newPreDefReport;
+		reportNameType report_name;
+		report_name.name = inReportName;
+		report_name.abrev = inReportAbrev;
+		report_name.namewithspaces = inReportNamewithSpaces;
+		report_name.show = false;
+		reportName.push_back( report_name );
+		++numReportName;
+		return numReportName;
 	}
 
 	int
@@ -2496,20 +2513,23 @@ namespace OutputReportPredefined {
 		// na
 
 		// SUBROUTINE LOCAL VARIABLE DECLARATIONS:
-		if ( ! allocated( subTable ) ) {
-			subTable.allocate( sizeIncrement );
-			sizeSubTable = sizeIncrement;
-			numSubTable = 1;
-		} else {
-			++numSubTable;
-			// if larger than current size then grow the array
-			if ( numSubTable > sizeSubTable ) {
-				subTable.redimension( sizeSubTable *= 2 ); //Tuned Changed += sizeIncrement to *= 2 for reduced heap allocations (at some space cost)
-			}
-		}
+		// if ( ! allocated( subTable ) ) {
+		// 	subTable.allocate( sizeIncrement );
+		// 	sizeSubTable = sizeIncrement;
+		// 	numSubTable = 1;
+		// } else {
+		// 	++numSubTable;
+		// 	// if larger than current size then grow the array
+		// 	if ( numSubTable > sizeSubTable ) {
+		// 		subTable.redimension( sizeSubTable *= 2 ); //Tuned Changed += sizeIncrement to *= 2 for reduced heap allocations (at some space cost)
+		// 	}
+		// }
 		// initialize new record)
-		subTable( numSubTable ).name = subTableName;
-		subTable( numSubTable ).indexReportName = reportIndex;
+		SubTableType sub_table;
+		sub_table.name = subTableName;
+		sub_table.indexReportName = reportIndex;
+		subTable.push_back( sub_table );
+		++numSubTable;
 		return numSubTable;
 	}
 
@@ -2578,7 +2598,6 @@ namespace OutputReportPredefined {
 		// USE STATEMENTS:
 
 		// Return value
-		int newPreDefColumn;
 
 		// Locals
 		// SUBROUTINE ARGUMENT DEFINITIONS:
@@ -2593,22 +2612,24 @@ namespace OutputReportPredefined {
 		// na
 
 		// SUBROUTINE LOCAL VARIABLE DECLARATIONS:
-		if ( ! allocated( columnTag ) ) {
-			columnTag.allocate( sizeIncrement );
-			sizeColumnTag = sizeIncrement;
-			numColumnTag = 1;
-		} else {
-			++numColumnTag;
-			// if larger than current size grow the array
-			if ( numColumnTag > sizeColumnTag ) {
-				columnTag.redimension( sizeColumnTag *= 2 ); //Tuned Changed += sizeIncrement to *= 2 for reduced heap allocations (at some space cost)
-			}
-		}
+		// if ( ! allocated( columnTag ) ) {
+		// 	columnTag.allocate( sizeIncrement );
+		// 	sizeColumnTag = sizeIncrement;
+		// 	numColumnTag = 1;
+		// } else {
+		// 	++numColumnTag;
+		// 	// if larger than current size grow the array
+		// 	if ( numColumnTag > sizeColumnTag ) {
+		// 		columnTag.redimension( sizeColumnTag *= 2 ); //Tuned Changed += sizeIncrement to *= 2 for reduced heap allocations (at some space cost)
+		// 	}
+		// }
 		// initialize new record)
-		columnTag( numColumnTag ).heading = columnHeading;
-		columnTag( numColumnTag ).indexSubTable = subTableIndex;
-		newPreDefColumn = numColumnTag;
-		return newPreDefColumn;
+		ColumnTagType column_tag;
+		column_tag.heading = columnHeading;
+		column_tag.indexSubTable = subTableIndex;
+		columnTag.push_back( column_tag );
+		++numColumnTag;
+		return numColumnTag;
 	}
 
 } // OutputReportPredefined

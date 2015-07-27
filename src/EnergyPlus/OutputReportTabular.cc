@@ -902,22 +902,25 @@ namespace OutputReportTabular {
 		// na
 
 		// SUBROUTINE LOCAL VARIABLE DECLARATIONS:
-		int const SizeAdder( 25 );
+		// int const SizeAdder( 25 );
 
-		if ( ! allocated( MonthlyInput ) ) {
-			MonthlyInput.allocate( SizeAdder );
-			sizeMonthlyInput = SizeAdder;
-			MonthlyInputCount = 1;
-		} else {
-			++MonthlyInputCount;
-			// if larger than current size grow the array
-			if ( MonthlyInputCount > sizeMonthlyInput ) {
-				MonthlyInput.redimension( sizeMonthlyInput += SizeAdder );
-			}
-		}
+		// if ( ! allocated( MonthlyInput ) ) {
+		// 	MonthlyInput.allocate( SizeAdder );
+		// 	sizeMonthlyInput = SizeAdder;
+		// 	MonthlyInputCount = 1;
+		// } else {
+		// 	++MonthlyInputCount;
+		// 	// if larger than current size grow the array
+		// 	if ( MonthlyInputCount > sizeMonthlyInput ) {
+		// 		MonthlyInput.redimension( sizeMonthlyInput += SizeAdder );
+		// 	}
+		// }
 		// initialize new record
-		MonthlyInput( MonthlyInputCount ).name = inReportName;
-		MonthlyInput( MonthlyInputCount ).showDigits = inNumDigitsShown;
+		MonthlyInputType monthly_input;
+		monthly_input.name = inReportName;
+		monthly_input.showDigits = inNumDigitsShown;
+		MonthlyInput.push_back( monthly_input );
+		++MonthlyInputCount;
 		return MonthlyInputCount;
 	}
 
@@ -951,7 +954,7 @@ namespace OutputReportTabular {
 		// SUBROUTINE ARGUMENT DEFINITIONS:
 
 		// SUBROUTINE PARAMETER DEFINITIONS:
-		int const sizeIncrement( 50 );
+		// int const sizeIncrement( 50 );
 
 		// INTERFACE BLOCK SPECIFICATIONS:
 		// na
@@ -962,21 +965,24 @@ namespace OutputReportTabular {
 		// SUBROUTINE LOCAL VARIABLE DECLARATIONS:
 		// na
 
-		if ( ! allocated( MonthlyFieldSetInput ) ) {
-			MonthlyFieldSetInput.allocate( sizeIncrement );
-			sizeMonthlyFieldSetInput = sizeIncrement;
-			MonthlyFieldSetInputCount = 1;
-		} else {
-			++MonthlyFieldSetInputCount;
-			// if larger than current size grow the array
-			if ( MonthlyFieldSetInputCount > sizeMonthlyFieldSetInput ) {
-				MonthlyFieldSetInput.redimension( sizeMonthlyFieldSetInput *= 2 ); //Tuned Changed += sizeIncrement to *= 2 for reduced heap allocations (at some space cost)
-			}
-		}
+		// if ( ! allocated( MonthlyFieldSetInput ) ) {
+		// 	MonthlyFieldSetInput.allocate( sizeIncrement );
+		// 	sizeMonthlyFieldSetInput = sizeIncrement;
+		// 	MonthlyFieldSetInputCount = 1;
+		// } else {
+		// 	++MonthlyFieldSetInputCount;
+		// 	// if larger than current size grow the array
+		// 	if ( MonthlyFieldSetInputCount > sizeMonthlyFieldSetInput ) {
+		// 		MonthlyFieldSetInput.redimension( sizeMonthlyFieldSetInput *= 2 ); //Tuned Changed += sizeIncrement to *= 2 for reduced heap allocations (at some space cost)
+		// 	}
+		// }
 		// initialize new record)
-		MonthlyFieldSetInput( MonthlyFieldSetInputCount ).variMeter = inVariMeter;
-		MonthlyFieldSetInput( MonthlyFieldSetInputCount ).colHead = inColHead;
-		MonthlyFieldSetInput( MonthlyFieldSetInputCount ).aggregate = inAggregate;
+		MonthlyFieldSetInputType monthly_field_set_input;
+		monthly_field_set_input.variMeter = inVariMeter;
+		monthly_field_set_input.colHead = inColHead;
+		monthly_field_set_input.aggregate = inAggregate;
+		MonthlyFieldSetInput.push_back( monthly_field_set_input );
+		++MonthlyFieldSetInputCount;
 		//update the references from the MonthlyInput array
 		if ( ( inMonthReport > 0 ) && ( inMonthReport <= MonthlyInputCount ) ) {
 			if ( MonthlyInput( inMonthReport ).firstFieldSet == 0 ) {
@@ -1065,8 +1071,8 @@ namespace OutputReportTabular {
 
 		// if not a running a weather simulation do not create reports
 		if ( ! DoWeathSim ) return;
-		maxUniqueKeyCount = 1500;
-		UniqueKeyNames.allocate( maxUniqueKeyCount );
+		// maxUniqueKeyCount = 1500;
+		// UniqueKeyNames.allocate( maxUniqueKeyCount );
 		// First pass through the input objects is to put the name of the report
 		// into the array and count the number of unique keys found to allocate
 		// the monthlyTables and monthlyColumns
@@ -1147,10 +1153,11 @@ namespace OutputReportTabular {
 					}
 					if ( found == 0 ) {
 						++UniqueKeyCount;
-						if ( UniqueKeyCount > maxUniqueKeyCount ) {
-							UniqueKeyNames.redimension( maxUniqueKeyCount += 500 );
-						}
-						UniqueKeyNames( UniqueKeyCount ) = MonthlyFieldSetInput( FirstColumn + colNum - 1 ).NamesOfKeys( iKey );
+						// if ( UniqueKeyCount > maxUniqueKeyCount ) {
+						// 	UniqueKeyNames.redimension( maxUniqueKeyCount += 500 );
+						// }
+						UniqueKeyNames.push_back( MonthlyFieldSetInput( FirstColumn + colNum - 1 ).NamesOfKeys( iKey ) );
+						// UniqueKeyNames( UniqueKeyCount ) = MonthlyFieldSetInput( FirstColumn + colNum - 1 ).NamesOfKeys( iKey );
 					}
 				}
 				//#ifdef ITM_KEYCACHE
@@ -14074,19 +14081,22 @@ Label900: ;
 		// SUBROUTINE LOCAL VARIABLE DECLARATIONS:
 		//    na
 
-		if ( ! allocated( TOCEntries ) ) {
-			TOCEntriesSize = 20;
-			TOCEntries.allocate( TOCEntriesSize );
-			TOCEntriesCount = 1;
-		} else {
-			++TOCEntriesCount;
-			// if larger than current size grow the array
-			if ( TOCEntriesCount > TOCEntriesSize ) {
-				TOCEntries.redimension( TOCEntriesSize += 20 );
-			}
-		}
-		TOCEntries( TOCEntriesCount ).reportName = nameReport;
-		TOCEntries( TOCEntriesCount ).sectionName = nameSection;
+		// if ( ! allocated( TOCEntries ) ) {
+		// 	TOCEntriesSize = 20;
+		// 	TOCEntries.allocate( TOCEntriesSize );
+		// 	TOCEntriesCount = 1;
+		// } else {
+		// 	++TOCEntriesCount;
+		// 	// if larger than current size grow the array
+		// 	if ( TOCEntriesCount > TOCEntriesSize ) {
+		// 		TOCEntries.redimension( TOCEntriesSize += 20 );
+		// 	}
+		// }
+		TOCEntriesType toc_entries;
+		toc_entries.reportName = nameReport;
+		toc_entries.sectionName = nameSection;
+		TOCEntries.push_back( toc_entries );
+		++TOCEntriesCount;
 	}
 
 	void
