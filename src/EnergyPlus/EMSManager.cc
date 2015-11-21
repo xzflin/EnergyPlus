@@ -77,6 +77,13 @@ namespace EMSManager {
 	// SUBROUTINE SPECIFICATIONS:
 
 	// Functions
+	void
+	clear_state()
+	{
+		GetEMSUserInput = true ; 
+		ZoneThermostatActuatorsHaveBeenSetup = false ;
+		FinishProcessingUserInput = true ; 
+	}
 
 	void
 	CheckIfAnyEMS()
@@ -229,13 +236,7 @@ namespace EMSManager {
 		// Standard EnergyPlus methodology.
 
 		// Using/Aliasing
-		using DataGlobals::WarmupFlag;
-		using DataGlobals::DoingSizing;
-		using DataGlobals::ZoneTSReporting;
-		using DataGlobals::HVACTSReporting;
-		using DataGlobals::KickOffSimulation;
 		using DataGlobals::AnyEnergyManagementSystemInModel;
-		using DataGlobals::BeginEnvrnFlag;
 		using DataGlobals::emsCallFromSetupSimulation;
 		using DataGlobals::emsCallFromExternalInterface;
 		using DataGlobals::emsCallFromBeginNewEvironment;
@@ -244,11 +245,8 @@ namespace EMSManager {
 		using RuntimeLanguageProcessor::EvaluateStack;
 		using RuntimeLanguageProcessor::BeginEnvrnInitializeRuntimeLanguage;
 		using OutputProcessor::MeterType;
-		using OutputProcessor::NumEnergyMeters;
-		using OutputProcessor::EnergyMeters;
 		using OutputProcessor::RealVariables;
 		using OutputProcessor::RealVariableType;
-		using OutputProcessor::NumOfRVariable;
 		using OutputProcessor::RVar;
 		using OutputProcessor::RVariableTypes;
 
@@ -376,7 +374,6 @@ namespace EMSManager {
 		// na
 
 		// Using/Aliasing
-		using DataGlobals::WarmupFlag;
 		using DataGlobals::DoingSizing;
 		using DataGlobals::KickOffSimulation;
 		using DataGlobals::BeginEnvrnFlag;
@@ -660,7 +657,7 @@ namespace EMSManager {
 
 				IsNotOK = false;
 				IsBlank = false;
-				VerifyName( cAlphaArgs( 1 ), Sensor.Name(), SensorNum - 1, IsNotOK, IsBlank, cCurrentModuleObject + " Name" );
+				VerifyName( cAlphaArgs( 1 ), Sensor, SensorNum - 1, IsNotOK, IsBlank, cCurrentModuleObject + " Name" );
 				if ( IsNotOK ) {
 					ErrorsFound = true;
 					if ( IsBlank ) cAlphaArgs( 1 ) = "xxxxx";
@@ -736,7 +733,7 @@ namespace EMSManager {
 
 				IsNotOK = false;
 				IsBlank = false;
-				VerifyName( cAlphaArgs( 1 ), EMSActuatorUsed.Name(), ActuatorNum - 1, IsNotOK, IsBlank, cCurrentModuleObject + " Name" );
+				VerifyName( cAlphaArgs( 1 ), EMSActuatorUsed, ActuatorNum - 1, IsNotOK, IsBlank, cCurrentModuleObject + " Name" );
 				if ( IsNotOK ) {
 					ErrorsFound = true;
 					if ( IsBlank ) cAlphaArgs( 1 ) = "xxxxx";
@@ -802,7 +799,7 @@ namespace EMSManager {
 
 				IsNotOK = false;
 				IsBlank = false;
-				VerifyName( cAlphaArgs( 1 ), EMSInternalVarsUsed.Name(), InternVarNum - 1, IsNotOK, IsBlank, cCurrentModuleObject + " Name" );
+				VerifyName( cAlphaArgs( 1 ), EMSInternalVarsUsed, InternVarNum - 1, IsNotOK, IsBlank, cCurrentModuleObject + " Name" );
 				if ( IsNotOK ) {
 					ErrorsFound = true;
 					if ( IsBlank ) cAlphaArgs( 1 ) = "xxxxx";
@@ -858,7 +855,7 @@ namespace EMSManager {
 
 				IsNotOK = false;
 				IsBlank = false;
-				VerifyName( cAlphaArgs( 1 ), EMSProgramCallManager.Name(), CallManagerNum - 1, IsNotOK, IsBlank, cCurrentModuleObject + " Name" );
+				VerifyName( cAlphaArgs( 1 ), EMSProgramCallManager, CallManagerNum - 1, IsNotOK, IsBlank, cCurrentModuleObject + " Name" );
 				if ( IsNotOK ) {
 					ErrorsFound = true;
 					if ( IsBlank ) cAlphaArgs( 1 ) = "xxxxx";
@@ -916,7 +913,7 @@ namespace EMSManager {
 						ErrorsFound = true;
 					}
 
-					StackNum = FindItemInList( cAlphaArgs( AlphaNum ), ErlStack.Name(), NumErlStacks );
+					StackNum = FindItemInList( cAlphaArgs( AlphaNum ), ErlStack );
 
 					if ( StackNum > 0 ) { // found it
 						// check for duplicate and warn.
@@ -1325,8 +1322,8 @@ namespace EMSManager {
 			int FoundControlType;
 			for ( int ActuatorLoop = 1; ActuatorLoop <= numEMSActuatorsAvailable; ++ActuatorLoop ) {
 				if ( ActuatorLoop + 1 <= numEMSActuatorsAvailable ) {
-					FoundTypeName = FindItemInList( EMSActuatorAvailable( ActuatorLoop ).ComponentTypeName, EMSActuatorAvailable( {ActuatorLoop + 1,numEMSActuatorsAvailable} ).ComponentTypeName(), numEMSActuatorsAvailable - ( ActuatorLoop + 1 ) );
-					FoundControlType = FindItemInList( EMSActuatorAvailable( ActuatorLoop ).ControlTypeName, EMSActuatorAvailable( {ActuatorLoop + 1,numEMSActuatorsAvailable} ).ControlTypeName(), numEMSActuatorsAvailable - ( ActuatorLoop + 1 ) );
+					FoundTypeName = FindItemInList( EMSActuatorAvailable( ActuatorLoop ).ComponentTypeName, EMSActuatorAvailable( {ActuatorLoop + 1,numEMSActuatorsAvailable} ), &EMSActuatorAvailableType::ComponentTypeName, numEMSActuatorsAvailable - ( ActuatorLoop + 1 ) );
+					FoundControlType = FindItemInList( EMSActuatorAvailable( ActuatorLoop ).ControlTypeName, EMSActuatorAvailable( {ActuatorLoop + 1,numEMSActuatorsAvailable} ), &EMSActuatorAvailableType::ControlTypeName, numEMSActuatorsAvailable - ( ActuatorLoop + 1 ) );
 				} else {
 					FoundTypeName = 1;
 					FoundControlType = 1;
@@ -1389,7 +1386,7 @@ namespace EMSManager {
 			for ( int InternalDataLoop = 1; InternalDataLoop <= numEMSInternalVarsAvailable; ++InternalDataLoop ) {
 				int Found( 0 );
 				if ( InternalDataLoop + 1 <= numEMSInternalVarsAvailable ) {
-					Found = FindItemInList( EMSInternalVarsAvailable( InternalDataLoop ).DataTypeName, EMSInternalVarsAvailable( {InternalDataLoop + 1,numEMSInternalVarsAvailable} ).DataTypeName(), numEMSInternalVarsAvailable - ( InternalDataLoop + 1 ) );
+					Found = FindItemInList( EMSInternalVarsAvailable( InternalDataLoop ).DataTypeName, EMSInternalVarsAvailable( {InternalDataLoop + 1,numEMSInternalVarsAvailable} ), &InternalVarsAvailableType::DataTypeName, numEMSInternalVarsAvailable - ( InternalDataLoop + 1 ) );
 				}
 				if ( Found == 0 ) {
 					gio::write( OutputEMSFileUnitNum, fmtA ) << "EnergyManagementSystem:InternalVariable Available, *," + EMSInternalVarsAvailable( InternalDataLoop ).DataTypeName + ',' + EMSInternalVarsAvailable( InternalDataLoop ).Units;
@@ -1455,8 +1452,8 @@ namespace EMSManager {
 			for ( LoopNode = 1; LoopNode <= NumOfNodes; ++LoopNode ) {
 				// setup the setpoint for each type of variable that can be controlled
 				SetupEMSActuator( "System Node Setpoint", NodeID( LoopNode ), "Temperature Setpoint", "[C]", lDummy, Node( LoopNode ).TempSetPoint );
-				SetupEMSActuator( "System Node Setpoint", NodeID( LoopNode ), "Temperature Minimum Setpoint", "[C]", lDummy, Node( LoopNode ).TempMin );
-				SetupEMSActuator( "System Node Setpoint", NodeID( LoopNode ), "Temperature Maximum Setpoint", "[C]", lDummy, Node( LoopNode ).TempMax );
+				SetupEMSActuator( "System Node Setpoint", NodeID( LoopNode ), "Temperature Minimum Setpoint", "[C]", lDummy, Node( LoopNode ).TempSetPointLo );
+				SetupEMSActuator( "System Node Setpoint", NodeID( LoopNode ), "Temperature Maximum Setpoint", "[C]", lDummy, Node( LoopNode ).TempSetPointHi );
 				SetupEMSActuator( "System Node Setpoint", NodeID( LoopNode ), "Humidity Ratio Setpoint", "[kgWater/kgDryAir]", lDummy, Node( LoopNode ).HumRatSetPoint );
 				SetupEMSActuator( "System Node Setpoint", NodeID( LoopNode ), "Humidity Ratio Maximum Setpoint", "[kgWater/kgDryAir]", lDummy, Node( LoopNode ).HumRatMax );
 				SetupEMSActuator( "System Node Setpoint", NodeID( LoopNode ), "Humidity Ratio Minimum Setpoint", "[kgWater/kgDryAir]", lDummy, Node( LoopNode ).HumRatMin );
@@ -1620,6 +1617,23 @@ namespace EMSManager {
 
 		if ( ( ! ErrorFlag ) && ( ! FoundControl ) ) ErrorFlag = true;
 
+	}
+
+	bool
+	CheckIfNodeMoreInfoSensedByEMS( 
+		int const nodeNum, // index of node being checked.
+		std::string const & varName
+	) {
+	bool returnValue;
+
+	returnValue = false;
+	for (auto loop = 1; loop <= NumSensors; ++loop ) {
+		if ( Sensor( loop ).UniqueKeyName == DataLoopNode::NodeID( nodeNum ) && InputProcessor::SameString(Sensor( loop ).OutputVarName ,varName) ) {
+			returnValue = true;
+		}
+	}
+
+	return returnValue;
 	}
 
 	void
@@ -2005,7 +2019,7 @@ namespace EMSManager {
 
 	//     NOTICE
 
-	//     Copyright © 1996-2014 The Board of Trustees of the University of Illinois
+	//     Copyright (c) 1996-2015 The Board of Trustees of the University of Illinois
 	//     and The Regents of the University of California through Ernest Orlando Lawrence
 	//     Berkeley National Laboratory.  All rights reserved.
 
@@ -2076,10 +2090,7 @@ SetupEMSActuator(
 
 	EMSActuatorKey const key( UpperCaseObjectType, UpperCaseObjectName, UpperCaseActuatorName );
 
-	if ( EMSActuator_lookup.find( key ) != EMSActuator_lookup.end() ) {
-		ShowSevereError( "Duplicate actuator was sent to SetupEMSActuator." );
-		ShowContinueError( "Actuator variable type = " + cComponentTypeName + " ; name = " + cUniqueIDName + " ; control = " + cControlTypeName );
-	} else { // Add new actuator
+	if ( EMSActuator_lookup.find( key ) == EMSActuator_lookup.end() ) {
 		if ( numEMSActuatorsAvailable == 0 ) {
 			EMSActuatorAvailable.allocate( varsAvailableAllocInc );
 			numEMSActuatorsAvailable = 1;
@@ -2099,8 +2110,7 @@ SetupEMSActuator(
 		actuator.Actuated >>= lEMSActuated; // Pointer assigment
 		actuator.RealValue >>= rValue; // Pointer assigment
 		actuator.PntrVarTypeUsed = PntrReal;
-//		EMSActuator_lookup.insert( key );
-		EMSActuator_lookup.insert( EMSActuatorKey( cComponentTypeName, cUniqueIDName, cControlTypeName ) ); //Bug Replicate bug pending DOE fix
+		EMSActuator_lookup.insert( key );
 	}
 
 }
@@ -2155,10 +2165,7 @@ SetupEMSActuator(
 
 	EMSActuatorKey const key( UpperCaseObjectType, UpperCaseObjectName, UpperCaseActuatorName );
 
-	if ( EMSActuator_lookup.find( key ) != EMSActuator_lookup.end() ) {
-		ShowSevereError( "Duplicate actuator was sent to SetupEMSActuator." );
-		ShowContinueError( "Actuator variable type = " + cComponentTypeName + " ; name = " + cUniqueIDName + " ; control = " + cControlTypeName );
-	} else { // Add new actuator
+	if ( EMSActuator_lookup.find( key ) == EMSActuator_lookup.end() ) {
 		if ( numEMSActuatorsAvailable == 0 ) {
 			EMSActuatorAvailable.allocate( varsAvailableAllocInc );
 			numEMSActuatorsAvailable = 1;
@@ -2178,8 +2185,7 @@ SetupEMSActuator(
 		actuator.Actuated >>= lEMSActuated; // Pointer assigment
 		actuator.IntValue >>= iValue; // Pointer assigment
 		actuator.PntrVarTypeUsed = PntrInteger;
-//		EMSActuator_lookup.insert( key );
-		EMSActuator_lookup.insert( EMSActuatorKey( cComponentTypeName, cUniqueIDName, cControlTypeName ) ); //Bug Replicate bug pending DOE fix
+		EMSActuator_lookup.insert( key );
 	}
 
 }
@@ -2229,10 +2235,7 @@ SetupEMSActuator(
 
 	EMSActuatorKey const key( UpperCaseObjectType, UpperCaseObjectName, UpperCaseActuatorName );
 
-	if ( EMSActuator_lookup.find( key ) != EMSActuator_lookup.end() ) {
-		ShowSevereError( "Duplicate actuator was sent to SetupEMSActuator." );
-		ShowContinueError( "Actuator variable type = " + cComponentTypeName + " ; name = " + cUniqueIDName + " ; control = " + cControlTypeName );
-	} else { // Add new actuator
+	if ( EMSActuator_lookup.find( key ) == EMSActuator_lookup.end() ) {
 		if ( numEMSActuatorsAvailable == 0 ) {
 			EMSActuatorAvailable.allocate( varsAvailableAllocInc );
 			numEMSActuatorsAvailable = 1;
@@ -2252,8 +2255,7 @@ SetupEMSActuator(
 		actuator.Actuated >>= lEMSActuated; // Pointer assigment
 		actuator.LogValue >>= lValue; // Pointer assigment
 		actuator.PntrVarTypeUsed = PntrLogical;
-//		EMSActuator_lookup.insert( key );
-		EMSActuator_lookup.insert( EMSActuatorKey( cComponentTypeName, cUniqueIDName, cControlTypeName ) ); //Bug Replicate bug pending DOE fix
+		EMSActuator_lookup.insert( key );
 	}
 
 }

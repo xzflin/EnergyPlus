@@ -223,7 +223,7 @@ namespace SingleDuct {
 
 		// Find the correct SysNumber with the Component Name
 		if ( CompIndex == 0 ) {
-			SysNum = FindItemInList( CompName, Sys.SysName(), NumSys );
+			SysNum = FindItemInList( CompName, Sys, &SysDesignParams::SysName );
 			if ( SysNum == 0 ) {
 				ShowFatalError( "SimulateSingleDuct: System not found=" + CompName );
 			}
@@ -316,7 +316,6 @@ namespace SingleDuct {
 		using namespace DataIPShortCuts;
 		using namespace DataHeatBalance;
 		using DataSizing::OARequirements;
-		using DataSizing::NumOARequirements;
 		using DataPlant::TypeOf_CoilWaterSimpleHeating;
 		using DataPlant::TypeOf_CoilSteamAirHeating;
 		using DataGlobals::DoZoneSizing;
@@ -349,7 +348,6 @@ namespace SingleDuct {
 		int NumZoneSiz;
 		int ZoneSizIndex;
 		int IOStat;
-		int ZoneNum; // Index to actual zone number
 		static bool ErrorsFound( false ); // If errors detected in input
 		bool IsNotOK; // Flag to verify name
 		bool IsBlank; // Flag for blank name
@@ -428,7 +426,7 @@ namespace SingleDuct {
 			SysNum = SysIndex;
 			IsNotOK = false;
 			IsBlank = false;
-			VerifyName( Alphas( 1 ), Sys.SysName(), SysNum - 1, IsNotOK, IsBlank, CurrentModuleObject + " Name" );
+			VerifyName( Alphas( 1 ), Sys, &SysDesignParams::SysName, SysNum - 1, IsNotOK, IsBlank, CurrentModuleObject + " Name" );
 			if ( IsNotOK ) {
 				ErrorsFound = true;
 				if ( IsBlank ) Alphas( 1 ) = "xxxxx";
@@ -604,7 +602,7 @@ namespace SingleDuct {
 			}
 
 			if ( ! lAlphaBlanks( 11 ) ) {
-				Sys( SysNum ).OARequirementsPtr = FindItemInList( Alphas( 11 ), OARequirements.Name(), NumOARequirements );
+				Sys( SysNum ).OARequirementsPtr = FindItemInList( Alphas( 11 ), OARequirements );
 				if ( Sys( SysNum ).OARequirementsPtr == 0 ) {
 					ShowSevereError( cAlphaFields( 11 ) + " = " + Alphas( 11 ) + " not found." );
 					ShowContinueError( "Occurs in " + Sys( SysNum ).SysType + " = " + Sys( SysNum ).SysName );
@@ -639,7 +637,7 @@ namespace SingleDuct {
 			SysNum = SysIndex + NumVAVSys;
 			IsNotOK = false;
 			IsBlank = false;
-			VerifyName( Alphas( 1 ), Sys.SysName(), SysNum - 1, IsNotOK, IsBlank, CurrentModuleObject + " Name" );
+			VerifyName( Alphas( 1 ), Sys, &SysDesignParams::SysName, SysNum - 1, IsNotOK, IsBlank, CurrentModuleObject + " Name" );
 			if ( IsNotOK ) {
 				ErrorsFound = true;
 				if ( IsBlank ) Alphas( 1 ) = "xxxxx";
@@ -802,7 +800,7 @@ namespace SingleDuct {
 			SysNum = SysIndex + NumVAVSys + NumCBVAVSys;
 			IsNotOK = false;
 			IsBlank = false;
-			VerifyName( Alphas( 1 ), Sys.SysName(), SysNum - 1, IsNotOK, IsBlank, CurrentModuleObject + " Name" );
+			VerifyName( Alphas( 1 ), Sys, &SysDesignParams::SysName, SysNum - 1, IsNotOK, IsBlank, CurrentModuleObject + " Name" );
 			if ( IsNotOK ) {
 				ErrorsFound = true;
 				if ( IsBlank ) Alphas( 1 ) = "xxxxx";
@@ -951,7 +949,7 @@ namespace SingleDuct {
 			SysNum = SysIndex + NumVAVSys + NumCBVAVSys + NumConstVolSys;
 			IsNotOK = false;
 			IsBlank = false;
-			VerifyName( Alphas( 1 ), Sys.SysName(), SysNum - 1, IsNotOK, IsBlank, CurrentModuleObject + " Name" );
+			VerifyName( Alphas( 1 ), Sys, &SysDesignParams::SysName, SysNum - 1, IsNotOK, IsBlank, CurrentModuleObject + " Name" );
 			if ( IsNotOK ) {
 				ErrorsFound = true;
 				if ( IsBlank ) Alphas( 1 ) = "xxxxx";
@@ -1053,7 +1051,7 @@ namespace SingleDuct {
 			}
 
 			if ( ! lAlphaBlanks( 7 ) ) {
-				Sys( SysNum ).OARequirementsPtr = FindItemInList( Alphas( 7 ), OARequirements.Name(), NumOARequirements );
+				Sys( SysNum ).OARequirementsPtr = FindItemInList( Alphas( 7 ), OARequirements );
 				if ( Sys( SysNum ).OARequirementsPtr == 0 ) {
 					ShowSevereError( cAlphaFields( 7 ) + " = " + Alphas( 7 ) + " not found." );
 					ShowContinueError( "Occurs in " + Sys( SysNum ).SysType + " = " + Sys( SysNum ).SysName );
@@ -1078,7 +1076,7 @@ namespace SingleDuct {
 			SysNum = SysIndex + NumVAVSys + NumCBVAVSys + NumConstVolSys + NumNoRHVAVSys;
 			IsNotOK = false;
 			IsBlank = false;
-			VerifyName( Alphas( 1 ), Sys.SysName(), SysNum - 1, IsNotOK, IsBlank, CurrentModuleObject + " Name" );
+			VerifyName( Alphas( 1 ), Sys, &SysDesignParams::SysName, SysNum - 1, IsNotOK, IsBlank, CurrentModuleObject + " Name" );
 			if ( IsNotOK ) {
 				ErrorsFound = true;
 				if ( IsBlank ) Alphas( 1 ) = "xxxxx";
@@ -1160,7 +1158,7 @@ namespace SingleDuct {
 			SysNum = SysIndex + NumVAVSys + NumCBVAVSys + NumConstVolSys + NumNoRHVAVSys + NumNoRHCBVAVSys;
 			IsNotOK = false;
 			IsBlank = false;
-			VerifyName( Alphas( 1 ), Sys.SysName(), SysNum - 1, IsNotOK, IsBlank, CurrentModuleObject + " Name" );
+			VerifyName( Alphas( 1 ), Sys, &SysDesignParams::SysName, SysNum - 1, IsNotOK, IsBlank, CurrentModuleObject + " Name" );
 			if ( IsNotOK ) {
 				ErrorsFound = true;
 				if ( IsBlank ) Alphas( 1 ) = "xxxxx";
@@ -3643,7 +3641,7 @@ namespace SingleDuct {
 		int const SysNum, // Unit index
 		bool const FirstHVACIteration, // flag for 1st HVAV iteration in the time step
 		int const ZoneNode, // zone node number
-		int const HCoilType, // type of hot water coil !unused1208
+		int const EP_UNUSED( HCoilType ), // type of hot water coil !unused1208
 		Real64 const HWFlow, // hot water flow (kg/s)
 		Real64 const HCoilReq, // gas or elec coil demand requested
 		int const FanType, // type of fan
@@ -4144,7 +4142,7 @@ namespace SingleDuct {
 	// *****************************************************************************
 
 	void
-	ReportSys( int const SysNum ) // unused1208
+	ReportSys( int const EP_UNUSED( SysNum ) ) // unused1208
 	{
 
 		// SUBROUTINE INFORMATION:
@@ -4232,7 +4230,7 @@ namespace SingleDuct {
 			GetInputFlag = false;
 		}
 
-		SDSIndex = FindItemInList( SDSName, Sys.SysName(), NumSys );
+		SDSIndex = FindItemInList( SDSName, Sys, &SysDesignParams::SysName );
 		if ( SDSIndex == 0 ) {
 			if ( present( ThisObjectType ) ) {
 				ShowSevereError( ThisObjectType() + ", GetHVACSingleDuctSysIndex: Single duct system not found=" + SDSName );
@@ -4298,7 +4296,7 @@ namespace SingleDuct {
 		}
 
 		if ( SysIndex == 0 ) {
-			SysNum = FindItemInList( SysName, SysATMixer.Name(), NumATMixers );
+			SysNum = FindItemInList( SysName, SysATMixer );
 			SysIndex = SysNum;
 			if ( SysNum == 0 ) {
 				ShowFatalError( "Object " + SysName + " not found" );
@@ -4341,7 +4339,6 @@ namespace SingleDuct {
 		using InputProcessor::FindItemInList;
 		using NodeInputManager::GetOnlySingleNode;
 		using DataZoneEquipment::ZoneEquipConfig;
-		using DataZoneEquipment::ZoneEquipList;
 		using DataZoneEquipment::EquipmentData;
 		using DataZoneEquipment::SubEquipmentData;
 		using namespace DataLoopNode;
@@ -4349,9 +4346,6 @@ namespace SingleDuct {
 		using BranchNodeConnections::TestCompSet;
 		using BranchNodeConnections::SetUpCompSets;
 		using DataGlobals::NumOfZones;
-		//  USE DataDefineEquip,   ONLY: AirDistUnit, NumAirDistUnits
-		//  USE PackagedTerminalHeatPump, ONLY: GetPTUnitZoneInletAirNode, GetPTUnitIndex, GetPTUnitInletAirNode
-		//  USE FanCoilUnits, ONLY: GetFanCoilIndex, GetFanCoilZoneInletAirNode, GetFanCoilInletAirNode
 
 		// Locals
 		// SUBROUTINE PARAMETER DEFINITIONS:
@@ -4378,8 +4372,6 @@ namespace SingleDuct {
 		int NodeNum; // Index to node number
 		int CtrlZone; // Index to control zone
 		bool ZoneNodeNotFound; // Flag for error checking
-		bool ZoneEquipNodeNotFound; // Flag for error checking
-		int ADUNum; // Air distribution unit index
 		int SupAirIn; // Supply air inlet node index
 		bool errFlag; // error flag from component validation
 
@@ -4395,7 +4387,7 @@ namespace SingleDuct {
 			GetObjectItem( cCurrentModuleObject, InletATMixerNum, cAlphaArgs, NumAlphas, rNumericArgs, NumNums, IOStat, lNumericFieldBlanks, lAlphaFieldBlanks, cAlphaFieldNames, cNumericFieldNames );
 			IsNotOK = false;
 			IsBlank = false;
-			VerifyName( cAlphaArgs( 1 ), SysATMixer.Name(), InletATMixerNum - 1, IsNotOK, IsBlank, cCurrentModuleObject + " Name" );
+			VerifyName( cAlphaArgs( 1 ), SysATMixer, InletATMixerNum - 1, IsNotOK, IsBlank, cCurrentModuleObject + " Name" );
 			if ( IsNotOK ) {
 				ErrorsFound = true;
 				if ( IsBlank ) cAlphaArgs( 1 ) = "xxxxxxxx";
@@ -4467,7 +4459,7 @@ namespace SingleDuct {
 			GetObjectItem( cCurrentModuleObject, SupplyATMixerNum, cAlphaArgs, NumAlphas, rNumericArgs, NumNums, IOStat, lNumericFieldBlanks, lAlphaFieldBlanks, cAlphaFieldNames, cNumericFieldNames );
 			IsNotOK = false;
 			IsBlank = false;
-			VerifyName( cAlphaArgs( 1 ), SysATMixer.Name(), SupplyATMixerNum - 1, IsNotOK, IsBlank, cCurrentModuleObject + " Name" );
+			VerifyName( cAlphaArgs( 1 ), SysATMixer, SupplyATMixerNum - 1, IsNotOK, IsBlank, cCurrentModuleObject + " Name" );
 			if ( IsNotOK ) {
 				ErrorsFound = true;
 				if ( IsBlank ) cAlphaArgs( 1 ) = "xxxxxxxx";
@@ -4628,19 +4620,16 @@ namespace SingleDuct {
 		// SUBROUTINE LOCAL VARIABLE DECLARATIONS:
 
 		static Real64 PriMassFlowRate( 0.0 );
-		static Real64 PriPressure( 0.0 );
 		static Real64 PriEnthalpy( 0.0 );
 		static Real64 PriHumRat( 0.0 );
 		static Real64 PriTemp( 0.0 );
 
 		static Real64 SecAirMassFlowRate( 0.0 );
-		static Real64 SecAirPressure( 0.0 );
 		static Real64 SecAirEnthalpy( 0.0 );
 		static Real64 SecAirHumRat( 0.0 );
 		static Real64 SecAirTemp( 0.0 );
 
 		static Real64 MixedAirMassFlowRate( 0.0 );
-		static Real64 MixedAirPressure( 0.0 );
 		static Real64 MixedAirEnthalpy( 0.0 );
 		static Real64 MixedAirHumRat( 0.0 );
 		static Real64 MixedAirTemp( 0.0 );
@@ -4770,7 +4759,7 @@ namespace SingleDuct {
 			GetATMixerFlag = false;
 		}
 
-		ATMixerIndex = FindItemInList( ZoneEquipName, SysATMixer.Name(), NumATMixers );
+		ATMixerIndex = FindItemInList( ZoneEquipName, SysATMixer );
 		if ( ATMixerIndex > 0 ) {
 			ATMixerPriNode = SysATMixer( ATMixerIndex ).PriInNode;
 		}
@@ -4829,7 +4818,7 @@ namespace SingleDuct {
 			GetATMixerFlag = false;
 		}
 
-		ATMixerIndex = FindItemInList( ZoneEquipName, SysATMixer.Name(), NumATMixers );
+		ATMixerIndex = FindItemInList( ZoneEquipName, SysATMixer );
 		if ( ATMixerIndex > 0 ) {
 			ATMixerSecNode = SysATMixer( ATMixerIndex ).SecInNode;
 		}
@@ -4888,7 +4877,7 @@ namespace SingleDuct {
 			GetATMixerFlag = false;
 		}
 
-		ATMixerIndex = FindItemInList( ZoneEquipName, SysATMixer.Name(), NumATMixers );
+		ATMixerIndex = FindItemInList( ZoneEquipName, SysATMixer );
 		if ( ATMixerIndex > 0 ) {
 			ATMixerOutNode = SysATMixer( ATMixerIndex ).MixedAirOutNode;
 		}
@@ -4947,7 +4936,6 @@ namespace SingleDuct {
 		// SUBROUTINE LOCAL VARIABLE DECLARATIONS:
 		int ATMixerIndex; // local air terminal mixer index
 
-		bool ErrorsFound; // for error trapping
 
 		if ( GetATMixerFlag ) {
 			// CALL GetZoneAirLoopEquipment
@@ -4965,7 +4953,7 @@ namespace SingleDuct {
 			return;
 		}
 
-		ATMixerIndex = FindItemInList( ZoneEquipName, SysATMixer.ZoneHVACUnitName(), NumATMixers );
+		ATMixerIndex = FindItemInList( ZoneEquipName, SysATMixer, &AirTerminalMixerData::ZoneHVACUnitName );
 		if ( ATMixerIndex > 0 ) {
 			ATMixerNum = ATMixerIndex;
 			ATMixerName = SysATMixer( ATMixerIndex ).Name;
@@ -5042,7 +5030,7 @@ namespace SingleDuct {
 
 	//     NOTICE
 
-	//     Copyright © 1996-2014 The Board of Trustees of the University of Illinois
+	//     Copyright (c) 1996-2015 The Board of Trustees of the University of Illinois
 	//     and The Regents of the University of California through Ernest Orlando Lawrence
 	//     Berkeley National Laboratory.  All rights reserved.
 

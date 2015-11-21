@@ -186,7 +186,7 @@ namespace PondGroundHeatExchanger {
 		}
 
 		if ( CompIndex == 0 ) {
-			PondGHENum = FindItemInList( CompName, PondGHE.Name(), NumOfPondGHEs );
+			PondGHENum = FindItemInList( CompName, PondGHE );
 			if ( PondGHENum == 0 ) {
 				ShowFatalError( "SimPondGroundHeatExchanger: Unit not found=" + CompName );
 			}
@@ -282,7 +282,6 @@ namespace PondGroundHeatExchanger {
 		int Item; // Item to be "gotten"
 		int NumAlphas; // Number of Alphas for each GetObjectItem call
 		int NumNumbers; // Number of Numbers for each GetObjectItem call
-		int NumFluids; // number of fluids in sim.
 
 		// Initializations and allocations
 		cCurrentModuleObject = "GroundHeatExchanger:Pond";
@@ -432,7 +431,7 @@ namespace PondGroundHeatExchanger {
 	InitPondGroundHeatExchanger(
 		int const PondGHENum, // component number
 		bool const FirstHVACIteration, // TRUE if 1st HVAC simulation of system timestep
-		bool const RunFlag // TRUE if equipment scheduled to operate
+		bool const EP_UNUSED( RunFlag ) // TRUE if equipment scheduled to operate
 	)
 	{
 
@@ -607,9 +606,6 @@ namespace PondGroundHeatExchanger {
 		using DataHVACGlobals::TimeStepSys;
 		using FluidProperties::GetSpecificHeatGlycol;
 		using FluidProperties::GetDensityGlycol;
-		using DataGlobals::SimTimeSteps;
-		using DataGlobals::CurrentTime;
-		using DataGlobals::BeginDayFlag;
 		using DataGlobals::SecInHour;
 
 		// Locals
@@ -1103,7 +1099,6 @@ namespace PondGroundHeatExchanger {
 		// na
 
 		// Using/Aliasing
-		using DataGlobals::TimeStepZone;
 		using DataLoopNode::Node;
 		using FluidProperties::GetSpecificHeatGlycol;
 		using PlantUtilities::SafeCopyPlantNode;
@@ -1197,7 +1192,7 @@ namespace PondGroundHeatExchanger {
 
 	//     NOTICE
 
-	//     Copyright © 1996-2014 The Board of Trustees of the University of Illinois
+	//     Copyright (c) 1996-2015 The Board of Trustees of the University of Illinois
 	//     and The Regents of the University of California through Ernest Orlando Lawrence
 	//     Berkeley National Laboratory.  All rights reserved.
 

@@ -266,8 +266,6 @@ namespace Furnaces {
 		// SUBROUTINE ARGUMENT DEFINITIONS:
 
 		// SUBROUTINE PARAMETER DEFINITIONS:
-		int const MaxIter( 25 ); // maximum number of iterations for controlling output
-		int const MaxIterCycl( 100 );
 
 		// INTERFACE BLOCK SPECIFICATIONS
 		// na
@@ -296,12 +294,7 @@ namespace Furnaces {
 		Real64 ZoneLoadToCoolSPSequenced;
 		Real64 ZoneLoadToHeatSPSequenced;
 
-		Real64 QCoilReq; // load passed to heating coil (W)
 		Real64 QActual; // actual heating coil output (W)
-		Real64 mdot; // local temporary for mass flow rate
-		Real64 QCoilMax; // heating coil maximum capacity (W)
-		Real64 MinWaterFlow; // minimum fluid flow rates
-		Real64 PartLoadRatioHeatingCoil; // Heating Coil Part Load Ratio
 		bool SuppHeatingCoilFlag; // true if supplemental heating coil
 
 		// Obtains and Allocates Furnace related parameters from input file
@@ -313,7 +306,7 @@ namespace Furnaces {
 
 		// Find the correct Furnace
 		if ( CompIndex == 0 ) {
-			FurnaceNum = FindItemInList( FurnaceName, Furnace.Name(), NumFurnaces );
+			FurnaceNum = FindItemInList( FurnaceName, Furnace );
 			if ( FurnaceNum == 0 ) {
 				ShowFatalError( "SimFurnace: Unit not found=" + FurnaceName );
 			}
@@ -677,7 +670,6 @@ namespace Furnaces {
 		using SteamCoils::GetCoilSteamInletNode;
 		auto & GetCoilMaxSteamFlowRate( SteamCoils::GetCoilMaxSteamFlowRate );
 		using SteamCoils::GetTypeOfCoil;
-		using SteamCoils::ZoneLoadControl;
 		using Fans::GetFanDesignVolumeFlowRate;
 		using Fans::GetFanInletNode;
 		using Fans::GetFanOutletNode;
@@ -863,7 +855,7 @@ namespace Furnaces {
 
 			IsNotOK = false;
 			IsBlank = false;
-			VerifyName( Alphas( 1 ), Furnace.Name(), FurnaceNum - 1, IsNotOK, IsBlank, CurrentModuleObject + " Name" );
+			VerifyName( Alphas( 1 ), Furnace, FurnaceNum - 1, IsNotOK, IsBlank, CurrentModuleObject + " Name" );
 			if ( IsNotOK ) {
 				ErrorsFound = true;
 				if ( IsBlank ) Alphas( 1 ) = "xxxxx";
@@ -896,7 +888,7 @@ namespace Furnaces {
 			}
 
 			//Get the Controlling Zone or Location of the Furnace Thermostat
-			Furnace( FurnaceNum ).ControlZoneNum = FindItemInList( Alphas( 6 ), Zone.Name(), NumOfZones );
+			Furnace( FurnaceNum ).ControlZoneNum = FindItemInList( Alphas( 6 ), Zone );
 			if ( Furnace( FurnaceNum ).ControlZoneNum == 0 ) {
 				ShowSevereError( CurrentModuleObject + " = " + Alphas( 1 ) );
 				ShowContinueError( "Illegal " + cAlphaFields( 6 ) + " = " + Alphas( 6 ) );
@@ -1380,7 +1372,7 @@ namespace Furnaces {
 
 			IsNotOK = false;
 			IsBlank = false;
-			VerifyName( Alphas( 1 ), Furnace.Name(), FurnaceNum - 1, IsNotOK, IsBlank, CurrentModuleObject + " Name" );
+			VerifyName( Alphas( 1 ), Furnace, FurnaceNum - 1, IsNotOK, IsBlank, CurrentModuleObject + " Name" );
 			if ( IsNotOK ) {
 				ErrorsFound = true;
 				if ( IsBlank ) Alphas( 1 ) = "xxxxx";
@@ -1413,7 +1405,7 @@ namespace Furnaces {
 			}
 
 			//Get the Controlling Zone or Location of the Furnace Thermostat
-			Furnace( FurnaceNum ).ControlZoneNum = FindItemInList( Alphas( 6 ), Zone.Name(), NumOfZones );
+			Furnace( FurnaceNum ).ControlZoneNum = FindItemInList( Alphas( 6 ), Zone );
 			if ( Furnace( FurnaceNum ).ControlZoneNum == 0 ) {
 				ShowSevereError( CurrentModuleObject + " = " + Alphas( 1 ) );
 				ShowContinueError( "Illegal " + cAlphaFields( 6 ) + " = " + Alphas( 6 ) );
@@ -2464,7 +2456,7 @@ namespace Furnaces {
 
 			IsNotOK = false;
 			IsBlank = false;
-			VerifyName( Alphas( 1 ), Furnace.Name(), FurnaceNum - 1, IsNotOK, IsBlank, CurrentModuleObject + " Name" );
+			VerifyName( Alphas( 1 ), Furnace, FurnaceNum - 1, IsNotOK, IsBlank, CurrentModuleObject + " Name" );
 			if ( IsNotOK ) {
 				ErrorsFound = true;
 				if ( IsBlank ) Alphas( 1 ) = "xxxxx";
@@ -2489,7 +2481,7 @@ namespace Furnaces {
 			TestCompSet( CurrentModuleObject, Alphas( 1 ), Alphas( 3 ), Alphas( 4 ), "Air Nodes" );
 
 			//Get the Controlling Zone or Location of the Furnace Thermostat
-			Furnace( FurnaceNum ).ControlZoneNum = FindItemInList( Alphas( 5 ), Zone.Name(), NumOfZones );
+			Furnace( FurnaceNum ).ControlZoneNum = FindItemInList( Alphas( 5 ), Zone );
 			if ( Furnace( FurnaceNum ).ControlZoneNum == 0 ) {
 				ShowSevereError( CurrentModuleObject + " = " + Alphas( 1 ) );
 				ShowContinueError( "Illegal " + cAlphaFields( 5 ) + " = " + Alphas( 5 ) );
@@ -3289,7 +3281,7 @@ namespace Furnaces {
 
 			IsNotOK = false;
 			IsBlank = false;
-			VerifyName( Alphas( 1 ), Furnace.Name(), FurnaceNum - 1, IsNotOK, IsBlank, CurrentModuleObject + " Name" );
+			VerifyName( Alphas( 1 ), Furnace, FurnaceNum - 1, IsNotOK, IsBlank, CurrentModuleObject + " Name" );
 			if ( IsNotOK ) {
 				ErrorsFound = true;
 				if ( IsBlank ) Alphas( 1 ) = "xxxxx";
@@ -3314,7 +3306,7 @@ namespace Furnaces {
 			TestCompSet( CurrentModuleObject, Alphas( 1 ), Alphas( 3 ), Alphas( 4 ), "Air Nodes" );
 
 			//Get the Controlling Zone or Location of the Furnace Thermostat
-			Furnace( FurnaceNum ).ControlZoneNum = FindItemInList( Alphas( 5 ), Zone.Name(), NumOfZones );
+			Furnace( FurnaceNum ).ControlZoneNum = FindItemInList( Alphas( 5 ), Zone );
 			if ( Furnace( FurnaceNum ).ControlZoneNum == 0 ) {
 				ShowSevereError( CurrentModuleObject + " = " + Alphas( 1 ) );
 				ShowContinueError( "Illegal " + cAlphaFields( 5 ) + " = " + Alphas( 5 ) );
@@ -4237,7 +4229,6 @@ namespace Furnaces {
 		static Real64 SumOfMassFlowRateMax( 0.0 ); // the sum of mass flow rates at inlet to zones in an airloop
 		static Real64 CntrlZoneTerminalUnitMassFlowRateMax( 0.0 ); // Maximum mass flow rate through controlled zone terminal unit
 		static int EquipNum( 0 ); // local do loop index for equipment listed for a zone
-		static int InletNodeNum( 0 ); // local do loop index for inlet nodes to a zone
 
 		static bool ErrorsFound( false ); // flag returned from mining call
 		static Real64 mdot( 0.0 ); // local temporary for mass flow rate (kg/s)
@@ -4299,6 +4290,7 @@ namespace Furnaces {
 			// Pass the fan cycling schedule index up to the air loop. Set the air loop unitary system flag.
 			AirLoopControlInfo( AirLoopNum ).CycFanSchedPtr = Furnace( FurnaceNum ).FanSchedPtr;
 			AirLoopControlInfo( AirLoopNum ).UnitarySys = true;
+			// RR this is wrong, Op mode needs to be updated each time atep
 			AirLoopControlInfo( AirLoopNum ).FanOpMode = Furnace( FurnaceNum ).OpMode;
 
 			//Check that heat pump heating capacity is within 20% of cooling capacity
@@ -4618,6 +4610,9 @@ namespace Furnaces {
 				Furnace( FurnaceNum ).OpMode = CycFanCycCoil;
 			} else {
 				Furnace( FurnaceNum ).OpMode = ContFanCycCoil;
+			}
+			if( AirLoopNum > 0 ) {
+				AirLoopControlInfo( AirLoopNum ).FanOpMode = Furnace( FurnaceNum ).OpMode;
 			}
 		}
 
@@ -4981,10 +4976,10 @@ namespace Furnaces {
 	void
 	SetOnOffMassFlowRate(
 		int const FurnaceNum, // index to furnace
-		int const AirLoopNum, // index to air loop !unused1208
+		int const EP_UNUSED( AirLoopNum ), // index to air loop !unused1208
 		Real64 & OnOffAirFlowRatio, // ratio of coil on to coil off air flow rate
 		int const OpMode, // fan operating mode
-		Real64 const ZoneLoad, // sensible load to be met (W) !unused1208
+		Real64 const EP_UNUSED( ZoneLoad ), // sensible load to be met (W) !unused1208
 		Real64 const MoistureLoad, // moisture load to be met (W)
 		Real64 const PartLoadRatio // coil part-load ratio
 	)
@@ -5189,9 +5184,7 @@ namespace Furnaces {
 		// na
 
 		// SUBROUTINE LOCAL VARIABLE DECLARATIONS:
-		Real64 ControlZoneVolFlow;
 		int ThisCtrlZoneNum; // the controlled zone number of the control zone !!!
-		int ControlledZoneNum;
 		int Iter; // iteration count
 		Real64 MulSpeedFlowScale; // variable speed air flow scaling factor
 		bool ErrFound; // flag returned from mining functions
@@ -7130,14 +7123,7 @@ namespace Furnaces {
 		Real64 Wout; // Temporary variable used when outlet temp > DesignMaxOutletTemp
 		int CoolingCoilType_Num; // Numeric Equivalent for CoolingCoilType
 		int HeatingCoilType_Num; // Numeric Equivalent for HeatingCoilType
-		Real64 mdot; // hot water or steam heating coil fluid mass flow rates
-		Real64 QCoilReq; // heating coil load
 		Real64 QActual; // heating coil load met or delivered
-		static Real64 MinWaterFlow( 0.0 ); // minimum fluid flow rates
-		int LoopNumber; // plant loop index for water and steam supplemental heating coil
-		int LoopSideNumber; // plant loop side  index for  water and steam supp. heating coil
-		int BranchNumber; // plant loop branch index for water and steam supp. heating coil
-		int CompNumber; // plant loop comp. index for water and steam supp. heating coil
 		bool SuppHeatingCoilFlag; // .TRUE. if supplemental heating coil
 
 		FurnaceOutletNode = Furnace( FurnaceNum ).FurnaceOutletNodeNum;
@@ -7913,7 +7899,8 @@ namespace Furnaces {
 		// na
 
 		// SUBROUTINE LOCAL VARIABLE DECLARATIONS:
-		// na
+		Real64 ratio;
+		Real64 OnOffRatio;
 
 		// Report the Furnace Fan Part Load Ratio
 		if ( Furnace( FurnaceNum ).NumOfSpeedCooling < 1 ) {
@@ -7929,6 +7916,19 @@ namespace Furnaces {
 		LoopSystemOffMassFlowrate = CompOffMassFlow;
 		LoopFanOperationMode = Furnace( FurnaceNum ).OpMode;
 		LoopOnOffFanPartLoadRatio = Furnace( FurnaceNum ).FanPartLoadRatio;
+		OnOffRatio = LoopOnOffFanPartLoadRatio;
+		if ( Furnace( FurnaceNum ).FurnaceType_Num == UnitarySys_HeatPump_AirToAir ) {
+			LoopOnOffFanPartLoadRatio = max( Furnace( FurnaceNum ).FanPartLoadRatio, Furnace( FurnaceNum ).HeatPartLoadRatio, Furnace( FurnaceNum ).CoolPartLoadRatio );
+			LoopOnOffFanPartLoadRatio = min( 1.0, LoopOnOffFanPartLoadRatio );
+		}
+		if ( Furnace( FurnaceNum ).FurnaceType_Num == UnitarySys_HeatCool ) {
+			if ( Furnace( FurnaceNum ).HeatPartLoadRatio == 0.0 && Furnace( FurnaceNum ).CoolPartLoadRatio == 0.0 && Furnace( FurnaceNum ).FanPartLoadRatio > 0.0 ) {
+				if ( CompOnMassFlow < max( Furnace( FurnaceNum ).MaxCoolAirMassFlow, Furnace( FurnaceNum ).MaxHeatAirMassFlow ) && CompOnMassFlow  > 0.0 ) {
+					ratio = max( Furnace( FurnaceNum ).MaxCoolAirMassFlow, Furnace( FurnaceNum ).MaxHeatAirMassFlow ) / CompOnMassFlow;
+					LoopOnOffFanPartLoadRatio = LoopOnOffFanPartLoadRatio * ratio;
+				}
+			}
+		}
 
 	}
 
@@ -7983,9 +7983,7 @@ namespace Furnaces {
 		// na
 
 		// SUBROUTINE LOCAL VARIABLE DECLARATIONS:
-		Real64 QCoilReq; // Heat addition required from an electric, gas, steam , or hot water heating coil
 		Real64 QActual; // actual heating load
-		int FanOpMode; // cycling fan or constant fan
 		Real64 mdot; // heating coil steam or hot water mass flow rate
 		Real64 MinWaterFlow; // coil minimum hot water mass flow rate, kg/s
 		Real64 MaxHotWaterFlow; // coil maximum hot water mass flow rate, kg/s
@@ -8490,7 +8488,6 @@ namespace Furnaces {
 		using General::RoundSigDigits;
 		using General::TrimSigDigits;
 		using DataGlobals::WarmupFlag;
-		using DataGlobals::CurrentTime;
 		using HeatingCoils::SimulateHeatingCoilComponents;
 		using Psychrometrics::PsyCpAirFnWTdb;
 		using DataEnvironment::OutDryBulbTemp;
@@ -8500,7 +8497,6 @@ namespace Furnaces {
 
 		// SUBROUTINE PARAMETER DEFINITIONS:
 		int const MaxIte( 500 ); // maximum number of iterations
-		Real64 const MinPLF( 0.0 ); // minimum part load factor allowed
 
 		// INTERFACE BLOCK SPECIFICATIONS
 		// na
@@ -9397,11 +9393,11 @@ namespace Furnaces {
 		int const FurnaceNum, // index to furnace
 		int const ZoneNum, // index to zone
 		bool const FirstHVACIteration, // Flag for 1st HVAC iteration
-		int const AirLoopNum, // index to air loop !unused1208
+		int const EP_UNUSED( AirLoopNum ), // index to air loop !unused1208
 		Real64 & OnOffAirFlowRatio, // ratio of coil on to coil off air flow rate
-		int const OpMode, // fan operating mode
-		Real64 const QZnReq, // sensible load to be met (W) !unused1208
-		Real64 const MoistureLoad, // moisture load to be met (W)
+		int const EP_UNUSED( OpMode ), // fan operating mode
+		Real64 const EP_UNUSED( QZnReq ), // sensible load to be met (W) !unused1208
+		Real64 const EP_UNUSED( MoistureLoad ), // moisture load to be met (W)
 		Real64 & PartLoadRatio // coil part-load ratio
 	)
 	{
@@ -9520,7 +9516,7 @@ namespace Furnaces {
 
 	//     NOTICE
 
-	//     Copyright © 1996-2014 The Board of Trustees of the University of Illinois
+	//     Copyright (c) 1996-2015 The Board of Trustees of the University of Illinois
 	//     and The Regents of the University of California through Ernest Orlando Lawrence
 	//     Berkeley National Laboratory.  All rights reserved.
 

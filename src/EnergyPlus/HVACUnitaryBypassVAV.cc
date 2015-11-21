@@ -225,7 +225,7 @@ namespace HVACUnitaryBypassVAV {
 
 		// Find the correct changeover-bypass VAV unit
 		if ( CompIndex == 0 ) {
-			CBVAVNum = FindItemInList( CompName, CBVAV.Name(), NumCBVAV );
+			CBVAVNum = FindItemInList( CompName, CBVAV );
 			if ( CBVAVNum == 0 ) {
 				ShowFatalError( "SimUnitaryBypassVAV: Unit not found=" + CompName );
 			}
@@ -425,9 +425,7 @@ namespace HVACUnitaryBypassVAV {
 		using ScheduleManager::CheckScheduleValueMinMax;
 		using ScheduleManager::GetScheduleIndex;
 		using DataHVACGlobals::FanType_SimpleConstVolume;
-		using DataHVACGlobals::FanType_SimpleVAV;
 		using DataHVACGlobals::FanType_SimpleOnOff;
-		using DataHVACGlobals::FanType_ZoneExhaust;
 		using DataHVACGlobals::NumPrimaryAirSys;
 		using NodeInputManager::GetOnlySingleNode;
 		using DataZoneEquipment::ZoneEquipConfig;
@@ -448,7 +446,6 @@ namespace HVACUnitaryBypassVAV {
 		using SteamCoils::GetCoilSteamInletNode;
 		auto & GetCoilMaxSteamFlowRate( SteamCoils::GetCoilMaxSteamFlowRate );
 		using SteamCoils::GetTypeOfCoil;
-		using SteamCoils::ZoneLoadControl;
 		using WaterCoils::GetCoilWaterInletNode;
 		using WaterCoils::GetCoilMaxWaterFlowRate;
 		auto & GetWaterCoilInletNode( WaterCoils::GetCoilInletNode );
@@ -510,7 +507,6 @@ namespace HVACUnitaryBypassVAV {
 		static int EquipNum( 0 ); // local do loop index for equipment listed for a zone
 		int HeatCoilInletNodeNum; // Heating coil air inlet node number
 		int HeatCoilOutletNodeNum; // Heating coil air outlet node number
-		int TempNodeNum; // HW coil water inlet node
 		int SteamIndex; // steam coil index
 		Real64 SteamDensity; // steam coil steam density
 
@@ -538,7 +534,7 @@ namespace HVACUnitaryBypassVAV {
 			CBVAVNum = CBVAVIndex;
 			IsNotOK = false;
 			IsBlank = false;
-			VerifyName( Alphas( 1 ), CBVAV.Name(), CBVAVNum - 1, IsNotOK, IsBlank, CurrentModuleObject + " Name" );
+			VerifyName( Alphas( 1 ), CBVAV, CBVAVNum - 1, IsNotOK, IsBlank, CurrentModuleObject + " Name" );
 			if ( IsNotOK ) {
 				ErrorsFound = true;
 				if ( IsBlank ) Alphas( 1 ) = "xxxxx";
@@ -1197,7 +1193,6 @@ namespace HVACUnitaryBypassVAV {
 		using EMSManager::iHumidityRatioMaxSetPoint;
 		using SteamCoils::SimulateSteamCoilComponents;
 		auto & GetCoilMaxSteamFlowRate( SteamCoils::GetCoilMaxSteamFlowRate );
-		auto & GetSteamCoilCapacity( SteamCoils::GetCoilCapacity );
 		using WaterCoils::GetCoilMaxWaterFlowRate;
 		using WaterCoils::SimulateWaterCoilComponents;
 		using DataPlant::TypeOf_CoilSteamAirHeating;
@@ -1864,7 +1859,6 @@ namespace HVACUnitaryBypassVAV {
 		// SUBROUTINE ARGUMENT DEFINITIONS:
 
 		// SUBROUTINE PARAMETER DEFINITIONS:
-		int const MaxIter( 50 ); // Maximum number of iterations
 
 		// INTERFACE BLOCK SPECIFICATIONS
 		// na
@@ -1895,7 +1889,7 @@ namespace HVACUnitaryBypassVAV {
 		bool const FirstHVACIteration, // Flag for 1st HVAC iteration
 		Real64 & PartLoadFrac, // Compressor part load fraction
 		Real64 & LoadMet, // Load met by unit (W)
-		Real64 & QZnReq, // Zone load (W)
+		Real64 & EP_UNUSED( QZnReq ), // Zone load (W)
 		Real64 & OnOffAirFlowRatio, // Ratio of compressor ON airflow to AVERAGE airflow over timestep
 		bool const HXUnitOn // flag to enable heat exchanger
 	)
@@ -3235,7 +3229,7 @@ namespace HVACUnitaryBypassVAV {
 
 	//     NOTICE
 
-	//     Copyright © 1996-2014 The Board of Trustees of the University of Illinois
+	//     Copyright (c) 1996-2015 The Board of Trustees of the University of Illinois
 	//     and The Regents of the University of California through Ernest Orlando Lawrence
 	//     Berkeley National Laboratory.  All rights reserved.
 

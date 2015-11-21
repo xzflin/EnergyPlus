@@ -185,7 +185,7 @@ namespace WindowAC {
 
 		// Find the correct Window AC Equipment
 		if ( CompIndex == 0 ) {
-			WindACNum = FindItemInList( CompName, WindAC.Name(), NumWindAC );
+			WindACNum = FindItemInList( CompName, WindAC );
 			if ( WindACNum == 0 ) {
 				ShowFatalError( "SimWindowAC: Unit not found=" + CompName );
 			}
@@ -271,13 +271,9 @@ namespace WindowAC {
 		using MixedAir::GetOAMixerIndex;
 		using MixedAir::GetOAMixerNodeNumbers;
 		using DataHVACGlobals::FanType_SimpleConstVolume;
-		using DataHVACGlobals::FanType_SimpleVAV;
 		using DataHVACGlobals::FanType_SimpleOnOff;
 		using DataHVACGlobals::cFanTypes;
-		using DataHVACGlobals::ZoneComp;
-		using DataZoneEquipment::WindowAC_Num;
 		using DataZoneEquipment::ZoneEquipConfig;
-		using DataSizing::NumZoneHVACSizing;
 		using DataSizing::ZoneHVACSizing;
 
 		// Locals
@@ -356,7 +352,7 @@ namespace WindowAC {
 
 			IsNotOK = false;
 			IsBlank = false;
-			VerifyName( Alphas( 1 ), WindAC.Name(), WindACNum - 1, IsNotOK, IsBlank, CurrentModuleObject + " Name" );
+			VerifyName( Alphas( 1 ), WindAC, WindACNum - 1, IsNotOK, IsBlank, CurrentModuleObject + " Name" );
 			if ( IsNotOK ) {
 				ErrorsFound = true;
 				if ( IsBlank ) Alphas( 1 ) = "xxxxx";
@@ -491,7 +487,7 @@ namespace WindowAC {
 
 			WindAC( WindACNum ).HVACSizingIndex = 0;
 			if ( ! lAlphaBlanks( 14 ) ) {
-				WindAC( WindACNum ).HVACSizingIndex = FindItemInList( Alphas( 14 ), ZoneHVACSizing.Name(), NumZoneHVACSizing);
+				WindAC( WindACNum ).HVACSizingIndex = FindItemInList( Alphas( 14 ), ZoneHVACSizing );
 				if ( WindAC( WindACNum ).HVACSizingIndex == 0) {
 					ShowSevereError( cAlphaFields( 14 ) + " = " + Alphas( 14 ) + " not found.");
 					ShowContinueError( "Occurs in " + CurrentModuleObject + " = " + WindAC( WindACNum ).Name );
@@ -996,7 +992,7 @@ namespace WindowAC {
 	void
 	SimCyclingWindowAC(
 		int const WindACNum, // number of the current window AC unit being simulated
-		int const ZoneNum, // number of zone being served !unused1208
+		int const EP_UNUSED( ZoneNum ), // number of zone being served !unused1208
 		bool const FirstHVACIteration, // TRUE if 1st HVAC simulation of system timestep
 		Real64 & PowerMet, // Sensible power supplied (W)
 		Real64 const QZnReq, // Sensible load to be met (W)
@@ -1668,7 +1664,7 @@ namespace WindowAC {
 
 	//     NOTICE
 
-	//     Copyright © 1996-2014 The Board of Trustees of the University of Illinois
+	//     Copyright (c) 1996-2015 The Board of Trustees of the University of Illinois
 	//     and The Regents of the University of California through Ernest Orlando Lawrence
 	//     Berkeley National Laboratory.  All rights reserved.
 

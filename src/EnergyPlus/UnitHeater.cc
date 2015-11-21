@@ -176,7 +176,7 @@ namespace UnitHeater {
 
 		// Find the correct Unit Heater Equipment
 		if ( CompIndex == 0 ) {
-			UnitHeatNum = FindItemInList( CompName, UnitHeat.Name(), NumOfUnitHeats );
+			UnitHeatNum = FindItemInList( CompName, UnitHeat );
 			if ( UnitHeatNum == 0 ) {
 				ShowFatalError( "SimUnitHeater: Unit not found=" + CompName );
 			}
@@ -249,18 +249,15 @@ namespace UnitHeater {
 		using WaterCoils::GetCoilWaterInletNode;
 		using SteamCoils::GetCoilSteamInletNode;
 		using SteamCoils::GetSteamCoilIndex;
-		using DataZoneEquipment::UnitHeater_Num;
 		using DataZoneEquipment::ZoneEquipConfig;
 		using DataSizing::AutoSize;
 		using General::TrimSigDigits;
 		using DataHVACGlobals::FanType_SimpleConstVolume;
 		using DataHVACGlobals::FanType_SimpleVAV;
 		using DataHVACGlobals::FanType_SimpleOnOff;
-		using DataHVACGlobals::ZoneComp;
 		using DataGlobals::NumOfZones;
 		using DataPlant::TypeOf_CoilWaterSimpleHeating;
 		using DataPlant::TypeOf_CoilSteamAirHeating;
-		using DataSizing::NumZoneHVACSizing;
 		using DataSizing::ZoneHVACSizing;
 
 		// Locals
@@ -331,7 +328,7 @@ namespace UnitHeater {
 
 			IsNotOK = false;
 			IsBlank = false;
-			VerifyName( Alphas( 1 ), UnitHeat.Name(), UnitHeatNum - 1, IsNotOK, IsBlank, CurrentModuleObject + " Name" );
+			VerifyName( Alphas( 1 ), UnitHeat, UnitHeatNum - 1, IsNotOK, IsBlank, CurrentModuleObject + " Name" );
 			if ( IsNotOK ) {
 				ErrorsFound = true;
 				if ( IsBlank ) Alphas( 1 ) = "xxxxx";
@@ -501,7 +498,7 @@ namespace UnitHeater {
 
 			UnitHeat( UnitHeatNum ).HVACSizingIndex = 0;
 			if ( ! lAlphaBlanks( 12 )) {
-				UnitHeat( UnitHeatNum ).HVACSizingIndex = FindItemInList( Alphas( 12 ), ZoneHVACSizing.Name(), NumZoneHVACSizing );
+				UnitHeat( UnitHeatNum ).HVACSizingIndex = FindItemInList( Alphas( 12 ), ZoneHVACSizing );
 				if (UnitHeat( UnitHeatNum ).HVACSizingIndex == 0) {
 					ShowSevereError( cAlphaFields( 12 ) + " = " + Alphas( 12 ) + " not found.");
 					ShowContinueError( "Occurs in " + CurrentModuleObject + " = " + UnitHeat( UnitHeatNum ).Name );
@@ -581,7 +578,7 @@ namespace UnitHeater {
 	InitUnitHeater(
 		int const UnitHeatNum, // index for the current unit heater
 		int const ZoneNum, // number of zone being served
-		bool const FirstHVACIteration // TRUE if 1st HVAC simulation of system timestep
+		bool const EP_UNUSED( FirstHVACIteration ) // TRUE if 1st HVAC simulation of system timestep
 	)
 	{
 
@@ -602,7 +599,6 @@ namespace UnitHeater {
 		// na
 
 		// Using/Aliasing
-		using DataEnvironment::StdBaroPress;
 		using DataEnvironment::StdRhoAir;
 		using DataZoneEquipment::ZoneEquipInputsFilled;
 		using DataZoneEquipment::CheckZoneEquipmentList;
@@ -839,7 +835,6 @@ namespace UnitHeater {
 		using General::RoundSigDigits;
 		using DataHVACGlobals::HeatingAirflowSizing;
 		using DataHVACGlobals::HeatingCapacitySizing;
-		using DataHVACGlobals::HeatingWaterflowSizing;
 		using DataHeatBalance::Zone;
 
 		// Locals
@@ -1715,7 +1710,7 @@ namespace UnitHeater {
 
 	//     NOTICE
 
-	//     Copyright © 1996-2014 The Board of Trustees of the University of Illinois
+	//     Copyright (c) 1996-2015 The Board of Trustees of the University of Illinois
 	//     and The Regents of the University of California through Ernest Orlando Lawrence
 	//     Berkeley National Laboratory.  All rights reserved.
 

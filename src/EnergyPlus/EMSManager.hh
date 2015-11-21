@@ -37,7 +37,9 @@ namespace EMSManager {
 	// SUBROUTINE SPECIFICATIONS:
 
 	// Functions
-
+	void
+	clear_state();
+	
 	void
 	CheckIfAnyEMS();
 
@@ -88,6 +90,12 @@ namespace EMSManager {
 		bool & ErrorFlag
 	);
 
+	bool
+	CheckIfNodeMoreInfoSensedByEMS( 
+		int const nodeNum, // index of node being checked.
+		std::string const & varName
+	);
+
 	void
 	SetupPrimaryAirSystemAvailMgrAsActuators();
 
@@ -111,7 +119,7 @@ namespace EMSManager {
 
 	//     NOTICE
 
-	//     Copyright © 1996-2014 The Board of Trustees of the University of Illinois
+	//     Copyright (c) 1996-2015 The Board of Trustees of the University of Illinois
 	//     and The Regents of the University of California through Ernest Orlando Lawrence
 	//     Berkeley National Laboratory.  All rights reserved.
 

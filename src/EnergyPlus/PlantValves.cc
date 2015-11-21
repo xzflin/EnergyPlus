@@ -72,13 +72,13 @@ namespace PlantValves {
 		int const CompTypeNum,
 		std::string const & CompName,
 		int & CompNum,
-		bool const RunFlag, // unused1208
+		bool const EP_UNUSED( RunFlag ), // unused1208
 		bool & InitLoopEquip,
-		Real64 & MyLoad, // unused1208
+		Real64 & EP_UNUSED( MyLoad ), // unused1208
 		Real64 & MaxCap,
 		Real64 & MinCap,
 		Real64 & OptCap,
-		bool const FirstHVACIteration // TRUE if First iteration of simulation
+		bool const EP_UNUSED( FirstHVACIteration ) // TRUE if First iteration of simulation
 	)
 	{
 
@@ -98,7 +98,6 @@ namespace PlantValves {
 		// na
 
 		// Using/Aliasing
-		using DataGlobals::BeginEnvrnFlag;
 		using InputProcessor::FindItemInList;
 
 		// Locals
@@ -124,7 +123,7 @@ namespace PlantValves {
 
 		// Find the correct Equipment
 		if ( CompNum == 0 ) {
-			EqNum = FindItemInList( CompName, TemperValve.Name(), NumTemperingValves );
+			EqNum = FindItemInList( CompName, TemperValve );
 			if ( EqNum == 0 ) {
 				ShowFatalError( "SimPlantValves: Unit not found=" + CompName );
 			}
@@ -706,7 +705,7 @@ namespace PlantValves {
 
 	//     NOTICE
 
-	//     Copyright © 1996-2014 The Board of Trustees of the University of Illinois
+	//     Copyright (c) 1996-2015 The Board of Trustees of the University of Illinois
 	//     and The Regents of the University of California through Ernest Orlando Lawrence
 	//     Berkeley National Laboratory.  All rights reserved.
 

@@ -132,7 +132,8 @@ namespace CondenserLoopTowers {
 
 	// MODULE VARIABLE DECLARATIONS:
 	int NumSimpleTowers( 0 ); // Number of similar towers
-
+	bool GetInput( true );
+	bool InitTowerOneTimeFlag( true );
 	//? The following block of variables are used to carry model results for a tower instance
 	//   across sim, update, and report routines.  Simulation manager must be careful
 	//   in models with multiple towers.
@@ -174,6 +175,29 @@ namespace CondenserLoopTowers {
 	//*************************************************************************
 
 	// Functions
+	void
+	clear_state()
+	{
+		NumSimpleTowers = 0; 
+		GetInput = true;
+		InitTowerOneTimeFlag = true;
+		InletWaterTemp = 0.0; 
+		OutletWaterTemp = 0.0;
+		WaterInletNode = 0;
+		WaterOutletNode = 0;
+		WaterMassFlowRate = 0.0;
+		Qactual = 0.0; 
+		CTFanPower = 0.0;
+		AirFlowRateRatio = 0.0;
+		BasinHeaterPower = 0.0;
+		WaterUsage = 0.0;
+		FanCyclingRatio = 0.0; 
+		CheckEquipName.deallocate();
+		SimpleTower.deallocate();
+		SimpleTowerInlet.deallocate(); 
+		SimpleTowerReport.deallocate();
+		VSTower.deallocate();
+	}
 
 	void
 	SimTowers(
@@ -212,7 +236,6 @@ namespace CondenserLoopTowers {
 
 		// Using/Aliasing
 		using InputProcessor::FindItemInList;
-		using DataPlant::PlantFirstSizesOkayToFinalize;
 
 		// Locals
 		// SUBROUTINE ARGUMENT DEFINITIONS:
@@ -227,7 +250,7 @@ namespace CondenserLoopTowers {
 		// na
 
 		// SUBROUTINE LOCAL VARIABLE DECLARATIONS:
-		static bool GetInput( true );
+
 		int TowerNum;
 
 		//GET INPUT
@@ -238,7 +261,7 @@ namespace CondenserLoopTowers {
 
 		// Find the correct CoolingTower
 		if ( CompIndex == 0 ) {
-			TowerNum = FindItemInList( TowerName, SimpleTower.Name(), NumSimpleTowers );
+			TowerNum = FindItemInList( TowerName, SimpleTower );
 			if ( TowerNum == 0 ) {
 				ShowFatalError( "SimTowers: Unit not found=" + TowerName );
 			}
@@ -465,7 +488,7 @@ namespace CondenserLoopTowers {
 			GetObjectItem( cCurrentModuleObject, SingleSpeedTowerNumber, AlphArray, NumAlphas, NumArray, NumNums, IOStat, _, lAlphaFieldBlanks, cAlphaFieldNames, cNumericFieldNames );
 			IsNotOK = false;
 			IsBlank = false;
-			VerifyName( AlphArray( 1 ), SimpleTower.Name(), TowerNum - 1, IsNotOK, IsBlank, cCurrentModuleObject + " Name" );
+			VerifyName( AlphArray( 1 ), SimpleTower, TowerNum - 1, IsNotOK, IsBlank, cCurrentModuleObject + " Name" );
 			if ( IsNotOK ) {
 				ErrorsFound = true;
 				if ( IsBlank ) AlphArray( 1 ) = "xxxxx";
@@ -753,7 +776,7 @@ namespace CondenserLoopTowers {
 
 			IsNotOK = false;
 			IsBlank = false;
-			VerifyName( AlphArray( 1 ), SimpleTower.Name(), TowerNum - 1, IsNotOK, IsBlank, cCurrentModuleObject + " Name" );
+			VerifyName( AlphArray( 1 ), SimpleTower, TowerNum - 1, IsNotOK, IsBlank, cCurrentModuleObject + " Name" );
 			if ( IsNotOK ) {
 				ErrorsFound = true;
 				if ( IsBlank ) AlphArray( 1 ) = "xxxxx";
@@ -1069,7 +1092,7 @@ namespace CondenserLoopTowers {
 			GetObjectItem( cCurrentModuleObject, VariableSpeedTowerNumber, AlphArray, NumAlphas, NumArray, NumNums, IOStat, _, lAlphaFieldBlanks, cAlphaFieldNames, cNumericFieldNames );
 			IsNotOK = false;
 			IsBlank = false;
-			VerifyName( AlphArray( 1 ), SimpleTower.Name(), TowerNum - 1, IsNotOK, IsBlank, cCurrentModuleObject + " Name" );
+			VerifyName( AlphArray( 1 ), SimpleTower, TowerNum - 1, IsNotOK, IsBlank, cCurrentModuleObject + " Name" );
 			if ( IsNotOK ) {
 				ErrorsFound = true;
 				if ( IsBlank ) AlphArray( 1 ) = "xxxxx";
@@ -1671,7 +1694,7 @@ namespace CondenserLoopTowers {
 			GetObjectItem( cCurrentModuleObject, MerkelVSTowerNum, AlphArray, NumAlphas, NumArray, NumNums, IOStat, lNumericFieldBlanks, lAlphaFieldBlanks, cAlphaFieldNames, cNumericFieldNames );
 			IsNotOK = false;
 			IsBlank = false;
-			VerifyName( AlphArray( 1 ), SimpleTower.Name(), TowerNum - 1, IsNotOK, IsBlank, cCurrentModuleObject + " Name" );
+			VerifyName( AlphArray( 1 ), SimpleTower, TowerNum - 1, IsNotOK, IsBlank, cCurrentModuleObject + " Name" );
 			if ( IsNotOK ) {
 				ErrorsFound = true;
 				if ( IsBlank ) AlphArray( 1 ) = "xxxxx";
@@ -2074,7 +2097,7 @@ namespace CondenserLoopTowers {
 	void
 	InitTower(
 		int const TowerNum, // Number of the current cooling tower being simulated
-		bool const RunFlag // Indication of
+		bool const EP_UNUSED( RunFlag ) // Indication of
 	)
 	{
 
@@ -2107,7 +2130,6 @@ namespace CondenserLoopTowers {
 		using DataPlant::PlantLoop;
 		using DataPlant::ScanPlantLoopsForObject;
 		using DataPlant::PlantFirstSizesOkayToFinalize;
-		using DataPlant::PlantFirstSizeCompleted;
 		using DataPlant::TypeOf_CoolingTower_VarSpdMerkel;
 		using PlantUtilities::InitComponentNodes;
 		using PlantUtilities::SetComponentFlowRate;
@@ -2127,7 +2149,7 @@ namespace CondenserLoopTowers {
 
 		// SUBROUTINE LOCAL VARIABLE DECLARATIONS:
 		static bool ErrorsFound( false ); // Flag if input data errors are found
-		static bool MyOneTimeFlag( true );
+
 		static Array1D_bool MyEnvrnFlag;
 		static Array1D_bool OneTimeFlagForEachTower;
 		//  LOGICAL                                 :: FatalError
@@ -2139,13 +2161,13 @@ namespace CondenserLoopTowers {
 		Real64 rho; // local density of fluid
 
 		// Do the one time initializations
-		if ( MyOneTimeFlag ) {
+		if ( InitTowerOneTimeFlag ) {
 			MyEnvrnFlag.allocate( NumSimpleTowers );
 			OneTimeFlagForEachTower.allocate( NumSimpleTowers );
 
 			OneTimeFlagForEachTower = true;
 			MyEnvrnFlag = true;
-			MyOneTimeFlag = false;
+			InitTowerOneTimeFlag = false;
 
 		}
 
@@ -2986,8 +3008,8 @@ namespace CondenserLoopTowers {
 		Real64 UA0; // Lower bound for UA [W/C]
 		Real64 UA1; // Upper bound for UA [W/C]
 		Real64 DesTowerLoad; // Design tower load [W]
-		Real64 Cp; // local specific heat for fluid
-		Real64 rho; // local density for fluid
+		Real64 Cp( 0 ); // local specific heat for fluid
+		Real64 rho( 0 ); // local density for fluid
 		Real64 UA; // Calculated UA value
 		Real64 OutWaterTemp;
 
@@ -4208,6 +4230,16 @@ namespace CondenserLoopTowers {
 			return;
 		}
 
+		if ( std::abs( MyLoad ) <= SmallLoad ) {
+		// tower doesn't need to do anything
+			OutletWaterTemp = Node( WaterInletNode ).Temp;
+			CTFanPower = 0.0;
+			AirFlowRateRatio = 0.0;
+			Qactual = 0.0;
+			CalcBasinHeaterPower( SimpleTower( TowerNum ).BasinHeaterPowerFTempDiff, SimpleTower( TowerNum ).BasinHeaterSchedulePtr, SimpleTower( TowerNum ).BasinHeaterSetPointTemp, BasinHeaterPower );
+			return;
+		}
+
 		// first find free convection cooling rate
 		UAdesignPerCell = SimpleTower( TowerNum ).FreeConvTowerUA / SimpleTower( TowerNum ).NumCell;
 		AirFlowRatePerCell = SimpleTower( TowerNum ).FreeConvAirFlowRate / SimpleTower( TowerNum ).NumCell;
@@ -4217,7 +4249,10 @@ namespace CondenserLoopTowers {
 
 		FreeConvQdot = WaterMassFlowRate * CpWater * ( Node( WaterInletNode ).Temp - OutletWaterTempOFF );
 		CTFanPower = 0.0;
+
 		if ( std::abs( MyLoad ) <= FreeConvQdot ) { // can meet load with free convection and fan off
+
+
 			OutletWaterTemp = OutletWaterTempOFF;
 			AirFlowRateRatio = 0.0;
 			Qactual = FreeConvQdot;
@@ -5561,7 +5596,6 @@ namespace CondenserLoopTowers {
 
 		// Using/Aliasing
 		using DataGlobals::SecInHour;
-		using DataGlobals::BeginTimeStepFlag;
 		using DataHVACGlobals::TimeStepSys;
 		using ScheduleManager::GetCurrentScheduleValue;
 		using DataWater::WaterStorage;
@@ -5924,7 +5958,7 @@ namespace CondenserLoopTowers {
 
 	//     NOTICE
 
-	//     Copyright © 1996-2014 The Board of Trustees of the University of Illinois
+	//     Copyright (c) 1996-2015 The Board of Trustees of the University of Illinois
 	//     and The Regents of the University of California through Ernest Orlando Lawrence
 	//     Berkeley National Laboratory.  All rights reserved.
 

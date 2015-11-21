@@ -106,6 +106,11 @@ namespace InternalHeatGains {
 	//PUBLIC  GetInternalGainDeviceIndex
 
 	// Functions
+	void
+	clear_state()
+	{
+		GetInternalHeatGainsInputFlag = true;
+	}
 
 	void
 	ManageInternalHeatGains( Optional_bool_const InitOnly ) // when true, just calls the get input, if appropriate and returns.
@@ -258,7 +263,6 @@ namespace InternalHeatGains {
 		int Item;
 		int ZLItem;
 		int Item1;
-		int MaxZoneNameLengthInZoneList;
 
 		// Formats
 		static gio::Fmt Format_720( "(' Zone Internal Gains, ',A,',',A,',',A,',')" );
@@ -351,7 +355,7 @@ namespace InternalHeatGains {
 			GetObjectItem( CurrentModuleObject, Item, AlphaName, NumAlpha, IHGNumbers, NumNumber, IOStat, lNumericFieldBlanks, lAlphaFieldBlanks, cAlphaFieldNames, cNumericFieldNames );
 			IsNotOK = false;
 			IsBlank = false;
-			VerifyName( AlphaName( 1 ), PeopleObjects.Name(), Item - 1, IsNotOK, IsBlank, CurrentModuleObject + " Name" );
+			VerifyName( AlphaName( 1 ), PeopleObjects, Item - 1, IsNotOK, IsBlank, CurrentModuleObject + " Name" );
 			if ( IsNotOK ) {
 				ErrorsFound = true;
 				errFlag = true;
@@ -359,9 +363,9 @@ namespace InternalHeatGains {
 			}
 			PeopleObjects( Item ).Name = AlphaName( 1 );
 
-			Item1 = FindItemInList( AlphaName( 2 ), Zone.Name(), NumOfZones );
+			Item1 = FindItemInList( AlphaName( 2 ), Zone );
 			ZLItem = 0;
-			if ( Item1 == 0 && NumOfZoneLists > 0 ) ZLItem = FindItemInList( AlphaName( 2 ), ZoneList.Name(), NumOfZoneLists );
+			if ( Item1 == 0 && NumOfZoneLists > 0 ) ZLItem = FindItemInList( AlphaName( 2 ), ZoneList );
 			if ( Item1 > 0 ) {
 				PeopleObjects( Item ).StartPtr = TotPeople + 1;
 				++TotPeople;
@@ -633,7 +637,7 @@ namespace InternalHeatGains {
 
 							} else if ( mrtType == "SURFACEWEIGHTED" ) {
 								People( Loop ).MRTCalcType = SurfaceWeighted;
-								People( Loop ).SurfacePtr = FindItemInList( AlphaName( 8 ), Surface.Name(), TotSurfaces );
+								People( Loop ).SurfacePtr = FindItemInList( AlphaName( 8 ), Surface );
 								if ( People( Loop ).SurfacePtr == 0 ) {
 									if ( Item1 == 1 ) {
 										ShowSevereError( RoutineName + CurrentModuleObject + "=\"" + AlphaName( 1 ) + "\", " + cAlphaFieldNames( 7 ) + '=' + AlphaName( 7 ) + " invalid Surface Name=" + AlphaName( 8 ) );
@@ -899,7 +903,7 @@ namespace InternalHeatGains {
 			GetObjectItem( CurrentModuleObject, Item, AlphaName, NumAlpha, IHGNumbers, NumNumber, IOStat, lNumericFieldBlanks, lAlphaFieldBlanks, cAlphaFieldNames, cNumericFieldNames );
 			IsNotOK = false;
 			IsBlank = false;
-			VerifyName( AlphaName( 1 ), LightsObjects.Name(), Item - 1, IsNotOK, IsBlank, CurrentModuleObject + " Name" );
+			VerifyName( AlphaName( 1 ), LightsObjects, Item - 1, IsNotOK, IsBlank, CurrentModuleObject + " Name" );
 			if ( IsNotOK ) {
 				ErrorsFound = true;
 				errFlag = true;
@@ -907,9 +911,9 @@ namespace InternalHeatGains {
 			}
 			LightsObjects( Item ).Name = AlphaName( 1 );
 
-			Item1 = FindItemInList( AlphaName( 2 ), Zone.Name(), NumOfZones );
+			Item1 = FindItemInList( AlphaName( 2 ), Zone );
 			ZLItem = 0;
-			if ( Item1 == 0 && NumOfZoneLists > 0 ) ZLItem = FindItemInList( AlphaName( 2 ), ZoneList.Name(), NumOfZoneLists );
+			if ( Item1 == 0 && NumOfZoneLists > 0 ) ZLItem = FindItemInList( AlphaName( 2 ), ZoneList );
 			if ( Item1 > 0 ) {
 				LightsObjects( Item ).StartPtr = TotLights + 1;
 				++TotLights;
@@ -1166,7 +1170,7 @@ namespace InternalHeatGains {
 			GetObjectItem( CurrentModuleObject, Item, AlphaName, NumAlpha, IHGNumbers, NumNumber, IOStat, lNumericFieldBlanks, lAlphaFieldBlanks, cAlphaFieldNames, cNumericFieldNames );
 			IsNotOK = false;
 			IsBlank = false;
-			VerifyName( AlphaName( 1 ), ZoneElectricObjects.Name(), Item - 1, IsNotOK, IsBlank, CurrentModuleObject + " Name" );
+			VerifyName( AlphaName( 1 ), ZoneElectricObjects, Item - 1, IsNotOK, IsBlank, CurrentModuleObject + " Name" );
 			if ( IsNotOK ) {
 				ErrorsFound = true;
 				errFlag = true;
@@ -1174,9 +1178,9 @@ namespace InternalHeatGains {
 			}
 			ZoneElectricObjects( Item ).Name = AlphaName( 1 );
 
-			Item1 = FindItemInList( AlphaName( 2 ), Zone.Name(), NumOfZones );
+			Item1 = FindItemInList( AlphaName( 2 ), Zone );
 			ZLItem = 0;
-			if ( Item1 == 0 && NumOfZoneLists > 0 ) ZLItem = FindItemInList( AlphaName( 2 ), ZoneList.Name(), NumOfZoneLists );
+			if ( Item1 == 0 && NumOfZoneLists > 0 ) ZLItem = FindItemInList( AlphaName( 2 ), ZoneList );
 			if ( Item1 > 0 ) {
 				ZoneElectricObjects( Item ).StartPtr = TotElecEquip + 1;
 				++TotElecEquip;
@@ -1376,7 +1380,7 @@ namespace InternalHeatGains {
 			GetObjectItem( CurrentModuleObject, Item, AlphaName, NumAlpha, IHGNumbers, NumNumber, IOStat, lNumericFieldBlanks, lAlphaFieldBlanks, cAlphaFieldNames, cNumericFieldNames );
 			IsNotOK = false;
 			IsBlank = false;
-			VerifyName( AlphaName( 1 ), ZoneGasObjects.Name(), Item - 1, IsNotOK, IsBlank, CurrentModuleObject + " Name" );
+			VerifyName( AlphaName( 1 ), ZoneGasObjects, Item - 1, IsNotOK, IsBlank, CurrentModuleObject + " Name" );
 			if ( IsNotOK ) {
 				ErrorsFound = true;
 				errFlag = true;
@@ -1384,9 +1388,9 @@ namespace InternalHeatGains {
 			}
 			ZoneGasObjects( Item ).Name = AlphaName( 1 );
 
-			Item1 = FindItemInList( AlphaName( 2 ), Zone.Name(), NumOfZones );
+			Item1 = FindItemInList( AlphaName( 2 ), Zone );
 			ZLItem = 0;
-			if ( Item1 == 0 && NumOfZoneLists > 0 ) ZLItem = FindItemInList( AlphaName( 2 ), ZoneList.Name(), NumOfZoneLists );
+			if ( Item1 == 0 && NumOfZoneLists > 0 ) ZLItem = FindItemInList( AlphaName( 2 ), ZoneList );
 			if ( Item1 > 0 ) {
 				ZoneGasObjects( Item ).StartPtr = TotGasEquip + 1;
 				++TotGasEquip;
@@ -1607,7 +1611,7 @@ namespace InternalHeatGains {
 			GetObjectItem( CurrentModuleObject, Item, AlphaName, NumAlpha, IHGNumbers, NumNumber, IOStat, lNumericFieldBlanks, lAlphaFieldBlanks, cAlphaFieldNames, cNumericFieldNames );
 			IsNotOK = false;
 			IsBlank = false;
-			VerifyName( AlphaName( 1 ), HotWaterEqObjects.Name(), Item - 1, IsNotOK, IsBlank, CurrentModuleObject + " Name" );
+			VerifyName( AlphaName( 1 ), HotWaterEqObjects, Item - 1, IsNotOK, IsBlank, CurrentModuleObject + " Name" );
 			if ( IsNotOK ) {
 				ErrorsFound = true;
 				errFlag = true;
@@ -1615,9 +1619,9 @@ namespace InternalHeatGains {
 			}
 			HotWaterEqObjects( Item ).Name = AlphaName( 1 );
 
-			Item1 = FindItemInList( AlphaName( 2 ), Zone.Name(), NumOfZones );
+			Item1 = FindItemInList( AlphaName( 2 ), Zone );
 			ZLItem = 0;
-			if ( Item1 == 0 && NumOfZoneLists > 0 ) ZLItem = FindItemInList( AlphaName( 2 ), ZoneList.Name(), NumOfZoneLists );
+			if ( Item1 == 0 && NumOfZoneLists > 0 ) ZLItem = FindItemInList( AlphaName( 2 ), ZoneList );
 			if ( Item1 > 0 ) {
 				HotWaterEqObjects( Item ).StartPtr = TotHWEquip + 1;
 				++TotHWEquip;
@@ -1817,7 +1821,7 @@ namespace InternalHeatGains {
 			GetObjectItem( CurrentModuleObject, Item, AlphaName, NumAlpha, IHGNumbers, NumNumber, IOStat, lNumericFieldBlanks, lAlphaFieldBlanks, cAlphaFieldNames, cNumericFieldNames );
 			IsNotOK = false;
 			IsBlank = false;
-			VerifyName( AlphaName( 1 ), SteamEqObjects.Name(), Item - 1, IsNotOK, IsBlank, CurrentModuleObject + " Name" );
+			VerifyName( AlphaName( 1 ), SteamEqObjects, Item - 1, IsNotOK, IsBlank, CurrentModuleObject + " Name" );
 			if ( IsNotOK ) {
 				ErrorsFound = true;
 				errFlag = true;
@@ -1825,9 +1829,9 @@ namespace InternalHeatGains {
 			}
 			SteamEqObjects( Item ).Name = AlphaName( 1 );
 
-			Item1 = FindItemInList( AlphaName( 2 ), Zone.Name(), NumOfZones );
+			Item1 = FindItemInList( AlphaName( 2 ), Zone );
 			ZLItem = 0;
-			if ( Item1 == 0 && NumOfZoneLists > 0 ) ZLItem = FindItemInList( AlphaName( 2 ), ZoneList.Name(), NumOfZoneLists );
+			if ( Item1 == 0 && NumOfZoneLists > 0 ) ZLItem = FindItemInList( AlphaName( 2 ), ZoneList );
 			if ( Item1 > 0 ) {
 				SteamEqObjects( Item ).StartPtr = TotStmEquip + 1;
 				++TotStmEquip;
@@ -2027,7 +2031,7 @@ namespace InternalHeatGains {
 			GetObjectItem( CurrentModuleObject, Item, AlphaName, NumAlpha, IHGNumbers, NumNumber, IOStat, lNumericFieldBlanks, lAlphaFieldBlanks, cAlphaFieldNames, cNumericFieldNames );
 			IsNotOK = false;
 			IsBlank = false;
-			VerifyName( AlphaName( 1 ), OtherEqObjects.Name(), Item - 1, IsNotOK, IsBlank, CurrentModuleObject + " Name" );
+			VerifyName( AlphaName( 1 ), OtherEqObjects, Item - 1, IsNotOK, IsBlank, CurrentModuleObject + " Name" );
 			if ( IsNotOK ) {
 				ErrorsFound = true;
 				errFlag = true;
@@ -2035,9 +2039,9 @@ namespace InternalHeatGains {
 			}
 			OtherEqObjects( Item ).Name = AlphaName( 1 );
 
-			Item1 = FindItemInList( AlphaName( 2 ), Zone.Name(), NumOfZones );
+			Item1 = FindItemInList( AlphaName( 2 ), Zone );
 			ZLItem = 0;
-			if ( Item1 == 0 && NumOfZoneLists > 0 ) ZLItem = FindItemInList( AlphaName( 2 ), ZoneList.Name(), NumOfZoneLists );
+			if ( Item1 == 0 && NumOfZoneLists > 0 ) ZLItem = FindItemInList( AlphaName( 2 ), ZoneList );
 			if ( Item1 > 0 ) {
 				OtherEqObjects( Item ).StartPtr = TotOthEquip + 1;
 				++TotOthEquip;
@@ -2214,7 +2218,7 @@ namespace InternalHeatGains {
 				GetObjectItem( CurrentModuleObject, Loop, AlphaName, NumAlpha, IHGNumbers, NumNumber, IOStat, lNumericFieldBlanks, lAlphaFieldBlanks, cAlphaFieldNames, cNumericFieldNames );
 
 				ZoneITEq( Loop ).Name = AlphaName( 1 );
-				ZoneITEq( Loop ).ZonePtr = FindItemInList( AlphaName( 2 ), Zone.Name(), NumOfZones );
+				ZoneITEq( Loop ).ZonePtr = FindItemInList( AlphaName( 2 ), Zone );
 
 				// IT equipment design level calculation method.
 				{ auto const equipmentLevel( AlphaName( 3 ) );
@@ -2514,14 +2518,14 @@ namespace InternalHeatGains {
 
 			IsNotOK = false;
 			IsBlank = false;
-			VerifyName( AlphaName( 1 ), ZoneBBHeat.Name(), Loop - 1, IsNotOK, IsBlank, CurrentModuleObject + " Name" );
+			VerifyName( AlphaName( 1 ), ZoneBBHeat, Loop - 1, IsNotOK, IsBlank, CurrentModuleObject + " Name" );
 			if ( IsNotOK ) {
 				ErrorsFound = true;
 				if ( IsBlank ) AlphaName( 1 ) = "xxxxx";
 			}
 			ZoneBBHeat( Loop ).Name = AlphaName( 1 );
 
-			ZoneBBHeat( Loop ).ZonePtr = FindItemInList( AlphaName( 2 ), Zone.Name(), NumOfZones );
+			ZoneBBHeat( Loop ).ZonePtr = FindItemInList( AlphaName( 2 ), Zone );
 			if ( ZoneBBHeat( Loop ).ZonePtr == 0 ) {
 				ShowSevereError( RoutineName + CurrentModuleObject + "=\"" + AlphaName( 1 ) + "\", invalid " + cAlphaFieldNames( 2 ) + " entered=" + AlphaName( 2 ) );
 				ErrorsFound = true;
@@ -2618,14 +2622,14 @@ namespace InternalHeatGains {
 
 			IsNotOK = false;
 			IsBlank = false;
-			VerifyName( AlphaName( 1 ), ZoneCO2Gen.Name(), Loop - 1, IsNotOK, IsBlank, CurrentModuleObject + " Name" );
+			VerifyName( AlphaName( 1 ), ZoneCO2Gen, Loop - 1, IsNotOK, IsBlank, CurrentModuleObject + " Name" );
 			if ( IsNotOK ) {
 				ErrorsFound = true;
 				if ( IsBlank ) AlphaName( 1 ) = "xxxxx";
 			}
 			ZoneCO2Gen( Loop ).Name = AlphaName( 1 );
 
-			ZoneCO2Gen( Loop ).ZonePtr = FindItemInList( AlphaName( 2 ), Zone.Name(), NumOfZones );
+			ZoneCO2Gen( Loop ).ZonePtr = FindItemInList( AlphaName( 2 ), Zone );
 			if ( ZoneCO2Gen( Loop ).ZonePtr == 0 ) {
 				ShowSevereError( RoutineName + CurrentModuleObject + "=\"" + AlphaName( 1 ) + "\", invalid " + cAlphaFieldNames( 2 ) + " entered=" + AlphaName( 2 ) );
 				ErrorsFound = true;
@@ -3224,8 +3228,6 @@ namespace InternalHeatGains {
 		using OutputReportTabular::radiantPulseTimestep;
 		using OutputReportTabular::radiantPulseReceived;
 		using DataGlobals::CompLoadReportIsReq;
-		using DataGlobalConstants::endUseHeating;
-		using DataGlobalConstants::endUseCooling;
 		using OutputReportTabular::AllocateLoadComponentArrays;
 		using DataSizing::CurOverallSimDay;
 
@@ -3351,7 +3353,7 @@ namespace InternalHeatGains {
 
 				//For predefined tabular reports related to outside air ventilation
 				ZonePreDefRep( NZ ).isOccupied = true; //set flag to occupied to be used in tabular reporting for ventilation
-				ZonePreDefRep( NZ ).NumOccAccum += NumberOccupants * TimeStepZone;
+				ZonePreDefRep( NZ ).NumOccAccum += NumberOccupants *  Zone( NZ ).Multiplier * Zone( NZ ).ListMultiplier * TimeStepZone;
 				ZonePreDefRep( NZ ).NumOccAccumTime += TimeStepZone;
 			} else {
 				ZonePreDefRep( NZ ).isOccupied = false; //set flag to occupied to be used in tabular reporting for ventilation
@@ -3697,7 +3699,6 @@ namespace InternalHeatGains {
 		Real64 AirVolFlowFrac;		// Air volume flow fraction
 		Real64 AirVolFlowFracDesignT; // Air volume flow fraction at design entering air temperature
 		Real64 AirVolFlowRate;		// Air volume flow rate at current density [m3/s]
-		Real64 AirDensity;			// Air density at inlet [kg/m3]
 		Real64 AirMassFlowRate;		// Air mass flow rate [kg/s]
 		Real64 CPUPower;			// CPU power input [W]
 		Real64 FanPower;			// Fan power input [W]
@@ -4002,7 +4003,6 @@ namespace InternalHeatGains {
 		// OutputDataStructure.doc (EnergyPlus documentation)
 
 		// Using/Aliasing
-		using DataGlobals::SecInHour;
 		using OutputReportTabular::WriteTabularFiles;
 
 		// Locals
@@ -5289,9 +5289,296 @@ namespace InternalHeatGains {
 		}
 	}
 
+	void
+	GetInternalGainDeviceIndex(
+		int const ZoneNum, // zone index pointer for which zone to sum gains for
+		int const IntGainTypeOfNum, // zone internal gain type number
+		std::string const & IntGainName, // Internal gain name
+		int & DeviceIndex, // Device index
+		bool & ErrorFound
+	)
+	{
+
+		// SUBROUTINE INFORMATION:
+		//       AUTHOR         B. Griffith
+		//       DATE WRITTEN   June 2012
+		//       MODIFIED       na
+		//       RE-ENGINEERED  na
+
+		// PURPOSE OF THIS SUBROUTINE:
+		// utility to retrieve index pointer to a specific internal gain
+
+		// METHODOLOGY EMPLOYED:
+		// <description>
+
+		// REFERENCES:
+		// na
+
+		// USE STATEMENTS:
+		using InputProcessor::SameString;
+		// na
+
+		// Argument array dimensioning
+
+		// Locals
+		// SUBROUTINE ARGUMENT DEFINITIONS:
+
+		// SUBROUTINE PARAMETER DEFINITIONS:
+		// na
+
+		// INTERFACE BLOCK SPECIFICATIONS:
+		// na
+
+		// DERIVED TYPE DEFINITIONS:
+		// na
+
+		// SUBROUTINE LOCAL VARIABLE DECLARATIONS:
+		bool Found;
+		int DeviceNum;
+
+		Found = false;
+
+		if ( ZoneIntGain( ZoneNum ).NumberOfDevices == 0 ) {
+			DeviceIndex = -1;
+			ErrorFound = true;
+			return;
+		}
+
+		for ( DeviceNum = 1; DeviceNum <= ZoneIntGain( ZoneNum ).NumberOfDevices; ++DeviceNum ) {
+			if ( SameString( ZoneIntGain( ZoneNum ).Device( DeviceNum ).CompObjectName, IntGainName ) ) {
+				if ( ZoneIntGain( ZoneNum ).Device( DeviceNum ).CompTypeOfNum != IntGainTypeOfNum ) {
+					ErrorFound = true;
+				}
+				else {
+					ErrorFound = false;
+				}
+				Found = true;
+				DeviceIndex = DeviceNum;
+				break;
+			}
+		}
+
+	}
+
+	void
+	SumInternalConvectionGainsByIndices(
+		int const ZoneNum, // zone index pointer for which zone to sum gains for
+		Array1S_int const DeviceIndexARR, // variable length 1-d array of integer device index pointers to include in summation
+		Array1A< Real64 > const FractionARR, // array of fractional multipliers to apply to devices
+		Real64 & SumConvGainRate
+	)
+	{
+
+		// SUBROUTINE INFORMATION:
+		//       AUTHOR         B. Griffith
+		//       DATE WRITTEN   June 2012
+		//       MODIFIED       na
+		//       RE-ENGINEERED  na
+
+		// PURPOSE OF THIS SUBROUTINE:
+		// worker routine for summing a subset of the internal gains by index
+
+		// METHODOLOGY EMPLOYED:
+		// <description>
+
+		// REFERENCES:
+		// na
+
+		// USE STATEMENTS:
+		// na
+
+		// Argument array dimensioning
+
+		// Locals
+		// SUBROUTINE ARGUMENT DEFINITIONS:
+
+		// SUBROUTINE PARAMETER DEFINITIONS:
+		// na
+
+		// INTERFACE BLOCK SPECIFICATIONS:
+		// na
+
+		// DERIVED TYPE DEFINITIONS:
+		// na
+
+		// SUBROUTINE LOCAL VARIABLE DECLARATIONS:
+		int NumberOfIndices;
+		int NumberOfFractions;
+		Real64 tmpSumConvGainRate;
+		int loop;
+		int DeviceNum;
+		Real64 DeviceFraction;
+
+		NumberOfIndices = isize( DeviceIndexARR );
+		NumberOfFractions = isize( FractionARR );
+		tmpSumConvGainRate = 0.0;
+
+		//remove this next safety check after testing code
+		if ( NumberOfIndices != NumberOfFractions ) { //throw error
+			ShowSevereError( "SumInternalConvectionGainsByIndices: bad arguments, sizes do not match" );
+		}
+
+		if ( ZoneIntGain( ZoneNum ).NumberOfDevices == 0 ) {
+			SumConvGainRate = 0.0;
+			return;
+		}
+
+		for ( loop = 1; loop <= NumberOfIndices; ++loop ) {
+			DeviceNum = DeviceIndexARR( loop );
+			DeviceFraction = FractionARR( loop );
+			tmpSumConvGainRate = tmpSumConvGainRate + ZoneIntGain( ZoneNum ).Device( DeviceNum ).ConvectGainRate * DeviceFraction;
+		}
+		SumConvGainRate = tmpSumConvGainRate;
+
+	}
+
+	void
+	SumInternalLatentGainsByIndices(
+		int const ZoneNum, // zone index pointer for which zone to sum gains for
+		Array1S_int const DeviceIndexARR, // variable length 1-d array of integer device index pointers to include in summation
+		Array1A< Real64 > const FractionARR, // array of fractional multipliers to apply to devices
+		Real64 & SumLatentGainRate
+	)
+	{
+
+		// SUBROUTINE INFORMATION:
+		//       AUTHOR         B. Griffith
+		//       DATE WRITTEN   June 2012
+		//       MODIFIED       na
+		//       RE-ENGINEERED  na
+
+		// PURPOSE OF THIS SUBROUTINE:
+		// worker routine for summing a subset of the internal gains by index
+
+		// METHODOLOGY EMPLOYED:
+		// <description>
+
+		// REFERENCES:
+		// na
+
+		// USE STATEMENTS:
+		// na
+
+		// Argument array dimensioning
+
+		// Locals
+		// SUBROUTINE ARGUMENT DEFINITIONS:
+
+		// SUBROUTINE PARAMETER DEFINITIONS:
+		// na
+
+		// INTERFACE BLOCK SPECIFICATIONS:
+		// na
+
+		// DERIVED TYPE DEFINITIONS:
+		// na
+
+		// SUBROUTINE LOCAL VARIABLE DECLARATIONS:
+		int NumberOfIndices;
+		int NumberOfFractions;
+		Real64 tmpSumLatentGainRate;
+		int loop;
+		int DeviceNum;
+		Real64 DeviceFraction;
+
+		NumberOfIndices = isize( DeviceIndexARR );
+		NumberOfFractions = isize( FractionARR );
+		tmpSumLatentGainRate = 0.0;
+
+		//remove this next safety check after testing code
+		if ( NumberOfIndices != NumberOfFractions ) { //throw error
+			ShowSevereError( "SumInternalLatentGainsByIndices: bad arguments, sizes do not match" );
+		}
+
+		if ( ZoneIntGain( ZoneNum ).NumberOfDevices == 0 ) {
+			SumLatentGainRate = 0.0;
+			return;
+		}
+
+		for ( loop = 1; loop <= NumberOfIndices; ++loop ) {
+			DeviceNum = DeviceIndexARR( loop );
+			DeviceFraction = FractionARR( loop );
+			tmpSumLatentGainRate = tmpSumLatentGainRate + ZoneIntGain( ZoneNum ).Device( DeviceNum ).LatentGainRate * DeviceFraction;
+		}
+		SumLatentGainRate = tmpSumLatentGainRate;
+
+	}
+
+	void
+	SumReturnAirConvectionGainsByIndices(
+		int const ZoneNum, // zone index pointer for which zone to sum gains for
+		Array1S_int const DeviceIndexARR, // variable length 1-d array of integer device index pointers to include in summation
+		Array1A< Real64 > const FractionARR, // array of fractional multipliers to apply to devices
+		Real64 & SumReturnAirGainRate
+	)
+	{
+
+		// SUBROUTINE INFORMATION:
+		//       AUTHOR         B. Griffith
+		//       DATE WRITTEN   June 2012
+		//       MODIFIED       na
+		//       RE-ENGINEERED  na
+
+		// PURPOSE OF THIS SUBROUTINE:
+		// worker routine for summing a subset of the internal gains by index
+
+		// METHODOLOGY EMPLOYED:
+		// <description>
+
+		// REFERENCES:
+		// na
+
+		// USE STATEMENTS:
+		// na
+
+		// Argument array dimensioning
+
+		// Locals
+		// SUBROUTINE ARGUMENT DEFINITIONS:
+
+		// SUBROUTINE PARAMETER DEFINITIONS:
+		// na
+
+		// INTERFACE BLOCK SPECIFICATIONS:
+		// na
+
+		// DERIVED TYPE DEFINITIONS:
+		// na
+
+		// SUBROUTINE LOCAL VARIABLE DECLARATIONS:
+		int NumberOfIndices;
+		int NumberOfFractions;
+		Real64 tmpSumReturnAirGainRate;
+		int loop;
+		int DeviceNum;
+		Real64 DeviceFraction;
+
+		NumberOfIndices = isize( DeviceIndexARR );
+		NumberOfFractions = isize( FractionARR );
+		tmpSumReturnAirGainRate = 0.0;
+
+		//remove this next safety check after testing code
+		if ( NumberOfIndices != NumberOfFractions ) { //throw error
+			ShowSevereError( "SumReturnAirConvectionGainsByIndice: bad arguments, sizes do not match" );
+		}
+
+		if ( ZoneIntGain( ZoneNum ).NumberOfDevices == 0 ) {
+			SumReturnAirGainRate = 0.0;
+			return;
+		}
+
+		for ( loop = 1; loop <= NumberOfIndices; ++loop ) {
+			DeviceNum = DeviceIndexARR( loop );
+			DeviceFraction = FractionARR( loop );
+			tmpSumReturnAirGainRate = tmpSumReturnAirGainRate + ZoneIntGain( ZoneNum ).Device( DeviceNum ).ReturnAirConvGainRate * DeviceFraction;
+		}
+		SumReturnAirGainRate = tmpSumReturnAirGainRate;
+
+	}
+
 	//     NOTICE
 
-	//     Copyright © 1996-2014 The Board of Trustees of the University of Illinois
+	//     Copyright (c) 1996-2015 The Board of Trustees of the University of Illinois
 	//     and The Regents of the University of California through Ernest Orlando Lawrence
 	//     Berkeley National Laboratory.  All rights reserved.
 

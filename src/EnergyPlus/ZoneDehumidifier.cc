@@ -118,7 +118,7 @@ namespace ZoneDehumidifier {
 	SimZoneDehumidifier(
 		std::string const & CompName, // Name of the zone dehumidifier
 		int const ZoneNum, // Number of zone being served
-		bool const FirstHVACIteration, // TRUE if 1st HVAC simulation of system timestep
+		bool const EP_UNUSED( FirstHVACIteration ), // TRUE if 1st HVAC simulation of system timestep
 		Real64 & QSensOut, // Sensible capacity delivered to zone (W)
 		Real64 & QLatOut, // Latent capacity delivered to zone (kg/s), dehumidify = negative
 		int & CompIndex // Index to the zone dehumidifier
@@ -168,7 +168,7 @@ namespace ZoneDehumidifier {
 
 		// Find the correct zone dehumidifier
 		if ( CompIndex == 0 ) {
-			ZoneDehumidNum = FindItemInList( CompName, ZoneDehumid.Name(), NumDehumidifiers );
+			ZoneDehumidNum = FindItemInList( CompName, ZoneDehumid );
 			if ( ZoneDehumidNum == 0 ) {
 				ShowFatalError( "SimZoneDehumidifier: Unit not found= " + CompName );
 			}
@@ -285,7 +285,7 @@ namespace ZoneDehumidifier {
 
 			IsNotOK = false;
 			IsBlank = false;
-			VerifyName( Alphas( 1 ), ZoneDehumid.Name(), ZoneDehumidIndex - 1, IsNotOK, IsBlank, CurrentModuleObject + " Name" );
+			VerifyName( Alphas( 1 ), ZoneDehumid, ZoneDehumidIndex - 1, IsNotOK, IsBlank, CurrentModuleObject + " Name" );
 			if ( IsNotOK ) {
 				ErrorsFound = true;
 				if ( IsBlank ) Alphas( 1 ) = "xxxxx";
@@ -1102,7 +1102,7 @@ namespace ZoneDehumidifier {
 
 	//     NOTICE
 
-	//     Copyright © 1996-2014 The Board of Trustees of the University of Illinois
+	//     Copyright (c) 1996-2015 The Board of Trustees of the University of Illinois
 	//     and The Regents of the University of California through Ernest Orlando Lawrence
 	//     Berkeley National Laboratory.  All rights reserved.
 

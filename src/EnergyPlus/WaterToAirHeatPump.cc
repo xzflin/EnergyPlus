@@ -172,7 +172,7 @@ namespace WaterToAirHeatPump {
 		}
 
 		if ( CompIndex == 0 ) {
-			HPNum = FindItemInList( CompName, WatertoAirHP.Name(), NumWatertoAirHPs );
+			HPNum = FindItemInList( CompName, WatertoAirHP );
 			if ( HPNum == 0 ) {
 				ShowFatalError( "WaterToAir HP not found=" + CompName );
 			}
@@ -259,7 +259,6 @@ namespace WaterToAirHeatPump {
 		int NumCool;
 		int NumHeat;
 		int WatertoAirHPNum;
-		int NumFluids;
 		int NumAlphas;
 		int NumParams;
 		int NumNums;
@@ -321,7 +320,7 @@ namespace WaterToAirHeatPump {
 			IsNotOK = false;
 			IsBlank = false;
 
-			VerifyName( AlphArray( 1 ), WatertoAirHP.Name(), HPNum - 1, IsNotOK, IsBlank, CurrentModuleObject + " Name" );
+			VerifyName( AlphArray( 1 ), WatertoAirHP, HPNum - 1, IsNotOK, IsBlank, CurrentModuleObject + " Name" );
 			if ( IsNotOK ) {
 				ErrorsFound = true;
 				if ( IsBlank ) AlphArray( 1 ) = "xxxxx";
@@ -396,14 +395,12 @@ namespace WaterToAirHeatPump {
 			TestCompSet( CurrentModuleObject, AlphArray( 1 ), AlphArray( 4 ), AlphArray( 5 ), "Water Nodes" );
 			TestCompSet( CurrentModuleObject, AlphArray( 1 ), AlphArray( 6 ), AlphArray( 7 ), "Air Nodes" );
 
+			// Setup Report variables for the detailed cooling Heat Pump
+			// CurrentModuleObject = "Coil:Cooling:WaterToAirHeatPump:ParameterEstimation"
 			SetupOutputVariable( "Cooling Coil Electric Energy [J]", WatertoAirHP( HPNum ).Energy, "System", "Summed", WatertoAirHP( HPNum ).Name, _, "Electric", "Cooling", _, "System" );
-
 			SetupOutputVariable( "Cooling Coil Total Cooling Energy [J]", WatertoAirHP( HPNum ).EnergyLoadTotal, "System", "Summed", WatertoAirHP( HPNum ).Name, _, "ENERGYTRANSFER", "COOLINGCOILS", _, "System" );
-
 			SetupOutputVariable( "Cooling Coil Sensible Cooling Energy [J]", WatertoAirHP( HPNum ).EnergySensible, "System", "Summed", WatertoAirHP( HPNum ).Name );
-
 			SetupOutputVariable( "Cooling Coil Latent Cooling Energy [J]", WatertoAirHP( HPNum ).EnergyLatent, "System", "Summed", WatertoAirHP( HPNum ).Name );
-
 			SetupOutputVariable( "Cooling Coil Source Side Heat Transfer Energy [J]", WatertoAirHP( HPNum ).EnergySource, "System", "Summed", WatertoAirHP( HPNum ).Name, _, "PLANTLOOPCOOLINGDEMAND", "COOLINGCOILS", _, "System" );
 
 			// save the design source side flow rate for use by plant loop sizing algorithms
@@ -430,7 +427,7 @@ namespace WaterToAirHeatPump {
 			IsNotOK = false;
 			IsBlank = false;
 
-			VerifyName( AlphArray( 1 ), WatertoAirHP.Name(), HPNum - 1, IsNotOK, IsBlank, CurrentModuleObject + " Name" );
+			VerifyName( AlphArray( 1 ), WatertoAirHP, HPNum - 1, IsNotOK, IsBlank, CurrentModuleObject + " Name" );
 			if ( IsNotOK ) {
 				ErrorsFound = true;
 				if ( IsBlank ) AlphArray( 1 ) = "xxxxx";
@@ -500,10 +497,9 @@ namespace WaterToAirHeatPump {
 			TestCompSet( CurrentModuleObject, AlphArray( 1 ), AlphArray( 4 ), AlphArray( 5 ), "Water Nodes" );
 			TestCompSet( CurrentModuleObject, AlphArray( 1 ), AlphArray( 6 ), AlphArray( 7 ), "Air Nodes" );
 
+			// CurrentModuleObject = "Coil:Heating:WaterToAirHeatPump:ParameterEstimation"
 			SetupOutputVariable( "Heating Coil Electric Energy [J]", WatertoAirHP( HPNum ).Energy, "System", "Summed", WatertoAirHP( HPNum ).Name, _, "Electric", "Heating", _, "System" );
-
 			SetupOutputVariable( "Heating Coil Heating Energy [J]", WatertoAirHP( HPNum ).EnergyLoadTotal, "System", "Summed", WatertoAirHP( HPNum ).Name, _, "ENERGYTRANSFER", "HEATINGCOILS", _, "System" );
-
 			SetupOutputVariable( "Heating Coil Source Side Heat Transfer Energy [J]", WatertoAirHP( HPNum ).EnergySource, "System", "Summed", WatertoAirHP( HPNum ).Name, _, "PLANTLOOPHEATINGDEMAND", "HEATINGCOILS", _, "System" );
 
 			// save the design source side flow rate for use by plant loop sizing algorithms
@@ -634,9 +630,6 @@ namespace WaterToAirHeatPump {
 
 		// SUBROUTINE PARAMETER DEFINITIONS:
 		// REAL(r64), PARAMETER        :: CpWater=4210.d0          ! Specific heat of water J/kg_C
-		Real64 const TempTOL( 0.2 ); // air temperature tolerance to trigger resimulation
-		Real64 const EnthTOL( 0.2 ); // air enthalpy tolerance to trigger resimulation
-		Real64 const HumRatTOL( 0.2 ); // air humidity ratio tolerance
 		static std::string const RoutineName( "InitWatertoAirHP" );
 
 		// INTERFACE BLOCK SPECIFICATIONS
@@ -655,7 +648,6 @@ namespace WaterToAirHeatPump {
 		static Array1D_bool MyEnvrnFlag;
 		Real64 rho; // local fluid density
 		Real64 Cp; // local fluid specific heat
-		Real64 Temptemp;
 		bool errFlag;
 
 		if ( MyOneTimeFlag ) {
@@ -844,7 +836,7 @@ namespace WaterToAirHeatPump {
 		int const CyclingScheme, // fan/compressor cycling scheme indicator
 		bool const FirstHVACIteration, // first iteration flag
 		Real64 const RuntimeFrac,
-		bool const InitFlag, // suppress property errors if true
+		bool const EP_UNUSED( InitFlag ), // suppress property errors if true
 		Real64 const SensDemand,
 		int const CompOp,
 		Real64 const PartLoadRatio
@@ -888,7 +880,6 @@ namespace WaterToAirHeatPump {
 		Real64 const gamma( 1.114 ); // Expansion Coefficient
 		Real64 const RelaxParam( 0.5 ); // Relaxation Parameter
 		Real64 const ERR( 0.01 ); // Error Value
-		Real64 const ERR1( 0.001 ); // Error Value
 		Real64 const PB( 1.013e5 ); // Barometric Pressure (Pa)
 
 		int const STOP1( 100000 ); // Iteration stopper1
@@ -1009,7 +1000,6 @@ namespace WaterToAirHeatPump {
 		Real64 SHReff; // Effective sensible heat ratio at part-load condition
 		Array1D< Real64 > Par( 4 ); // Parameter array passed to RegulaFalsi function
 		int SolFlag; // Solution flag returned from RegulaFalsi function
-		static bool ErrorsFound( false );
 		static bool firstTime( true );
 		static Real64 LoadSideInletDBTemp_Init; // rated conditions
 		static Real64 LoadSideInletHumRat_Init; // rated conditions
@@ -1514,7 +1504,7 @@ namespace WaterToAirHeatPump {
 		int const CyclingScheme, // fan/compressor cycling scheme indicator
 		bool const FirstHVACIteration, // first iteration flag
 		Real64 const RuntimeFrac,
-		bool const InitFlag, // first iteration flag
+		bool const EP_UNUSED( InitFlag ), // first iteration flag
 		Real64 const SensDemand,
 		int const CompOp,
 		Real64 const PartLoadRatio
@@ -1553,8 +1543,6 @@ namespace WaterToAirHeatPump {
 		Real64 const gamma( 1.114 ); // Expnasion Coefficient
 		Real64 const RelaxParam( 0.5 ); // Relaxation Parameter
 		Real64 const ERR( 0.01 ); // Error Value
-		Real64 const ERR1( 0.01 ); // Error Value
-		Real64 const PB( 1.013e5 ); // Barometric Pressure (Pa)
 		int const STOP1( 10000 ); // Iteration stopper1
 		int const STOP2( 100000 ); // Iteration stopper2
 		int const STOP3( 100000 ); // Iteration stopper3
@@ -2339,7 +2327,7 @@ namespace WaterToAirHeatPump {
 			GetCoilsInputFlag = false;
 		}
 
-		IndexNum = FindItemInList( CoilName, WatertoAirHP.Name(), NumWatertoAirHPs );
+		IndexNum = FindItemInList( CoilName, WatertoAirHP );
 
 		if ( IndexNum == 0 ) {
 			ShowSevereError( "Could not find CoilType=\"" + CoilType + "\" with Name=\"" + CoilName + "\"" );
@@ -2406,7 +2394,7 @@ namespace WaterToAirHeatPump {
 		}
 
 		if ( SameString( CoilType, "COIL:HEATING:WATERTOAIRHEATPUMP:PARAMETERESTIMATION" ) || SameString( CoilType, "COIL:COOLING:WATERTOAIRHEATPUMP:PARAMETERESTIMATION" ) ) {
-			WhichCoil = FindItemInList( CoilName, WatertoAirHP.Name(), NumWatertoAirHPs );
+			WhichCoil = FindItemInList( CoilName, WatertoAirHP );
 			if ( WhichCoil != 0 ) {
 				if ( SameString( CoilType, "COIL:HEATING:WATERTOAIRHEATPUMP:PARAMETERESTIMATION" ) ) {
 					CoilCapacity = WatertoAirHP( WhichCoil ).HeatingCapacity;
@@ -2482,7 +2470,7 @@ namespace WaterToAirHeatPump {
 			GetCoilsInputFlag = false;
 		}
 
-		WhichCoil = FindItemInList( CoilName, WatertoAirHP.Name(), NumWatertoAirHPs );
+		WhichCoil = FindItemInList( CoilName, WatertoAirHP );
 		if ( WhichCoil != 0 ) {
 			NodeNumber = WatertoAirHP( WhichCoil ).AirInletNodeNum;
 		}
@@ -2551,7 +2539,7 @@ namespace WaterToAirHeatPump {
 			GetCoilsInputFlag = false;
 		}
 
-		WhichCoil = FindItemInList( CoilName, WatertoAirHP.Name(), NumWatertoAirHPs );
+		WhichCoil = FindItemInList( CoilName, WatertoAirHP );
 		if ( WhichCoil != 0 ) {
 			NodeNumber = WatertoAirHP( WhichCoil ).AirOutletNodeNum;
 		}

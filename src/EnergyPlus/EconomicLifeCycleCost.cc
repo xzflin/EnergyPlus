@@ -1192,7 +1192,6 @@ namespace EconomicLifeCycleCost {
 		int offset;
 		int month; // number of months since base date
 		int firstMonth;
-		int repeatMonths;
 		static int baseMonths1900( 0 ); // number of months since 1900 for base period
 		static int serviceMonths1900( 0 ); // number of months since 1900 for service period
 		int monthsBaseToService;
@@ -1919,7 +1918,6 @@ namespace EconomicLifeCycleCost {
 		Array1D_string rowHead;
 		Array2D_string tableBody;
 
-		int month;
 		int numColumns;
 		int iYear;
 		int jObj;
@@ -2485,7 +2483,7 @@ namespace EconomicLifeCycleCost {
 
 	//     NOTICE
 
-	//     Copyright © 1996-2014 The Board of Trustees of the University of Illinois
+	//     Copyright (c) 1996-2015 The Board of Trustees of the University of Illinois
 	//     and The Regents of the University of California through Ernest Orlando Lawrence
 	//     Berkeley National Laboratory.  All rights reserved.
 

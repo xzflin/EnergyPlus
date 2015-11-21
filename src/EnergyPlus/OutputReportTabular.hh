@@ -177,6 +177,8 @@ namespace OutputReportTabular {
 	extern Real64 gatherElecPurchased;
 	extern int meterNumElecSurplusSold;
 	extern Real64 gatherElecSurplusSold;
+	extern int meterNumElecStorage;
+	extern Real64 gatherElecStorage;
 	// for on site thermal source components on BEPS report
 	extern int meterNumWaterHeatRecovery;
 	extern Real64 gatherWaterHeatRecovery;
@@ -728,6 +730,8 @@ namespace OutputReportTabular {
 	extern Array1D< UnitConvType > UnitConv;
 
 	// Functions
+	void
+	clear_state();
 
 	void
 	UpdateTabularReports( int const IndexTypeKey ); // What kind of data to update (Zone, HVAC)
@@ -863,6 +867,12 @@ namespace OutputReportTabular {
 	void
 	WriteBEPSTable();
 
+	std::string
+	ResourceWarningMessage(std::string resource);
+
+	Real64
+	WaterConversionFunct(Real64 WaterTotal, Real64 ConversionFactor);
+
 	void
 	WriteSourceEnergyEndUseSummary();
 
@@ -957,6 +967,42 @@ namespace OutputReportTabular {
 
 	void
 	DetermineBuildingFloorArea();
+
+	//======================================================================================================================
+	//======================================================================================================================
+
+	//    ROUTINES TO RESET GATHERED VALUES TO ZERO
+
+	//======================================================================================================================
+	//======================================================================================================================
+
+	void
+	ResetTabularReports();
+
+	void
+	ResetMonthlyGathering();
+
+	void
+	ResetBinGathering();
+
+	void
+	ResetBEPSGathering();
+
+	void
+	ResetSourceEnergyEndUseGathering();
+
+	void
+	ResetPeakDemandGathering();
+
+	void
+	ResetHeatGainGathering();
+
+	void
+	ResetRemainingPredefinedEntries();
+
+	void
+	ResetAdaptiveComfort();
+
 
 	//======================================================================================================================
 	//======================================================================================================================
@@ -1074,7 +1120,7 @@ namespace OutputReportTabular {
 
 	//     NOTICE
 
-	//     Copyright © 1996-2014 The Board of Trustees of the University of Illinois
+	//     Copyright (c) 1996-2015 The Board of Trustees of the University of Illinois
 	//     and The Regents of the University of
 	//     Berkeley National Laboratory.  All rights reserved.
 

@@ -130,6 +130,7 @@ namespace ManageElectricPower {
 	int ElecProducedCoGenIndex( 0 );
 	int ElecProducedPVIndex( 0 );
 	int ElecProducedWTIndex( 0 );
+	int ElecProducedStorageIndex( 0 );
 
 	int MaxRainflowArrayBounds( 100 );
 	int MaxRainflowArrayInc( 100 );
@@ -182,15 +183,8 @@ namespace ManageElectricPower {
 		// Using/Aliasing
 		using ScheduleManager::GetCurrentScheduleValue;
 		using General::TrimSigDigits;
-		using DataGlobals::DoOutputReporting;
 		using DataGlobals::MetersHaveBeenInitialized;
-		using DataGlobals::WarmupFlag;
-		using DataGlobals::DoingSizing;
-		using DataGlobals::CurrentTime;
 		using DataGlobals::BeginEnvrnFlag;
-		using DataEnvironment::Month;
-		using DataEnvironment::DayOfMonth;
-		using DataHVACGlobals::SysTimeElapsed;
 
 		// Locals
 		// SUBROUTINE ARGUMENT DEFINITIONS:
@@ -215,6 +209,7 @@ namespace ManageElectricPower {
 		static Real64 ElecFacilityHVAC( 0.0 );
 		static Real64 ElecProducedPV( 0.0 );
 		static Real64 ElecProducedWT( 0.0 );
+		static Real64 ElecProducedStorage( 0.0 );
 		static Real64 RemainingLoad( 0.0 ); // Remaining electric power load to be met by a load center
 		static Real64 WholeBldgRemainingLoad( 0.0 ); // Remaining electric power load for the building
 		static Real64 RemainingThermalLoad( 0.0 ); // Remaining thermal load to be met
@@ -243,6 +238,7 @@ namespace ManageElectricPower {
 			ElecProducedCoGenIndex = GetMeterIndex( "Cogeneration:ElectricityProduced" );
 			ElecProducedPVIndex = GetMeterIndex( "Photovoltaic:ElectricityProduced" );
 			ElecProducedWTIndex = GetMeterIndex( "WindTurbine:ElectricityProduced" );
+			ElecProducedStorageIndex = GetMeterIndex( "ElectricStorage:ElectricityProduced" );
 
 			for ( LoadCenterNum = 1; LoadCenterNum <= NumLoadCenters; ++LoadCenterNum ) {
 				ElecLoadCenter( LoadCenterNum ).DemandMeterPtr = GetMeterIndex( ElecLoadCenter( LoadCenterNum ).DemandMeterName );
@@ -283,6 +279,7 @@ namespace ManageElectricPower {
 			WholeBldgElectSummary.TotalElectricDemand = 0.0;
 			WholeBldgElectSummary.ElecProducedPVRate = 0.0;
 			WholeBldgElectSummary.ElecProducedWTRate = 0.0;
+			WholeBldgElectSummary.ElecProducedStorageRate = 0.0;
 
 			if ( NumLoadCenters > 0 ) {
 				ElecLoadCenter.DCElectricityProd() = 0.0;
@@ -341,12 +338,14 @@ namespace ManageElectricPower {
 		// deprecate this PV stuff?
 		ElecProducedPV = GetInstantMeterValue( ElecProducedPVIndex, 2 );
 		ElecProducedWT = GetInstantMeterValue( ElecProducedWTIndex, 2 );
+		ElecProducedStorage = GetInstantMeterValue( ElecProducedStorageIndex, 2 );
 
 		WholeBldgElectSummary.TotalBldgElecDemand = ElecFacilityBldg / TimeStepZoneSec;
 		WholeBldgElectSummary.TotalHVACElecDemand = ElecFacilityHVAC / ( TimeStepSys * SecInHour );
 		WholeBldgElectSummary.TotalElectricDemand = WholeBldgElectSummary.TotalBldgElecDemand + WholeBldgElectSummary.TotalHVACElecDemand;
 		WholeBldgElectSummary.ElecProducedPVRate = ElecProducedPV / ( TimeStepSys * SecInHour );
 		WholeBldgElectSummary.ElecProducedWTRate = ElecProducedWT / ( TimeStepSys * SecInHour );
+		WholeBldgElectSummary.ElecProducedStorageRate = ElecProducedStorage / ( TimeStepSys * SecInHour );;
 
 		WholeBldgRemainingLoad = WholeBldgElectSummary.TotalElectricDemand; //- WholeBldgElectSummary%ElecProducedPVRate
 
@@ -883,7 +882,6 @@ namespace ManageElectricPower {
 		using DataHeatBalance::IntGainTypeOf_ElectricLoadCenterStorageSimple;
 		using DataHeatBalance::IntGainTypeOf_ElectricLoadCenterStorageBattery;
 		using DataHeatBalance::IntGainTypeOf_ElectricLoadCenterTransformer;
-		using DataGlobals::NumOfZones;
 		using DataGlobals::AnyEnergyManagementSystemInModel;
 		using DataGlobals::ScheduleAlwaysOn;
 		using General::RoundSigDigits;
@@ -986,7 +984,7 @@ namespace ManageElectricPower {
 						}
 					}
 
-					Inverter( InvertNum ).ZoneNum = FindItemInList( cAlphaArgs( 3 ), Zone.Name(), NumOfZones );
+					Inverter( InvertNum ).ZoneNum = FindItemInList( cAlphaArgs( 3 ), Zone );
 					if ( Inverter( InvertNum ).ZoneNum > 0 ) Inverter( InvertNum ).HeatLossesDestination = ZoneGains;
 					if ( Inverter( InvertNum ).ZoneNum == 0 ) {
 						if ( lAlphaFieldBlanks( 3 ) ) {
@@ -1041,7 +1039,7 @@ namespace ManageElectricPower {
 						}
 					}
 
-					Inverter( InvertNum ).ZoneNum = FindItemInList( cAlphaArgs( 3 ), Zone.Name(), NumOfZones );
+					Inverter( InvertNum ).ZoneNum = FindItemInList( cAlphaArgs( 3 ), Zone );
 					if ( Inverter( InvertNum ).ZoneNum > 0 ) Inverter( InvertNum ).HeatLossesDestination = ZoneGains;
 					if ( Inverter( InvertNum ).ZoneNum == 0 ) {
 						if ( lAlphaFieldBlanks( 3 ) ) {
@@ -1098,7 +1096,7 @@ namespace ManageElectricPower {
 						}
 					}
 
-					Inverter( InvertNum ).ZoneNum = FindItemInList( cAlphaArgs( 3 ), Zone.Name(), NumOfZones );
+					Inverter( InvertNum ).ZoneNum = FindItemInList( cAlphaArgs( 3 ), Zone );
 					if ( Inverter( InvertNum ).ZoneNum > 0 ) Inverter( InvertNum ).HeatLossesDestination = ZoneGains;
 					if ( Inverter( InvertNum ).ZoneNum == 0 ) {
 						if ( lAlphaFieldBlanks( 3 ) ) {
@@ -1174,7 +1172,7 @@ namespace ManageElectricPower {
 						}
 					}
 
-					ElecStorage( StorNum ).ZoneNum = FindItemInList( cAlphaArgs( 3 ), Zone.Name(), NumOfZones );
+					ElecStorage( StorNum ).ZoneNum = FindItemInList( cAlphaArgs( 3 ), Zone );
 					if ( ElecStorage( StorNum ).ZoneNum > 0 ) ElecStorage( StorNum ).HeatLossesDestination = ZoneGains;
 					if ( ElecStorage( StorNum ).ZoneNum == 0 ) {
 						if ( lAlphaFieldBlanks( 3 ) ) {
@@ -1228,7 +1226,7 @@ namespace ManageElectricPower {
 						}
 					}
 
-					ElecStorage( StorNum ).ZoneNum = FindItemInList( cAlphaArgs( 3 ), Zone.Name(), NumOfZones );
+					ElecStorage( StorNum ).ZoneNum = FindItemInList( cAlphaArgs( 3 ), Zone );
 					if ( ElecStorage( StorNum ).ZoneNum > 0 ) ElecStorage( StorNum ).HeatLossesDestination = ZoneGains;
 					if ( ElecStorage( StorNum ).ZoneNum == 0 ) {
 						if ( lAlphaFieldBlanks( 3 ) ) {
@@ -1348,9 +1346,9 @@ namespace ManageElectricPower {
 			for ( StorNum = 1; StorNum <= NumofSimpleElecStorage + NumofKiBaMElecStorage; ++StorNum ) {
 				SetupOutputVariable( "Electric Storage Charge Power [W]", ElecStorage( StorNum ).StoredPower, "System", "Average", ElecStorage( StorNum ).Name );
 				SetupOutputVariable( "Electric Storage Charge Energy [J]", ElecStorage( StorNum ).StoredEnergy, "System", "Sum", ElecStorage( StorNum ).Name );
-				SetupOutputVariable( "Electric Storage Production Decrement Energy [J]", ElecStorage( StorNum ).DecrementedEnergyStored, "System", "Sum", ElecStorage( StorNum ).Name, _, "ElectricityProduced", "COGENERATION", _, "Plant" );
+				SetupOutputVariable( "Electric Storage Production Decrement Energy [J]", ElecStorage( StorNum ).DecrementedEnergyStored, "System", "Sum", ElecStorage( StorNum ).Name, _, "ElectricityProduced", "ELECTRICSTORAGE", _, "Plant" );
 				SetupOutputVariable( "Electric Storage Discharge Power [W]", ElecStorage( StorNum ).DrawnPower, "System", "Average", ElecStorage( StorNum ).Name );
-				SetupOutputVariable( "Electric Storage Discharge Energy [J]", ElecStorage( StorNum ).DrawnEnergy, "System", "Sum", ElecStorage( StorNum ).Name, _, "ElectricityProduced", "COGENERATION", _, "Plant" );
+				SetupOutputVariable( "Electric Storage Discharge Energy [J]", ElecStorage( StorNum ).DrawnEnergy, "System", "Sum", ElecStorage( StorNum ).Name, _, "ElectricityProduced", "ELECTRICSTORAGE", _, "Plant" );
 				SetupOutputVariable( "Electric Storage Thermal Loss Rate [W]", ElecStorage( StorNum ).ThermLossRate, "System", "Average", ElecStorage( StorNum ).Name );
 				SetupOutputVariable( "Electric Storage Thermal Loss Energy [J]", ElecStorage( StorNum ).ThermLossEnergy, "System", "Sum", ElecStorage( StorNum ).Name );
 				if ( AnyEnergyManagementSystemInModel ) {
@@ -1418,7 +1416,7 @@ namespace ManageElectricPower {
 					ErrorsFound = true;
 				}
 
-				Transformer( TransfNum ).ZoneNum = FindItemInList( cAlphaArgs( 4 ), Zone.Name(), NumOfZones );
+				Transformer( TransfNum ).ZoneNum = FindItemInList( cAlphaArgs( 4 ), Zone );
 				if ( Transformer( TransfNum ).ZoneNum > 0 ) Transformer( TransfNum ).HeatLossesDestination = ZoneGains;
 				if ( Transformer( TransfNum ).ZoneNum == 0 ) {
 					if ( lAlphaFieldBlanks( 4 ) ) {
@@ -1575,7 +1573,7 @@ namespace ManageElectricPower {
 			GetObjectItem( cCurrentModuleObject, Count, cAlphaArgs, NumAlphas, rNumericArgs, NumNums, IOStat, _, lAlphaFieldBlanks, cAlphaFieldNames, cNumericFieldNames );
 			IsNotOK = false;
 			IsBlank = false;
-			VerifyName( cAlphaArgs( 1 ), ElecLoadCenter.Name(), Count - 1, IsNotOK, IsBlank, cCurrentModuleObject + " Name" );
+			VerifyName( cAlphaArgs( 1 ), ElecLoadCenter, Count - 1, IsNotOK, IsBlank, cCurrentModuleObject + " Name" );
 			if ( IsNotOK ) {
 				ErrorsFound = true;
 				if ( IsBlank ) cAlphaArgs( 1 ) = "xxxxx";
@@ -1672,7 +1670,7 @@ namespace ManageElectricPower {
 				} else {
 					// check if previous elec load center already uses this inverter.
 					if ( Count - 1 > 0 ) {
-						Found = FindItemInList( cAlphaArgs( 7 ), ElecLoadCenter.InverterName(), Count - 1 );
+						Found = FindItemInList( cAlphaArgs( 7 ), ElecLoadCenter, &ElectricPowerLoadCenter::InverterName, Count - 1 );
 						if ( Found != 0 ) {
 							ShowSevereError( RoutineName + cCurrentModuleObject + "=\"" + cAlphaArgs( 1 ) + "\", invalid entry." );
 							ShowContinueError( "Invalid " + cAlphaFieldNames( 7 ) + " = " + cAlphaArgs( 7 ) );
@@ -1699,7 +1697,7 @@ namespace ManageElectricPower {
 				} else {
 					// check if previous elec load center already uses this storage.
 					if ( Count - 1 > 0 ) {
-						Found = FindItemInList( cAlphaArgs( 8 ), ElecLoadCenter.StorageName(), Count - 1 );
+						Found = FindItemInList( cAlphaArgs( 8 ), ElecLoadCenter, &ElectricPowerLoadCenter::StorageName, Count - 1 );
 						if ( Found != 0 ) {
 							ShowSevereError( RoutineName + cCurrentModuleObject + "=\"" + cAlphaArgs( 1 ) + "\", invalid entry." );
 							ShowContinueError( "Invalid " + cAlphaFieldNames( 8 ) + " = " + cAlphaArgs( 8 ) );
@@ -2023,7 +2021,7 @@ namespace ManageElectricPower {
 
 	void
 	CalcLoadCenterThermalLoad(
-		bool const FirstHVACIteration, // unused1208
+		bool const EP_UNUSED( FirstHVACIteration ), // unused1208
 		int const LoadCenterNum, // Load Center number counter
 		Real64 & ThermalLoad // heat rate called for from cogenerator(watts)
 	)
@@ -2046,18 +2044,11 @@ namespace ManageElectricPower {
 		// Using/Aliasing
 		using namespace DataPlant;
 		using DataHVACGlobals::NumPlantLoops;
-		using DataHVACGlobals::SysTimeElapsed;
 		using InputProcessor::SameString;
 
-		using DataGlobals::DoOutputReporting;
 		using DataGlobals::MetersHaveBeenInitialized;
-		using DataGlobals::WarmupFlag;
-		using DataGlobals::DoingSizing;
-		using DataGlobals::CurrentTime;
 
 		using General::TrimSigDigits;
-		using DataEnvironment::Month;
-		using DataEnvironment::DayOfMonth;
 
 		// Locals
 		// SUBROUTINE ARGUMENT DEFINITIONS:
@@ -2472,7 +2463,7 @@ namespace ManageElectricPower {
 		// Flow
 
 		ElecProducedCoGen = GetInstantMeterValue( ElecProducedCoGenIndex, 2 ); //whole building
-		ElecProducedFacility = ElecProducedCoGen + WholeBldgElectSummary.ElecProducedPVRate * TimeStepSys * SecInHour + WholeBldgElectSummary.ElecProducedWTRate * TimeStepSys * SecInHour; //whole building
+		ElecProducedFacility = ElecProducedCoGen + ( WholeBldgElectSummary.ElecProducedPVRate + WholeBldgElectSummary.ElecProducedWTRate + WholeBldgElectSummary.ElecProducedStorageRate ) * TimeStepSys * SecInHour; //whole building
 
 		WholeBldgElectSummary.ElectricityProd = ElecProducedFacility; //whole building
 		WholeBldgElectSummary.ElectProdRate = ElecProducedFacility / ( TimeStepSys * SecInHour ); //whole building
@@ -2523,7 +2514,6 @@ namespace ManageElectricPower {
 
 		// Using/Aliasing
 		using DataGlobals::BeginEnvrnFlag;
-		using DataHeatBalance::ZoneIntGain;
 
 		// Locals
 		// SUBROUTINE ARGUMENT DEFINITIONS:
@@ -2540,8 +2530,6 @@ namespace ManageElectricPower {
 
 		// SUBROUTINE LOCAL VARIABLE DECLARATIONS:
 		static bool MyEnvrnFlag( true );
-		static int InvertNum( 0 );
-		static int ZoneNum( 0 );
 
 		if ( NumInverters == 0 ) return;
 
@@ -2641,7 +2629,6 @@ namespace ManageElectricPower {
 		Real64 E0d; // fully discharged internal battery voltage
 		Real64 InternalR; // internal resistance
 		Real64 Xf; // normalized maximum capacity at the given current
-		Real64 X; // normalized maximum capacity at the given current
 		Real64 Inew; // converged current
 		Real64 Tnew; // charge of discharge time, defined by T=qmaxf/I
 		Real64 Imax; // maximum current
@@ -2656,10 +2643,8 @@ namespace ManageElectricPower {
 		static Real64 error( 0.0 ); // error in iterative process
 		static Real64 Pactual( 0.0 ); // actual Power output
 		static Real64 RHS( 0.0 ); // right hand side of a equation
-		static Real64 I( 0.0 ); // current
 		Real64 DeltaSOC1; // difference of fractional SOC between this time step and last time step
 		Real64 DeltaSOC2; // difference of fractional SOC between last time step and last two time step
-		int SaveArrayBounds; // Maximum size for the arrays used for rainflow counting
 
 		if ( ! ( ElecLoadCenter( LoadCenterNum ).StoragePresent ) ) return;
 
@@ -3289,8 +3274,6 @@ namespace ManageElectricPower {
 
 		// SUBROUTINE LOCAL VARIABLE DECLARATIONS:
 		static bool MyEnvrnFlag( true );
-		static int StorNum( 0 );
-		static int ZoneNum( 0 );
 
 		if ( NumElecStorageDevices == 0 ) return;
 
@@ -3559,7 +3542,6 @@ namespace ManageElectricPower {
 
 		// Using/Aliasing
 		using DataGlobals::BeginEnvrnFlag;
-		using DataHeatBalance::ZoneIntGain;
 
 		// Locals
 		// SUBROUTINE ARGUMENT DEFINITIONS:
@@ -3576,8 +3558,6 @@ namespace ManageElectricPower {
 
 		// SUBROUTINE LOCAL VARIABLE DECLARATIONS:
 		static bool MyEnvrnFlag( true );
-		static int TransfNum( 0 );
-		static int ZoneNum( 0 );
 
 		if ( NumTransformers == 0 ) return;
 
@@ -3645,11 +3625,7 @@ namespace ManageElectricPower {
 		// na
 
 		// SUBROUTINE LOCAL VARIABLE DECLARATIONS:
-		Real64 var1;
-		Real64 var2;
 		int num;
-		int i;
-		int k;
 
 		X( count ) = input - B1( count - 1 ); // calculate the difference between two data (current and previous)
 
@@ -3774,7 +3750,7 @@ namespace ManageElectricPower {
 
 	//     NOTICE
 
-	//     Copyright © 1996-2014 The Board of Trustees of the University of Illinois
+	//     Copyright (c) 1996-2015 The Board of Trustees of the University of Illinois
 	//     and The Regents of the University of California through Ernest Orlando Lawrence
 	//     Berkeley National Laboratory.  All rights reserved.
 

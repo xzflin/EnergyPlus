@@ -411,7 +411,6 @@ namespace DaylightingDevices {
 		using InputProcessor::FindItemInList;
 		using InputProcessor::GetObjectItem;
 		using InputProcessor::VerifyName;
-		using DataDaylighting::ZoneDaylight;
 		using General::RoundSigDigits;
 		using General::SafeDivide;
 
@@ -446,7 +445,7 @@ namespace DaylightingDevices {
 				// Pipe name
 				IsNotOK = false;
 				IsBlank = false;
-				VerifyName( cAlphaArgs( 1 ), TDDPipe.Name(), PipeNum - 1, IsNotOK, IsBlank, cCurrentModuleObject + " Name" );
+				VerifyName( cAlphaArgs( 1 ), TDDPipe, PipeNum - 1, IsNotOK, IsBlank, cCurrentModuleObject + " Name" );
 				if ( IsNotOK ) {
 					ErrorsFound = true;
 					if ( IsBlank ) cAlphaArgs( 1 ) = "xxxxx";
@@ -454,7 +453,7 @@ namespace DaylightingDevices {
 				TDDPipe( PipeNum ).Name = cAlphaArgs( 1 );
 
 				// Get TDD:DOME object
-				SurfNum = FindItemInList( cAlphaArgs( 2 ), Surface.Name(), TotSurfaces );
+				SurfNum = FindItemInList( cAlphaArgs( 2 ), Surface );
 
 				if ( SurfNum == 0 ) {
 					ShowSevereError( cCurrentModuleObject + " = " + cAlphaArgs( 1 ) + ":  Dome " + cAlphaArgs( 2 ) + " not found." );
@@ -499,7 +498,7 @@ namespace DaylightingDevices {
 				}
 
 				// Get TDD:DIFFUSER object
-				SurfNum = FindItemInList( cAlphaArgs( 3 ), Surface.Name(), TotSurfaces );
+				SurfNum = FindItemInList( cAlphaArgs( 3 ), Surface );
 
 				if ( SurfNum == 0 ) {
 					ShowSevereError( cCurrentModuleObject + " = " + cAlphaArgs( 1 ) + ":  Diffuser " + cAlphaArgs( 3 ) + " not found." );
@@ -558,7 +557,7 @@ namespace DaylightingDevices {
 				}
 
 				// Construction
-				TDDPipe( PipeNum ).Construction = FindItemInList( cAlphaArgs( 4 ), Construct.Name(), TotConstructs );
+				TDDPipe( PipeNum ).Construction = FindItemInList( cAlphaArgs( 4 ), Construct );
 
 				if ( TDDPipe( PipeNum ).Construction == 0 ) {
 					ShowSevereError( cCurrentModuleObject + " = " + cAlphaArgs( 1 ) + ":  Pipe construction " + cAlphaArgs( 4 ) + " not found." );
@@ -619,7 +618,7 @@ namespace DaylightingDevices {
 
 					for ( TZoneNum = 1; TZoneNum <= TDDPipe( PipeNum ).NumOfTZones; ++TZoneNum ) {
 						TZoneName = cAlphaArgs( TZoneNum + 4 );
-						TDDPipe( PipeNum ).TZone( TZoneNum ) = FindItemInList( TZoneName, Zone.Name(), NumOfZones );
+						TDDPipe( PipeNum ).TZone( TZoneNum ) = FindItemInList( TZoneName, Zone );
 						if ( TDDPipe( PipeNum ).TZone( TZoneNum ) == 0 ) {
 							ShowSevereError( cCurrentModuleObject + " = " + cAlphaArgs( 1 ) + ":  Transition zone " + TZoneName + " not found." );
 							ErrorsFound = true;
@@ -691,7 +690,7 @@ namespace DaylightingDevices {
 				// Shelf name
 				IsNotOK = false;
 				IsBlank = false;
-				VerifyName( cAlphaArgs( 1 ), Shelf.Name(), ShelfNum - 1, IsNotOK, IsBlank, "DaylightingDevice:Shelf" );
+				VerifyName( cAlphaArgs( 1 ), Shelf, ShelfNum - 1, IsNotOK, IsBlank, "DaylightingDevice:Shelf" );
 				if ( IsNotOK ) {
 					ErrorsFound = true;
 					if ( IsBlank ) cAlphaArgs( 1 ) = "xxxxx";
@@ -699,7 +698,7 @@ namespace DaylightingDevices {
 				Shelf( ShelfNum ).Name = cAlphaArgs( 1 );
 
 				// Get window object
-				SurfNum = FindItemInList( cAlphaArgs( 2 ), Surface.Name(), TotSurfaces );
+				SurfNum = FindItemInList( cAlphaArgs( 2 ), Surface );
 
 				if ( SurfNum == 0 ) {
 					ShowSevereError( cCurrentModuleObject + " = " + cAlphaArgs( 1 ) + ":  Window " + cAlphaArgs( 2 ) + " not found." );
@@ -740,7 +739,7 @@ namespace DaylightingDevices {
 
 				// Get inside shelf heat transfer surface (optional)
 				if ( cAlphaArgs( 3 ) != "" ) {
-					SurfNum = FindItemInList( cAlphaArgs( 3 ), Surface.Name(), TotSurfaces );
+					SurfNum = FindItemInList( cAlphaArgs( 3 ), Surface );
 
 					if ( SurfNum == 0 ) {
 						ShowSevereError( cCurrentModuleObject + " = " + cAlphaArgs( 1 ) + ":  Inside shelf " + cAlphaArgs( 3 ) + " not found." );
@@ -764,7 +763,7 @@ namespace DaylightingDevices {
 
 				// Get outside shelf attached shading surface (optional)
 				if ( cAlphaArgs( 4 ) != "" ) {
-					SurfNum = FindItemInList( cAlphaArgs( 4 ), Surface.Name(), TotSurfaces );
+					SurfNum = FindItemInList( cAlphaArgs( 4 ), Surface );
 
 					if ( SurfNum == 0 ) {
 						ShowSevereError( cCurrentModuleObject + " = " + cAlphaArgs( 1 ) + ":  Outside shelf " + cAlphaArgs( 4 ) + " not found." );
@@ -789,7 +788,7 @@ namespace DaylightingDevices {
 
 						// Get outside shelf construction (required if outside shelf is specified)
 						if ( cAlphaArgs( 5 ) != "" ) {
-							ConstrNum = FindItemInList( cAlphaArgs( 5 ), Construct.Name(), TotConstructs );
+							ConstrNum = FindItemInList( cAlphaArgs( 5 ), Construct );
 
 							if ( ConstrNum == 0 ) {
 								ShowSevereError( cCurrentModuleObject + " = " + cAlphaArgs( 1 ) + ":  Outside shelf construction " + cAlphaArgs( 5 ) + " not found." );
@@ -1382,7 +1381,6 @@ namespace DaylightingDevices {
 		using DataHeatBalance::QRadSWwinAbs;
 		using DataHeatBalance::QRadSWwinAbsTot;
 		using DataHeatBalance::QS;
-		using DataHeatBalance::ZoneIntGain;
 		using DataSurfaces::WinTransSolar;
 
 		// Locals
@@ -1555,7 +1553,7 @@ namespace DaylightingDevices {
 
 	//     NOTICE
 
-	//     Copyright © 1996-2014 The Board of Trustees of the University of Illinois
+	//     Copyright (c) 1996-2015 The Board of Trustees of the University of Illinois
 	//     and The Regents of the University of California through Ernest Orlando Lawrence
 	//     Berkeley National Laboratory.  All rights reserved.
 

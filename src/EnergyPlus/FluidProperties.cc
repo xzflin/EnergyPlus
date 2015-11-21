@@ -208,7 +208,6 @@ namespace FluidProperties {
 		// na
 
 		// SUBROUTINE PARAMETER DEFINITIONS:
-		Real64 const TempToler( 0.1 ); // Some reasonable value for comparisons
 		Real64 const PressToler( 1.0 ); // Some reasonable value for comparisons
 		int const DefaultNumGlyTemps( 33 ); // Temperature dimension of default glycol data
 		int const DefaultNumGlyConcs( 10 ); // Concentration dimension of default glycol data
@@ -247,7 +246,6 @@ namespace FluidProperties {
 		int NumOfConcPts;
 		static bool ErrorsFound( false );
 		int Index;
-		int i;
 		int NumOfGlyConcs;
 		bool GlycolFound;
 		int NumOfOptionalInput;
@@ -477,7 +475,7 @@ namespace FluidProperties {
 
 			ErrorInName = false;
 			IsBlank = false;
-			VerifyName( Alphas( 1 ), FluidNames.Name(), FluidNum, ErrorInName, IsBlank, CurrentModuleObject + " Name" );
+			VerifyName( Alphas( 1 ), FluidNames, FluidNum, ErrorInName, IsBlank, CurrentModuleObject + " Name" );
 			if ( ErrorInName ) {
 				ShowContinueError( "...Fluid names must be unique regardless of subtype." );
 				ErrorsFound = true;
@@ -1702,7 +1700,7 @@ namespace FluidProperties {
 			// Check to see if glycol name is one of the defaults or is listed in the Fluid Name list
 			ErrorInName = false;
 			IsBlank = false;
-			VerifyName( Alphas( 1 ), GlycolData.Name(), NumOfGlyConcs, ErrorInName, IsBlank, CurrentModuleObject + " Name" );
+			VerifyName( Alphas( 1 ), GlycolData, NumOfGlyConcs, ErrorInName, IsBlank, CurrentModuleObject + " Name" );
 			if ( ErrorInName ) {
 				ShowContinueError( "...Fluid names must be unique regardless of subtype." );
 				ErrorsFound = true;
@@ -3435,8 +3433,6 @@ namespace FluidProperties {
 		Real64 TempInterpRatio; // ratio to interpolate in temperature domain
 		// error counters and dummy string
 		bool ErrorFlag; // error flag for current call
-		static int TempRangeErrCount( 0 ); // cumulative error counter
-		static int TempRangeErrIndex( 0 );
 
 		// FLOW:
 		if ( GetInput ) {
@@ -3550,8 +3546,6 @@ namespace FluidProperties {
 		Real64 PresInterpRatio; // ratio to interpolate in temperature domain
 		// error counters and dummy string
 		bool ErrorFlag; // error flag for current call
-		static int PresRangeErrCount( 0 ); // cumulative error counter
-		static int PresRangeErrIndex( 0 );
 
 		// FLOW:
 		if ( GetInput ) {
@@ -3755,8 +3749,6 @@ namespace FluidProperties {
 		bool ErrorFlag; // error flag for current call
 
 		// error counters and dummy string
-		static int TempRangeErrCount( 0 ); // cumulative error counter
-		static int TempRangeErrIndex( 0 ); // cumulative error counter
 
 		// FLOW:
 		if ( GetInput ) {
@@ -4008,12 +4000,7 @@ namespace FluidProperties {
 		int ErrCount; // error counter for current call
 		int CurTempRangeErrCount; // error counter for current call
 		int CurPresRangeErrCount; // error counter for current call
-		static int TempRangeErrCount( 0 );
-		static int TempRangeErrIndex( 0 );
-		static int PresRangeErrCount( 0 );
-		static int PresRangeErrIndex( 0 );
 		static int SatErrCount( 0 );
-		static int SatErrIndex( 0 );
 
 		// see if data is there
 		if ( GetInput ) {
@@ -4124,14 +4111,14 @@ namespace FluidProperties {
 				RefrigErrorTracking( RefrigNum ).SatSupEnthalpyErrCount += SatErrCount;
 				// send warning
 				if ( RefrigErrorTracking( RefrigNum ).SatTempDensityErrCount <= RefrigerantErrorLimitTest ) {
-					ShowSevereMessage( RoutineName + "Refrigerant [" + RefrigErrorTracking( RefrigNum ).Name + "] is saturated at the given conditions, saturated enthalpy at given temperature returned. **" );
+					ShowWarningMessage( RoutineName + "Refrigerant [" + RefrigErrorTracking( RefrigNum ).Name + "] is saturated at the given conditions, saturated enthalpy at given temperature returned. **" );
 					ShowContinueError( "...Called From:" + CalledFrom );
 					ShowContinueError( "Refrigerant temperature = " + RoundSigDigits( Temperature, 2 ) );
 					ShowContinueError( "Refrigerant pressure = " + RoundSigDigits( Pressure, 0 ) );
 					ShowContinueError( "Returned Enthalpy value = " + RoundSigDigits( ReturnValue, 3 ) );
 					ShowContinueErrorTimeStamp( "" );
 				}
-				ShowRecurringSevereErrorAtEnd( RoutineName + "Refrigerant [" + RefrigErrorTracking( RefrigNum ).Name + "] saturated at the given conditions **", RefrigErrorTracking( RefrigNum ).SatSupEnthalpyErrIndex, Temperature, Temperature, _, "{C}", "{C}" );
+				ShowRecurringWarningErrorAtEnd( RoutineName + "Refrigerant [" + RefrigErrorTracking( RefrigNum ).Name + "] saturated at the given conditions **", RefrigErrorTracking( RefrigNum ).SatSupEnthalpyErrIndex, Temperature, Temperature, _, "{C}", "{C}" );
 			}
 			return ReturnValue;
 		}
@@ -4214,7 +4201,6 @@ namespace FluidProperties {
 		// FUNCTION ARGUMENT DEFINITIONS:
 
 		// FUNCTION PARAMETERS:
-		Real64 const EnthalpyDiff( 0.01 ); // Allows a 1% difference in the enthalpy input and
 		// the enthalpy calculated from the pressure found
 		static std::string const RoutineName( "GetSupHeatPressureRefrig: " );
 		static std::string const RoutineNameNoSpace( "GetSupHeatPressureRefrig:" );
@@ -4254,12 +4240,6 @@ namespace FluidProperties {
 		int HiEnthalpyIndex; // Index value of higher enthalpy from data
 
 		// error counters and dummy string
-		static int TempRangeErrCount( 0 );
-		static int EnthalpyRangeErrCount( 0 );
-		static int SatErrCount( 0 );
-		static int TempRangeErrIndex( 0 );
-		static int EnthalpyRangeErrIndex( 0 );
-		static int SatErrIndex( 0 );
 		int ErrCount; // error counter for current call
 		int CurTempRangeErrCount; // error counter for current call
 		int CurEnthalpyRangeErrCount; // error counter for current call
@@ -4524,12 +4504,7 @@ namespace FluidProperties {
 		int RefrigNum; // index for refrigerant under consideration
 		int TempIndex; // low index value of Temperature from table
 		// error counters and dummy string
-		static int TempRangeErrCount( 0 );
-		static int PresRangeErrCount( 0 );
 		static int SatErrCount( 0 );
-		static int TempRangeErrIndex( 0 );
-		static int PresRangeErrIndex( 0 );
-		static int SatErrIndex( 0 );
 		int ErrCount; // error counter for current call
 		int CurTempRangeErrCount; // error counter for current call
 		int CurPresRangeErrCount; // error counter for current call
@@ -4648,7 +4623,7 @@ namespace FluidProperties {
 			RefrigErrorTracking( RefrigNum ).SatSupDensityErrCount += SatErrCount;
 			// send warning
 			if ( RefrigErrorTracking( RefrigNum ).SatSupDensityErrCount <= RefrigerantErrorLimitTest ) {
-				ShowSevereMessage( RoutineName + ": Refrigerant [" + RefrigErrorTracking( RefrigNum ).Name + "] is saturated at the given conditions, saturated density at given temperature returned. **" );
+				ShowWarningMessage( RoutineName + ": Refrigerant [" + RefrigErrorTracking( RefrigNum ).Name + "] is saturated at the given conditions, saturated density at given temperature returned. **" );
 				ShowContinueError( "...Called From:" + CalledFrom );
 				ShowContinueError( "Refrigerant temperature = " + RoundSigDigits( Temperature, 2 ) );
 				ShowContinueError( "Refrigerant pressure = " + RoundSigDigits( Pressure, 0 ) );
@@ -4656,7 +4631,7 @@ namespace FluidProperties {
 				ShowContinueErrorTimeStamp( "" );
 			}
 			if ( SatErrCount > 0 ) {
-				ShowRecurringSevereErrorAtEnd( RoutineName + ": Refrigerant [" + RefrigErrorTracking( RefrigNum ).Name + "] saturated at the given conditions **", RefrigErrorTracking( RefrigNum ).SatSupEnthalpyErrIndex, Temperature, Temperature, _, "{C}", "{C}" );
+				ShowRecurringWarningErrorAtEnd( RoutineName + ": Refrigerant [" + RefrigErrorTracking( RefrigNum ).Name + "] saturated at the given conditions **", RefrigErrorTracking( RefrigNum ).SatSupEnthalpyErrIndex, Temperature, Temperature, _, "{C}", "{C}" );
 			}
 			return saturated_density;
 		}
@@ -4743,8 +4718,6 @@ namespace FluidProperties {
 		// FUNCTION LOCAL VARIABLE DECLARATIONS:
 		static int HighTempLimitErr( 0 );
 		static int LowTempLimitErr( 0 );
-		static int HighTempLimitIndex( 0 );
-		static int LowTempLimitIndex( 0 );
 
 		// Get the input if we haven't already
 		if ( GetInput ) {
@@ -4870,9 +4843,7 @@ namespace FluidProperties {
 		// FUNCTION LOCAL VARIABLE DECLARATIONS:
 		int Loop; // DO loop counter
 		static int HighTempLimitErr( 0 );
-		static int HighTempLimitIndex( 0 );
 		static int LowTempLimitErr( 0 );
-		static int LowTempLimitIndex( 0 );
 		int GlycolNum;
 		bool LowErrorThisTime;
 		bool HighErrorThisTime;
@@ -5014,8 +4985,6 @@ namespace FluidProperties {
 		int Loop; // DO loop counter
 		static int HighTempLimitErr( 0 );
 		static int LowTempLimitErr( 0 );
-		static int HighTempLimitIndex( 0 );
-		static int LowTempLimitIndex( 0 );
 		int GlycolNum;
 		bool LowErrorThisTime;
 		bool HighErrorThisTime;
@@ -5156,9 +5125,7 @@ namespace FluidProperties {
 		// FUNCTION LOCAL VARIABLE DECLARATIONS:
 		int Loop; // DO loop counter
 		static int HighTempLimitErr( 0 );
-		static int HighTempLimitIndex( 0 );
 		static int LowTempLimitErr( 0 );
-		static int LowTempLimitIndex( 0 );
 		int GlycolNum;
 		bool LowErrorThisTime;
 		bool HighErrorThisTime;
@@ -5430,7 +5397,7 @@ namespace FluidProperties {
 		}
 
 		// Check to see if this glycol shows up in the glycol data
-		Found = FindItemInList( MakeUPPERCase( Refrigerant ), RefrigData.Name(), NumOfRefrigerants );
+		Found = FindItemInList( MakeUPPERCase( Refrigerant ), RefrigData );
 
 		if ( Found > 0 ) {
 			FindRefrigerant = Found;
@@ -5498,7 +5465,7 @@ namespace FluidProperties {
 		}
 
 		// Check to see if this glycol shows up in the glycol data
-		Found = FindItemInList( MakeUPPERCase( Glycol ), GlycolData.Name(), NumOfGlycols );
+		Found = FindItemInList( MakeUPPERCase( Glycol ), GlycolData, NumOfGlycols ); // GlycolData is allocated to NumOfGlyConcs
 
 		if ( Found > 0 ) {
 			FindGlycol = Found;
@@ -5770,12 +5737,12 @@ namespace FluidProperties {
 			++TempRangeErrCount;
 			// send warning
 			if ( TempRangeErrCount <= RefrigerantErrorLimitTest ) {
-				ShowSevereError( "GetInterpolatedSatProp: Saturation temperature for interpolation is out of range of data supplied: **" );
+				ShowWarningError( "GetInterpolatedSatProp: Saturation temperature for interpolation is out of range of data supplied: **" );
 				ShowContinueErrorTimeStamp( " Called from:" + CalledFrom );
 				ShowContinueError( "Refrigerant temperature = " + RoundSigDigits( Temperature, 2 ) );
 				ShowContinueError( "Returned saturated property value = " + RoundSigDigits( ReturnValue, 3 ) );
 			} else {
-				ShowRecurringSevereErrorAtEnd( "GetInterpolatedSatProp: Refrigerant temperature for interpolation out of range error", TempRangeErrIndex, Temperature, Temperature, _, "{C}", "{C}" );
+				ShowRecurringWarningErrorAtEnd( "GetInterpolatedSatProp: Refrigerant temperature for interpolation out of range error", TempRangeErrIndex, Temperature, Temperature, _, "{C}", "{C}" );
 			}
 		}
 
@@ -5833,11 +5800,11 @@ namespace FluidProperties {
 		// Item must be either in Refrigerant or Glycol list
 		Found = 0;
 		if ( NumOfRefrigerants > 0 ) {
-			Found = FindItemInList( NameToCheck, RefrigData.Name(), NumOfRefrigerants );
+			Found = FindItemInList( NameToCheck, RefrigData );
 		}
 		if ( Found == 0 ) {
 			if ( NumOfGlycols > 0 ) {
-				Found = FindItemInList( NameToCheck, GlycolData.Name(), NumOfGlycols );
+				Found = FindItemInList( NameToCheck, GlycolData, NumOfGlycols ); // GlycolData is allocated to NumOfGlyConcs
 			}
 		}
 
@@ -6166,7 +6133,7 @@ namespace FluidProperties {
 
 	//     NOTICE
 
-	//     Copyright © 1996-2014 The Board of Trustees of the University of Illinois
+	//     Copyright (c) 1996-2015 The Board of Trustees of the University of Illinois
 	//     and The Regents of the University of California through Ernest Orlando Lawrence
 	//     Berkeley National Laboratory.  All rights reserved.
 

@@ -48,18 +48,55 @@ namespace PlantUtilities {
 	// Using/Aliasing
 	using namespace DataPrecisionGlobals;
 
-	// MODULE PARAMETER DEFINITIONS:
-	// na
+	namespace { 
+		struct CriteriaData
+		{
+			// Members
+			int CallingCompLoopNum; // for debug error handling
+			int CallingCompLoopSideNum; // for debug error handling
+			int CallingCompBranchNum; // for debug error handling
+			int CallingCompCompNum; // for debug error handling
+			Real64 ThisCriteriaCheckValue; // the previous value, to check the current against
 
-	// DERIVED TYPE DEFINITIONS:
-	// na
+			// Default Constructor
+			CriteriaData() :
+				CallingCompLoopNum( 0 ),
+				CallingCompLoopSideNum( 0 ),
+				CallingCompBranchNum( 0 ),
+				CallingCompCompNum( 0 ),
+				ThisCriteriaCheckValue( 0.0 )
+			{}
 
+			// Member Constructor
+			CriteriaData(
+				int const CallingCompLoopNum, // for debug error handling
+				int const CallingCompLoopSideNum, // for debug error handling
+				int const CallingCompBranchNum, // for debug error handling
+				int const CallingCompCompNum, // for debug error handling
+				Real64 const ThisCriteriaCheckValue // the previous value, to check the current against
+			) :
+				CallingCompLoopNum( CallingCompLoopNum ),
+				CallingCompLoopSideNum( CallingCompLoopSideNum ),
+				CallingCompBranchNum( CallingCompBranchNum ),
+				CallingCompCompNum( CallingCompCompNum ),
+				ThisCriteriaCheckValue( ThisCriteriaCheckValue )
+			{}
+
+		};
+
+		// Object Data
+		Array1D< CriteriaData > CriteriaChecks; // stores criteria information
+	}
 	// MODULE VARIABLE DECLARATIONS:
 	// na
 
 	// SUBROUTINE SPECIFICATIONS FOR MODULE <module_name>:
 
 	// Functions
+	void
+	clear_state(){
+		CriteriaChecks.deallocate();
+	}
 
 	void
 	InitComponentNodes(
@@ -67,10 +104,10 @@ namespace PlantUtilities {
 		Real64 const MaxCompMdot,
 		int const InletNode, // component's inlet node index in node structure
 		int const OutletNode, // component's outlet node index in node structure
-		int const LoopNum, // plant loop index for PlantLoop structure
-		int const LoopSideNum, // Loop side index for PlantLoop structure
-		int const BranchIndex, // branch index for PlantLoop
-		int const CompIndex // component index for PlantLoop
+		int const EP_UNUSED( LoopNum ), // plant loop index for PlantLoop structure
+		int const EP_UNUSED( LoopSideNum ), // Loop side index for PlantLoop structure
+		int const EP_UNUSED( BranchIndex ), // branch index for PlantLoop
+		int const EP_UNUSED( CompIndex ) // component index for PlantLoop
 	)
 	{
 
@@ -94,7 +131,6 @@ namespace PlantUtilities {
 		// Using/Aliasing
 		using DataLoopNode::Node;
 		using DataLoopNode::NodeID;
-		using DataPlant::PlantLoop;
 		using DataPlant::DemandOpSchemeType;
 
 		// Locals
@@ -623,8 +659,6 @@ namespace PlantUtilities {
 		// Using/Aliasing
 		using DataLoopNode::Node;
 		using DataPlant::PlantLoop;
-		using DataPlant::SupplySide;
-		using DataPlant::DemandSide;
 
 		// Locals
 		// SUBROUTINE ARGUMENT DEFINITIONS:
@@ -1370,43 +1404,7 @@ namespace PlantUtilities {
 
 		// SUBROUTINE LOCAL VARIABLE DECLARATIONS:
 
-		struct CriteriaData
-		{
-			// Members
-			int CallingCompLoopNum; // for debug error handling
-			int CallingCompLoopSideNum; // for debug error handling
-			int CallingCompBranchNum; // for debug error handling
-			int CallingCompCompNum; // for debug error handling
-			Real64 ThisCriteriaCheckValue; // the previous value, to check the current against
 
-			// Default Constructor
-			CriteriaData() :
-				CallingCompLoopNum( 0 ),
-				CallingCompLoopSideNum( 0 ),
-				CallingCompBranchNum( 0 ),
-				CallingCompCompNum( 0 ),
-				ThisCriteriaCheckValue( 0.0 )
-			{}
-
-			// Member Constructor
-			CriteriaData(
-				int const CallingCompLoopNum, // for debug error handling
-				int const CallingCompLoopSideNum, // for debug error handling
-				int const CallingCompBranchNum, // for debug error handling
-				int const CallingCompCompNum, // for debug error handling
-				Real64 const ThisCriteriaCheckValue // the previous value, to check the current against
-			) :
-				CallingCompLoopNum( CallingCompLoopNum ),
-				CallingCompLoopSideNum( CallingCompLoopSideNum ),
-				CallingCompBranchNum( CallingCompBranchNum ),
-				CallingCompCompNum( CallingCompCompNum ),
-				ThisCriteriaCheckValue( ThisCriteriaCheckValue )
-			{}
-
-		};
-
-		// Object Data
-		static Array1D< CriteriaData > CriteriaChecks; // stores criteria information
 		CriteriaData CurCriteria; // for convenience
 
 		if ( UniqueCriteriaCheckIndex <= 0 ) { // If we don't yet have an index, we need to initialize
@@ -1474,7 +1472,7 @@ namespace PlantUtilities {
 	UpdateChillerComponentCondenserSide(
 		int const LoopNum, // component's loop index
 		int const LoopSide, // component's loop side number
-		int const TypeOfNum, // Component's type index
+		int const EP_UNUSED( TypeOfNum ), // Component's type index
 		int const InletNodeNum, // Component's inlet node pointer
 		int const OutletNodeNum, // Component's outlet node pointer
 		Real64 const ModelCondenserHeatRate, // model's heat rejection rate at condenser (W)
@@ -1581,7 +1579,7 @@ namespace PlantUtilities {
 	UpdateComponentHeatRecoverySide(
 		int const LoopNum, // component's loop index
 		int const LoopSide, // component's loop side number
-		int const TypeOfNum, // Component's type index
+		int const EP_UNUSED( TypeOfNum ), // Component's type index
 		int const InletNodeNum, // Component's inlet node pointer
 		int const OutletNodeNum, // Component's outlet node pointer
 		Real64 const ModelRecoveryHeatRate, // model's heat rejection rate at recovery (W)
@@ -1688,9 +1686,9 @@ namespace PlantUtilities {
 	UpdateAbsorberChillerComponentGeneratorSide(
 		int const LoopNum, // component's loop index
 		int const LoopSide, // component's loop side number
-		int const TypeOfNum, // Component's type index
+		int const EP_UNUSED( TypeOfNum ), // Component's type index
 		int const InletNodeNum, // Component's inlet node pointer
-		int const OutletNodeNum, // Component's outlet node pointer
+		int const EP_UNUSED( OutletNodeNum ), // Component's outlet node pointer
 		int const HeatSourceType, // Type of fluid in Generator loop
 		Real64 const ModelGeneratorHeatRate, // model's generator heat rate (W)
 		Real64 const ModelMassFlowRate, // model's generator mass flow rate (kg/s)
@@ -2087,7 +2085,7 @@ namespace PlantUtilities {
 		int const InletNodeNum,
 		int const OutletNodeNum,
 		Optional_int_const LoopNum,
-		Optional< Real64 const > OutletTemp // set on outlet node if present and water.
+		Optional< Real64 const > EP_UNUSED( OutletTemp ) // set on outlet node if present and water.
 	)
 	{
 
@@ -2491,7 +2489,7 @@ namespace PlantUtilities {
 
 	//     NOTICE
 
-	//     Copyright © 1996-2014 The Board of Trustees of the University of Illinois
+	//     Copyright (c) 1996-2015 The Board of Trustees of the University of Illinois
 	//     and The Regents of the University of California through Ernest Orlando Lawrence
 	//     Berkeley National Laboratory.  All rights reserved.
 

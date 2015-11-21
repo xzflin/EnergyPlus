@@ -1,5 +1,6 @@
 // C++ Headers
 #include <cmath>
+#include <memory>
 
 // ObjexxFCL Headers
 #include <ObjexxFCL/Array.functions.hh>
@@ -21,6 +22,7 @@
 #include <DataPrecisionGlobals.hh>
 #include <FluidProperties.hh>
 #include <General.hh>
+#include <GroundTemperatureModeling/GroundTemperatureModelManager.hh>
 #include <HeatBalanceInternalHeatGains.hh>
 #include <InputProcessor.hh>
 #include <NodeInputManager.hh>
@@ -63,6 +65,7 @@ namespace PipeHeatTransfer {
 
 	// Using/Aliasing
 	using namespace DataPrecisionGlobals;
+	using namespace GroundTemperatureManager;
 	using DataPlant::TypeOf_PipeExterior;
 	using DataPlant::TypeOf_PipeInterior;
 	using DataPlant::TypeOf_PipeUnderground;
@@ -144,7 +147,6 @@ namespace PipeHeatTransfer {
 		// Using/Aliasing
 		using InputProcessor::FindItemInList;
 		using General::TrimSigDigits;
-		using DataLoopNode::Node;
 
 		// Locals
 		// SUBROUTINE ARGUMENT DEFINITIONS:
@@ -168,7 +170,7 @@ namespace PipeHeatTransfer {
 		}
 
 		if ( EqNum == 0 ) {
-			PipeHTNum = FindItemInList( EquipName, PipeHT.Name(), NumOfPipeHT );
+			PipeHTNum = FindItemInList( EquipName, PipeHT );
 			if ( PipeHTNum == 0 ) {
 				ShowFatalError( "SimPipeHeatTransfer: Pipe:heat transfer requested not found=" + EquipName ); // Catch any bad names before crashing
 			}
@@ -255,14 +257,11 @@ namespace PipeHeatTransfer {
 		// REFERENCES:
 
 		// Using/Aliasing
-		using DataGlobals::NumOfZones;
 		using DataGlobals::SecInHour;
 		using DataGlobals::Pi;
 		using DataHeatBalance::Construct;
-		using DataHeatBalance::TotConstructs;
 		using DataHeatBalance::Zone;
 		using DataHeatBalance::Material;
-		using DataHeatBalance::TotMaterials;
 		using DataHeatBalance::IntGainTypeOf_PipeIndoor;
 		using InputProcessor::GetNumObjectsFound;
 		using InputProcessor::GetObjectItem;
@@ -304,7 +303,6 @@ namespace PipeHeatTransfer {
 		int PipeItem;
 		int NumAlphas; // Number of Alphas for each GetObjectItem call
 		int NumNumbers; // Number of Numbers for each GetObjectItem call
-		int NumFluids; // number of fluids in sim.
 		int NumOfPipeHTInt; // Number of Pipe Heat Transfer objects
 		int NumOfPipeHTExt; // Number of Pipe Heat Transfer objects
 		int NumOfPipeHTUG; // Number of Pipe Heat Transfer objects
@@ -338,7 +336,7 @@ namespace PipeHeatTransfer {
 
 			IsNotOK = false;
 			IsBlank = false;
-			VerifyName( cAlphaArgs( 1 ), PipeHT.Name(), Item - 1, IsNotOK, IsBlank, cCurrentModuleObject + " Name" );
+			VerifyName( cAlphaArgs( 1 ), PipeHT, Item - 1, IsNotOK, IsBlank, cCurrentModuleObject + " Name" );
 			if ( IsNotOK ) {
 				ErrorsFound = true;
 				if ( IsBlank ) cAlphaArgs( 1 ) = "xxxxx";
@@ -348,7 +346,7 @@ namespace PipeHeatTransfer {
 
 			// General user input data
 			PipeHT( Item ).Construction = cAlphaArgs( 2 );
-			PipeHT( Item ).ConstructionNum = FindItemInList( cAlphaArgs( 2 ), Construct.Name(), TotConstructs );
+			PipeHT( Item ).ConstructionNum = FindItemInList( cAlphaArgs( 2 ), Construct );
 
 			if ( PipeHT( Item ).ConstructionNum == 0 ) {
 				ShowSevereError( "Invalid " + cAlphaFieldNames( 2 ) + '=' + cAlphaArgs( 2 ) );
@@ -388,7 +386,7 @@ namespace PipeHeatTransfer {
 			if ( SELECT_CASE_var == "ZONE" ) {
 				PipeHT( Item ).EnvironmentPtr = ZoneEnv;
 				PipeHT( Item ).EnvrZone = cAlphaArgs( 6 );
-				PipeHT( Item ).EnvrZonePtr = FindItemInList( cAlphaArgs( 6 ), Zone.Name(), NumOfZones );
+				PipeHT( Item ).EnvrZonePtr = FindItemInList( cAlphaArgs( 6 ), Zone );
 				if ( PipeHT( Item ).EnvrZonePtr == 0 ) {
 					ShowSevereError( "Invalid " + cAlphaFieldNames( 6 ) + '=' + cAlphaArgs( 6 ) );
 					ShowContinueError( "Entered in " + cCurrentModuleObject + '=' + cAlphaArgs( 1 ) );
@@ -452,7 +450,7 @@ namespace PipeHeatTransfer {
 
 			IsNotOK = false;
 			IsBlank = false;
-			VerifyName( cAlphaArgs( 1 ), PipeHT.Name(), Item - 1, IsNotOK, IsBlank, cCurrentModuleObject + " Name" );
+			VerifyName( cAlphaArgs( 1 ), PipeHT, Item - 1, IsNotOK, IsBlank, cCurrentModuleObject + " Name" );
 			if ( IsNotOK ) {
 				ErrorsFound = true;
 				if ( IsBlank ) cAlphaArgs( 1 ) = "xxxxx";
@@ -462,7 +460,7 @@ namespace PipeHeatTransfer {
 
 			// General user input data
 			PipeHT( Item ).Construction = cAlphaArgs( 2 );
-			PipeHT( Item ).ConstructionNum = FindItemInList( cAlphaArgs( 2 ), Construct.Name(), TotConstructs );
+			PipeHT( Item ).ConstructionNum = FindItemInList( cAlphaArgs( 2 ), Construct );
 
 			if ( PipeHT( Item ).ConstructionNum == 0 ) {
 				ShowSevereError( "Invalid " + cAlphaFieldNames( 2 ) + '=' + cAlphaArgs( 2 ) );
@@ -545,7 +543,7 @@ namespace PipeHeatTransfer {
 
 			IsNotOK = false;
 			IsBlank = false;
-			VerifyName( cAlphaArgs( 1 ), PipeHT.Name(), Item - 1, IsNotOK, IsBlank, cCurrentModuleObject + " Name" );
+			VerifyName( cAlphaArgs( 1 ), PipeHT, Item - 1, IsNotOK, IsBlank, cCurrentModuleObject + " Name" );
 			if ( IsNotOK ) {
 				ErrorsFound = true;
 				if ( IsBlank ) cAlphaArgs( 1 ) = "xxxxx";
@@ -555,7 +553,7 @@ namespace PipeHeatTransfer {
 
 			// General user input data
 			PipeHT( Item ).Construction = cAlphaArgs( 2 );
-			PipeHT( Item ).ConstructionNum = FindItemInList( cAlphaArgs( 2 ), Construct.Name(), TotConstructs );
+			PipeHT( Item ).ConstructionNum = FindItemInList( cAlphaArgs( 2 ), Construct );
 
 			if ( PipeHT( Item ).ConstructionNum == 0 ) {
 				ShowSevereError( "Invalid " + cAlphaFieldNames( 2 ) + '=' + cAlphaArgs( 2 ) );
@@ -620,7 +618,7 @@ namespace PipeHeatTransfer {
 			// Also get the soil material name
 			// A7,  \field Soil Material
 			PipeHT( Item ).SoilMaterial = cAlphaArgs( 6 );
-			PipeHT( Item ).SoilMaterialNum = FindItemInList( cAlphaArgs( 6 ), Material.Name(), TotMaterials );
+			PipeHT( Item ).SoilMaterialNum = FindItemInList( cAlphaArgs( 6 ), Material );
 			if ( PipeHT( Item ).SoilMaterialNum == 0 ) {
 				ShowSevereError( "Invalid " + cAlphaFieldNames( 6 ) + '=' + PipeHT( Item ).SoilMaterial );
 				ShowContinueError( "Found in " + cCurrentModuleObject + '=' + PipeHT( Item ).Name );
@@ -646,51 +644,12 @@ namespace PipeHeatTransfer {
 				PipeHT( Item ).dSregular = PipeHT( Item ).DomainDepth / ( PipeHT( Item ).NumDepthNodes - 1 );
 			}
 
-			// Now we need to see if average annual temperature data is brought in here
-			if ( NumNumbers >= 3 ) {
-				PipeHT( Item ).AvgAnnualManualInput = 1;
-
-				//If so, we need to read in the data
-				// N3,  \field Average soil surface temperature
-				PipeHT( Item ).AvgGroundTemp = rNumericArgs( 3 );
-				//IF (PipeHT(Item)%AvgGroundTemp == 0) THEN
-				//  CALL ShowSevereError('GetPipesHeatTransfer: Invalid Average Ground Temp for PIPE:UNDERGROUND=' &
-				//                        //TRIM(PipeHT(Item)%Name))
-				//  CALL ShowContinueError('If any one annual ground temperature item is entered, all 3 items must be entered')
-				//  ErrorsFound=.TRUE.
-				//ENDIF
-
-				// N4,  \field Amplitude of soil surface temperature
-				if ( NumNumbers >= 4 ) {
-					PipeHT( Item ).AvgGndTempAmp = rNumericArgs( 4 );
-					if ( PipeHT( Item ).AvgGndTempAmp < 0.0 ) {
-						ShowSevereError( "Invalid " + cNumericFieldNames( 4 ) + '=' + RoundSigDigits( PipeHT( Item ).AvgGndTempAmp, 2 ) );
-						ShowContinueError( "Found in " + cCurrentModuleObject + '=' + PipeHT( Item ).Name );
-						ErrorsFound = true;
-					}
-				}
-
-				// N5;  \field Phase constant of soil surface temperature
-				if ( NumNumbers >= 5 ) {
-					PipeHT( Item ).PhaseShiftDays = rNumericArgs( 5 );
-					if ( PipeHT( Item ).PhaseShiftDays < 0 ) {
-						ShowSevereError( "Invalid " + cNumericFieldNames( 5 ) + '=' + RoundSigDigits( PipeHT( Item ).PhaseShiftDays ) );
-						ShowContinueError( "Found in " + cCurrentModuleObject + '=' + PipeHT( Item ).Name );
-						ErrorsFound = true;
-					}
-				}
-
-				if ( NumNumbers >= 3 && NumNumbers < 5 ) {
-					ShowSevereError( cCurrentModuleObject + '=' + PipeHT( Item ).Name );
-					ShowContinueError( "If any one annual ground temperature item is entered, all 3 items must be entered" );
-					ErrorsFound = true;
-				}
-
-			}
-
 			if ( PipeHT( Item ).ConstructionNum != 0 ) {
 				ValidatePipeConstruction( cCurrentModuleObject, cAlphaArgs( 2 ), cAlphaFieldNames( 2 ), PipeHT( Item ).ConstructionNum, Item, ErrorsFound );
 			}
+
+			// Get ground temperature model
+			PipeHT( Item ).groundTempModel = GetGroundTempModelAndInit( cAlphaArgs( 7 ), cAlphaArgs( 8 ) );
 
 			// Select number of pipe sections.  Hanby's optimal number of 20 section is selected.
 			NumSections = NumPipeSections;
@@ -861,7 +820,7 @@ namespace PipeHeatTransfer {
 
 	void
 	InitPipesHeatTransfer(
-		int const PipeType,
+		int const EP_UNUSED( PipeType ),
 		int const PipeHTNum, // component number
 		bool const FirstHVACIteration // component number
 	)
@@ -894,17 +853,10 @@ namespace PipeHeatTransfer {
 		using DataGlobals::TimeStep;
 		using DataGlobals::TimeStepZone;
 		using DataGlobals::SecInHour;
-		using DataGlobals::BeginTimeStepFlag;
 		using DataHVACGlobals::SysTimeElapsed;
 		using DataHVACGlobals::TimeStepSys;
-		using DataHVACGlobals::ShortenTimeStepSys;
 		using DataEnvironment::OutDryBulbTemp;
-		using DataEnvironment::GroundTemp;
-		using DataEnvironment::PubGroundTempSurface;
-		using DataEnvironment::PubGroundTempSurfFlag;
 		using DataLoopNode::Node;
-		using DataHeatBalance::TotConstructs;
-		using DataHeatBalance::TotMaterials;
 		using DataHeatBalance::Construct;
 		using DataHeatBalance::Material;
 		using DataHeatBalFanSys::MAT; // average (mean) zone air temperature [C]
@@ -913,21 +865,12 @@ namespace PipeHeatTransfer {
 		using FluidProperties::GetSpecificHeatGlycol;
 		using FluidProperties::GetDensityGlycol;
 		using DataPlant::PlantLoop;
-		using DataPlant::DemandSide;
 		using DataPlant::ScanPlantLoopsForObject;
 
 		// Locals
 		// SUBROUTINE ARGUMENT DEFINITIONS:
 
 		// SUBROUTINE PARAMETER DEFINITIONS:
-		int const NumPipeSections( 20 ); // Number of length nodes in Hanby model
-		int const NumberOfDepthNodes( 8 ); // Number of nodes in the cartesian grid
-		int const MonthsInYear( 12 ); // Number of months in the year
-		int const AvgDaysInMonth( 30 ); // Average days in a month
-		int const DemandLoopSide( 1 ); // Demand Loop side indicator
-		Real64 const LargeNumber( 9999.9 ); // Large number (compared to temperature values)
-		Real64 const SecondsInHour( 3600.0 ); // Number of seconds in hour
-		Real64 const HoursInDay( 24.0 ); // Number of hours in day
 		static std::string const RoutineName( "InitPipesHeatTransfer" );
 
 		// INTERFACE BLOCK SPECIFICATIONS
@@ -941,7 +884,6 @@ namespace PipeHeatTransfer {
 		static bool OneTimeInit( true ); // one time flag
 		Real64 FirstTemperatures; // initial temperature of every node in pipe (set to inlet temp) [C]
 		int PipeNum; // number of pipes
-		int MonthIndex;
 		int TimeIndex;
 		int LengthIndex;
 		int DepthIndex;
@@ -949,10 +891,6 @@ namespace PipeHeatTransfer {
 		Real64 CurrentDepth;
 		Real64 CurTemp;
 		Real64 CurSimDay;
-		int PlantLoopCtr;
-		int LoopSideCtr;
-		int BranchCtr;
-		int CompCtr;
 		bool PushArrays;
 		bool errFlag;
 
@@ -989,45 +927,6 @@ namespace PipeHeatTransfer {
 				//  END IF
 
 				if ( errFlag ) continue;
-
-				//If there are any underground buried pipes, we must bring in data
-				if ( PipeHT( PipeNum ).EnvironmentPtr == GroundEnv ) {
-
-					//If ground temp data was not brought in manually in GETINPUT,
-					// then we must get it from the surface ground temperatures
-					if ( PipeHT( PipeNum ).AvgAnnualManualInput == 0 ) {
-
-						if ( ! PubGroundTempSurfFlag ) {
-							ShowFatalError( "No Site:GroundTemperature:Shallow object found.  This is required for a Pipe:Underground object." );
-						}
-
-						//Calculate Average Ground Temperature for all 12 months of the year:
-						PipeHT( PipeNum ).AvgGroundTemp = 0.0;
-						for ( MonthIndex = 1; MonthIndex <= MonthsInYear; ++MonthIndex ) {
-							PipeHT( PipeNum ).AvgGroundTemp += PubGroundTempSurface( MonthIndex );
-						}
-						PipeHT( PipeNum ).AvgGroundTemp /= MonthsInYear;
-
-						//Calculate Average Amplitude from Average:
-						PipeHT( PipeNum ).AvgGndTempAmp = 0.0;
-						for ( MonthIndex = 1; MonthIndex <= MonthsInYear; ++MonthIndex ) {
-							PipeHT( PipeNum ).AvgGndTempAmp += std::abs( PubGroundTempSurface( MonthIndex ) - PipeHT( PipeNum ).AvgGroundTemp );
-						}
-						PipeHT( PipeNum ).AvgGndTempAmp /= MonthsInYear;
-
-						//Also need to get the month of minimum surface temperature to set phase shift for Kusuda and Achenbach:
-						PipeHT( PipeNum ).MonthOfMinSurfTemp = 0;
-						PipeHT( PipeNum ).MinSurfTemp = LargeNumber; //Set high so that the first months temp will be lower and actually get updated
-						for ( MonthIndex = 1; MonthIndex <= MonthsInYear; ++MonthIndex ) {
-							if ( PubGroundTempSurface( MonthIndex ) <= PipeHT( PipeNum ).MinSurfTemp ) {
-								PipeHT( PipeNum ).MonthOfMinSurfTemp = MonthIndex;
-								PipeHT( PipeNum ).MinSurfTemp = PubGroundTempSurface( MonthIndex );
-							}
-						}
-						PipeHT( PipeNum ).PhaseShiftDays = PipeHT( PipeNum ).MonthOfMinSurfTemp * AvgDaysInMonth;
-					} //End manual ground data input structure
-
-				}
 
 			}
 			if ( errFlag ) {
@@ -1210,7 +1109,7 @@ namespace PipeHeatTransfer {
 
 	void
 	InitializeHeatTransferPipes(
-		int const PipeType, // Type of Pipe
+		int const EP_UNUSED( PipeType ), // Type of Pipe
 		std::string const & PipeName, // Name of Pipe
 		int & PipeNum // Index into pipe structure for name
 	)
@@ -1256,7 +1155,7 @@ namespace PipeHeatTransfer {
 		}
 
 		if ( PipeNum == 0 ) {
-			PipeNum = FindItemInList( PipeName, PipeHT.Name(), NumOfPipeHT );
+			PipeNum = FindItemInList( PipeName, PipeHT );
 			if ( PipeNum == 0 ) {
 				ShowFatalError( "SimPipes: Pipe requested not found =" + PipeName ); // Catch any bad names before crashing
 			}
@@ -1481,7 +1380,6 @@ namespace PipeHeatTransfer {
 		using DataEnvironment::DifSolarRad;
 		using DataEnvironment::SOLCOS;
 		using DataGlobals::Pi;
-		using DataGlobals::WarmupFlag;
 		using DataGlobals::TimeStep;
 		using DataGlobals::HourOfDay;
 		using DataGlobals::KelvinConv;
@@ -1812,7 +1710,6 @@ namespace PipeHeatTransfer {
 
 		// Using/Aliasing
 		using DataGlobals::BeginEnvrnFlag;
-		using DataHeatBalance::ZoneIntGain;
 
 		// Locals
 		// SUBROUTINE LOCAL VARIABLE DECLARATIONS:
@@ -2026,7 +1923,6 @@ namespace PipeHeatTransfer {
 		Real64 AirVisc;
 		Real64 AirVel;
 		Real64 AirTemp;
-		Real64 MidTemp;
 		Real64 PipeOD;
 		bool ViscositySet;
 		bool CoefSet;
@@ -2129,18 +2025,16 @@ namespace PipeHeatTransfer {
 		// Returns a temperature to be used on the boundary of the buried pipe model domain
 
 		// METHODOLOGY EMPLOYED:
-		// Kusuda and Achenbach correlation is used
 
 		// REFERENCES: See Module Level Description
 
 		// Using/Aliasing
-		using DataGlobals::Pi;
+		using DataGlobals::SecsInDay;
 
-		// Return value
+		Real64 curSimTime = DayOfSim * SecsInDay;
 		Real64 TBND;
 
-		//Kusuda and Achenbach
-		TBND = PipeHT( PipeHTNum ).AvgGroundTemp - PipeHT( PipeHTNum ).AvgGndTempAmp * std::exp( -z * std::sqrt( Pi / ( 365.0 * PipeHT( PipeHTNum ).SoilDiffusivityPerDay ) ) ) * std::cos( ( 2.0 * Pi / 365.0 ) * ( DayOfSim - PipeHT( PipeHTNum ).PhaseShiftDays - ( z / 2.0 ) * std::sqrt( 365.0 / ( Pi * PipeHT( PipeHTNum ).SoilDiffusivityPerDay ) ) ) );
+		TBND = PipeHT( PipeHTNum ).groundTempModel->getGroundTempAtTimeInSeconds( z, curSimTime );
 
 		return TBND;
 
@@ -2152,7 +2046,7 @@ namespace PipeHeatTransfer {
 
 	//     NOTICE
 
-	//     Copyright © 1996-2014 The Board of Trustees of the University of Illinois
+	//     Copyright (c) 1996-2015 The Board of Trustees of the University of Illinois
 	//     and The Regents of the University of California through Ernest Orlando Lawrence
 	//     Berkeley National Laboratory.  All rights reserved.
 

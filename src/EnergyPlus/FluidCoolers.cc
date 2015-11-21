@@ -178,7 +178,6 @@ namespace FluidCoolers {
 
 		// Using/Aliasing
 		using InputProcessor::FindItemInList;
-		using DataPlant::PlantFirstSizesOkayToFinalize;
 
 		// Locals
 		// SUBROUTINE ARGUMENT DEFINITIONS:
@@ -204,7 +203,7 @@ namespace FluidCoolers {
 		// INITIALIZE
 		// Find the correct Equipment
 		if ( CompIndex == 0 ) {
-			FluidCoolerNum = FindItemInList( FluidCoolerName, SimpleFluidCooler.Name(), NumSimpleFluidCoolers );
+			FluidCoolerNum = FindItemInList( FluidCoolerName, SimpleFluidCooler );
 			if ( FluidCoolerNum == 0 ) {
 				ShowFatalError( "SimFluidCoolers: Unit not found = " + FluidCoolerName );
 			}
@@ -356,7 +355,7 @@ namespace FluidCoolers {
 			GetObjectItem( cCurrentModuleObject, SingleSpeedFluidCoolerNumber, AlphArray, NumAlphas, NumArray, NumNums, IOStat, lNumericFieldBlanks, lAlphaFieldBlanks, cAlphaFieldNames, cNumericFieldNames );
 			IsNotOK = false;
 			IsBlank = false;
-			VerifyName( AlphArray( 1 ), SimpleFluidCooler.Name(), FluidCoolerNum - 1, IsNotOK, IsBlank, cCurrentModuleObject + " Name" );
+			VerifyName( AlphArray( 1 ), SimpleFluidCooler, FluidCoolerNum - 1, IsNotOK, IsBlank, cCurrentModuleObject + " Name" );
 			if ( IsNotOK ) {
 				ErrorsFound = true;
 				if ( IsBlank ) AlphArray( 1 ) = "xxxxx";
@@ -468,7 +467,7 @@ namespace FluidCoolers {
 			GetObjectItem( cCurrentModuleObject, TwoSpeedFluidCoolerNumber, AlphArray, NumAlphas, NumArray, NumNums, IOStat, lNumericFieldBlanks, lAlphaFieldBlanks, cAlphaFieldNames, cNumericFieldNames );
 			IsNotOK = false;
 			IsBlank = false;
-			VerifyName( AlphArray( 1 ), SimpleFluidCooler.Name(), FluidCoolerNum - 1, IsNotOK, IsBlank, cCurrentModuleObject + " Name" );
+			VerifyName( AlphArray( 1 ), SimpleFluidCooler, FluidCoolerNum - 1, IsNotOK, IsBlank, cCurrentModuleObject + " Name" );
 			if ( IsNotOK ) {
 				ErrorsFound = true;
 				if ( IsBlank ) AlphArray( 1 ) = "xxxxx";
@@ -482,6 +481,9 @@ namespace FluidCoolers {
 			TestCompSet( cCurrentModuleObject, AlphArray( 1 ), AlphArray( 2 ), AlphArray( 3 ), "Chilled Water Nodes" );
 
 			SimpleFluidCooler( FluidCoolerNum ).HighSpeedFluidCoolerUA = NumArray( 1 );
+			if ( SimpleFluidCooler( FluidCoolerNum ).HighSpeedFluidCoolerUA == AutoSize ) {
+				SimpleFluidCooler( FluidCoolerNum ).HighSpeedFluidCoolerUAWasAutoSized = true;
+			}
 			SimpleFluidCooler( FluidCoolerNum ).LowSpeedFluidCoolerUA = NumArray( 2 );
 			if ( SimpleFluidCooler( FluidCoolerNum ).LowSpeedFluidCoolerUA == AutoSize ) {
 				SimpleFluidCooler( FluidCoolerNum ).LowSpeedFluidCoolerUAWasAutoSized = true;
@@ -562,7 +564,7 @@ namespace FluidCoolers {
 
 	bool
 	TestFluidCoolerTwoSpeedInputForDesign(
-		std::string const cCurrentModuleObject,
+		std::string const & cCurrentModuleObject,
 		Array1D<std::string> const &  AlphArray,
 		Array1D<std::string> const & cNumericFieldNames,
 		Array1D<std::string> const & cAlphaFieldNames,
@@ -772,7 +774,7 @@ namespace FluidCoolers {
 	void
 	InitFluidCooler(
 		int const FluidCoolerNum, // Number of the current fluid cooler being simulated
-		bool const RunFlag // TRUE if fluid cooler is ON
+		bool const EP_UNUSED( RunFlag ) // TRUE if fluid cooler is ON
 	)
 	{
 
@@ -794,13 +796,10 @@ namespace FluidCoolers {
 
 		// Using/Aliasing
 		using DataGlobals::BeginEnvrnFlag;
-		//  USE Psychrometrics,  ONLY: PsyTwbFnTdbWPb
-		//  USE FluidProperties, ONLY : GetDensityGlycol
 		using InputProcessor::SameString;
 		using DataPlant::TypeOf_FluidCooler_SingleSpd;
 		using DataPlant::TypeOf_FluidCooler_TwoSpd;
 		using DataPlant::ScanPlantLoopsForObject;
-		using DataPlant::PlantFirstSizeCompleted;
 		using DataPlant::PlantFirstSizesOkayToFinalize;
 		using PlantUtilities::InitComponentNodes;
 		using PlantUtilities::SetComponentFlowRate;
@@ -823,7 +822,6 @@ namespace FluidCoolers {
 		static bool MyOneTimeFlag( true );
 		static Array1D_bool MyEnvrnFlag;
 		static Array1D_bool OneTimeFlagForEachFluidCooler;
-		bool FatalError;
 		int TypeOf_Num( 0 );
 		int LoopNum;
 		int LoopSideNum;
@@ -2130,7 +2128,7 @@ namespace FluidCoolers {
 
 	//     NOTICE
 
-	//     Copyright © 1996-2014 The Board of Trustees of the University of Illinois
+	//     Copyright (c) 1996-2015 The Board of Trustees of the University of Illinois
 	//     and The Regents of the University of California through Ernest Orlando Lawrence
 	//     Berkeley National Laboratory.  All rights reserved.
 

@@ -169,7 +169,6 @@ namespace PurchasedAirManager {
 		// na
 
 		// Using/Aliasing
-		using DataGlobals::MaxNameLength;
 		using InputProcessor::FindItemInList;
 		using General::TrimSigDigits;
 
@@ -198,7 +197,7 @@ namespace PurchasedAirManager {
 
 		// Find the correct PurchasedAir Equipment
 		if ( CompIndex == 0 ) {
-			PurchAirNum = FindItemInList( PurchAirName, PurchAir.Name(), NumPurchAir );
+			PurchAirNum = FindItemInList( PurchAirName, PurchAir );
 			if ( PurchAirNum == 0 ) {
 				ShowFatalError( "SimPurchasedAir: Unit not found=" + PurchAirName );
 			}
@@ -261,9 +260,7 @@ namespace PurchasedAirManager {
 		using namespace DataLoopNode;
 		using namespace DataIPShortCuts;
 		using DataSizing::OARequirements; // to find DesignSpecification:OutdoorAir pointer
-		using DataSizing::NumOARequirements;
 		using DataContaminantBalance::Contaminant;
-		using DataSizing::NumZoneHVACSizing;
 		using DataSizing::ZoneHVACSizing;
 		using DataZoneEquipment::ZoneEquipConfig;
 
@@ -316,7 +313,7 @@ namespace PurchasedAirManager {
 
 				IsNotOK = false;
 				IsBlank = false;
-				VerifyName( cAlphaArgs( 1 ), PurchAir.Name(), PurchAirNum - 1, IsNotOK, IsBlank, cCurrentModuleObject + " Name" );
+				VerifyName( cAlphaArgs( 1 ), PurchAir, PurchAirNum - 1, IsNotOK, IsBlank, cCurrentModuleObject + " Name" );
 				if ( IsNotOK ) {
 					ErrorsFound = true;
 					if ( IsBlank ) cAlphaArgs( 1 ) = "xxxxx";
@@ -474,7 +471,7 @@ namespace PurchasedAirManager {
 
 				// get Design specification outdoor air object
 				if ( ! lAlphaFieldBlanks( 11 ) ) {
-					PurchAir( PurchAirNum ).OARequirementsPtr = FindItemInList( cAlphaArgs( 11 ), OARequirements.Name(), NumOARequirements );
+					PurchAir( PurchAirNum ).OARequirementsPtr = FindItemInList( cAlphaArgs( 11 ), OARequirements );
 					if ( PurchAir( PurchAirNum ).OARequirementsPtr == 0 ) {
 						ShowSevereError( RoutineName + cCurrentModuleObject + "=\"" + cAlphaArgs( 1 ) + " invalid data" );
 						ShowContinueError( "Invalid-not found" + cAlphaFieldNames( 11 ) + "=\"" + cAlphaArgs( 11 ) + "\"." );
@@ -579,7 +576,7 @@ namespace PurchasedAirManager {
 
 				PurchAir( PurchAirNum ).HVACSizingIndex = 0;
 				if ( ! lAlphaFieldBlanks( 16 ) ) {
-					PurchAir(PurchAirNum).HVACSizingIndex = FindItemInList(cAlphaArgs(16), ZoneHVACSizing.Name(), NumZoneHVACSizing);
+					PurchAir(PurchAirNum).HVACSizingIndex = FindItemInList( cAlphaArgs( 16 ), ZoneHVACSizing );
 					if ( PurchAir(PurchAirNum).HVACSizingIndex == 0 ) {
 						ShowSevereError( cAlphaFieldNames( 16 ) + " = " + cAlphaArgs( 16 ) + " not found.");
 						ShowContinueError( "Occurs in " + cCurrentModuleObject + " = " + PurchAir( PurchAirNum ).Name);
@@ -638,6 +635,11 @@ namespace PurchasedAirManager {
 				PurchAir( PurchAirNum ).HtRecSenCoolRate = 0.0;
 				PurchAir( PurchAirNum ).HtRecLatCoolRate = 0.0;
 				PurchAir( PurchAirNum ).HtRecTotCoolRate = 0.0;
+
+				PurchAir( PurchAirNum ).OutdoorAirMassFlowRate = 0.0;
+				PurchAir( PurchAirNum ).OutdoorAirVolFlowRateStdRho = 0.0;
+				PurchAir( PurchAirNum ).SupplyAirMassFlowRate = 0.0;
+				PurchAir( PurchAirNum ).SupplyAirVolFlowRateStdRho = 0.0;
 
 			}
 			EndUniqueNodeCheck( cCurrentModuleObject );
@@ -703,6 +705,12 @@ namespace PurchasedAirManager {
 
 			SetupOutputVariable( "Zone Ideal Loads Hybrid Ventilation Available Status []", PurchAir( PurchAirNum ).AvailStatus, "System", "Average", PurchAir( PurchAirNum ).Name );
 
+			//air flows
+			SetupOutputVariable( "Zone Ideal Loads Outdoor Air Mass Flow Rate [kg/s]", PurchAir( PurchAirNum ).OutdoorAirMassFlowRate, "System", "Average", PurchAir( PurchAirNum ).Name );
+			SetupOutputVariable( "Zone Ideal Loads Outdoor Air Standard Density Volume Flow Rate [m3/s]", PurchAir( PurchAirNum ).OutdoorAirVolFlowRateStdRho, "System", "Average", PurchAir( PurchAirNum ).Name );
+			SetupOutputVariable( "Zone Ideal Loads Supply Air Mass Flow Rate [kg/s]", PurchAir( PurchAirNum ).SupplyAirMassFlowRate, "System", "Average", PurchAir( PurchAirNum ).Name );
+			SetupOutputVariable( "Zone Ideal Loads Supply Air Standard Density Volume Flow Rate [m3/s]", PurchAir( PurchAirNum ).SupplyAirVolFlowRateStdRho, "System", "Average", PurchAir( PurchAirNum ).Name );
+
 			if ( AnyEnergyManagementSystemInModel ) {
 				SetupEMSActuator( "Ideal Loads Air System", PurchAir( PurchAirNum ).Name, "Air Mass Flow Rate", "[kg/s]", PurchAir( PurchAirNum ).EMSOverrideMdotOn, PurchAir( PurchAirNum ).EMSValueMassFlowRate );
 				SetupEMSActuator( "Ideal Loads Air System", PurchAir( PurchAirNum ).Name, "Outdoor Air Mass Flow Rate", "[kg/s]", PurchAir( PurchAirNum ).EMSOverrideOAMdotOn, PurchAir( PurchAirNum ).EMSValueOAMassFlowRate );
@@ -721,7 +729,7 @@ namespace PurchasedAirManager {
 	void
 	InitPurchasedAir(
 		int const PurchAirNum,
-		bool const FirstHVACIteration, // unused1208
+		bool const EP_UNUSED( FirstHVACIteration ), // unused1208
 		int const ControlledZoneNum,
 		int const ActualZoneNum
 	)
@@ -983,7 +991,6 @@ namespace PurchasedAirManager {
 		using Psychrometrics::CPCW;
 		using Psychrometrics::PsyHFnTdbW;
 		using General::RoundSigDigits;
-		using DataHVACGlobals::SystemAirflowSizing;
 		using DataHVACGlobals::CoolingAirflowSizing;
 		using DataHVACGlobals::HeatingAirflowSizing;
 		using DataHVACGlobals::CoolingCapacitySizing;
@@ -1003,11 +1010,6 @@ namespace PurchasedAirManager {
 		// na
 
 		// SUBROUTINE LOCAL VARIABLE DECLARATIONS:
-		Real64 MixedAirTemp;
-		Real64 OutletTemp;
-		Real64 MixedAirHumRat;
-		Real64 OutletHumRat;
-		Real64 DesignLoad;
 		bool IsAutoSize; // Indicator to autosize
 		Real64 MaxHeatVolFlowRateDes; // Autosized maximum heating air flow for reporting
 		Real64 MaxHeatVolFlowRateUser; // Hardsized maximum heating air flow for reporting
@@ -1020,7 +1022,6 @@ namespace PurchasedAirManager {
 		std::string CompName; // component name
 		std::string CompType; // component type
 		std::string SizingString; // input field sizing description (e.g., Nominal Capacity)
-		bool bPRINT = true; // TRUE if sizing is reported to output (eio)
 		Real64 TempSize; // autosized value of coil input field
 		int FieldNum = 2; // IDD numeric field number where input field description is found
 		int SizingMethod; // Integer representation of sizing method name (e.g., CoolingAirflowSizing, HeatingAirflowSizing, CoolingCapacitySizing, HeatingCapacitySizing, etc.)
@@ -2211,6 +2212,9 @@ namespace PurchasedAirManager {
 		}
 
 		PurchAir( PurchAirNum ).OutdoorAirMassFlowRate = OAMassFlowRate;
+		PurchAir( PurchAirNum ).OutdoorAirVolFlowRateStdRho = OAMassFlowRate / StdRhoAir;
+		PurchAir( PurchAirNum ).SupplyAirMassFlowRate = SupplyMassFlowRate;
+		PurchAir( PurchAirNum ).SupplyAirVolFlowRateStdRho = SupplyMassFlowRate / StdRhoAir;
 
 	}
 
@@ -2238,15 +2242,8 @@ namespace PurchasedAirManager {
 		// REFERENCES:
 
 		// Using/Aliasing
-		using DataHeatBalance::ZoneIntGain;
 		using DataHeatBalance::Zone;
 		using DataEnvironment::StdRhoAir;
-		using DataSizing::OAFlowPPer;
-		using DataSizing::OAFlow;
-		using DataSizing::OAFlowPerArea;
-		using DataSizing::OAFlowACH;
-		using DataSizing::OAFlowSum;
-		using DataSizing::OAFlowMax;
 		using DataContaminantBalance::ZoneSysContDemand;
 		using DataZoneEquipment::CalcDesignSpecificationOutdoorAir;
 
@@ -2429,7 +2426,7 @@ namespace PurchasedAirManager {
 	}
 
 	void
-	UpdatePurchasedAir( int const PurchAirNum )
+	UpdatePurchasedAir( int const EP_UNUSED( PurchAirNum ) )
 	{
 
 		// SUBROUTINE INFORMATION:
@@ -2844,9 +2841,19 @@ namespace PurchasedAirManager {
 
 	}
 
+	// Clears the global data in Fans.
+	// Needed for unit tests, should not be normally called.
+	void
+	clear_state()
+	{
+		NumPurchAir = 0;
+		PurchAir.deallocate();
+		PurchAirNumericFields.deallocate();
+	}
+
 	//     NOTICE
 
-	//     Copyright © 1996-2014 The Board of Trustees of the University of Illinois
+	//     Copyright (c) 1996-2015 The Board of Trustees of the University of Illinois
 	//     and The Regents of the University of California through Ernest Orlando Lawrence
 	//     Berkeley National Laboratory.  All rights reserved.
 

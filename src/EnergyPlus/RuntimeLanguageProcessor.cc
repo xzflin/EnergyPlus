@@ -127,6 +127,40 @@ namespace RuntimeLanguageProcessor {
 	// MODULE SUBROUTINES:
 
 	// Functions
+	void
+	clear_state(){
+		GetInput =  true ;
+		InitializeOnce = true ;
+		MyEnvrnFlag = true ;
+
+		NullVariableNum = 0;
+		FalseVariableNum = 0;
+		TrueVariableNum = 0;
+		OffVariableNum = 0;
+		OnVariableNum = 0;
+		PiVariableNum = 0;
+		CurveIndexVariableNums.deallocate();
+		ConstructionIndexVariableNums.deallocate();
+		YearVariableNum = 0;
+		MonthVariableNum = 0;
+		DayOfMonthVariableNum = 0;
+		DayOfWeekVariableNum = 0;
+		DayOfYearVariableNum = 0;
+		HourVariableNum = 0;
+		MinuteVariableNum = 0;
+		HolidayVariableNum = 0;
+		DSTVariableNum = 0;
+		CurrentTimeVariableNum = 0;
+		SunIsUpVariableNum = 0;
+		IsRainingVariableNum = 0;
+		SystemTimeStepVariableNum = 0;
+		ZoneTimeStepVariableNum = 0;
+		CurrentEnvironmentPeriodNum = 0;
+		ActualDateAndTimeNum = 0;
+		ActualTimeNum = 0;
+		WarmUpFlagNum = 0;
+	
+	}
 
 	void
 	InitializeRuntimeLanguage()
@@ -146,7 +180,6 @@ namespace RuntimeLanguageProcessor {
 		// Using/Aliasing
 		using DataGlobals::Pi;
 		using DataGlobals::HourOfDay;
-		using DataGlobals::OutputFileDebug;
 		using DataGlobals::CurrentTime;
 		using DataGlobals::TimeStepZone;
 		using DataGlobals::WarmupFlag;
@@ -515,7 +548,7 @@ namespace RuntimeLanguageProcessor {
 					Pos = scan( Remainder, ' ' );
 					if ( Pos == std::string::npos ) Pos = Remainder.length();
 					Variable = MakeUPPERCase( stripped( Remainder.substr( 0, Pos ) ) ); // really the subroutine, or reference to instruction set
-					StackNum2 = FindItemInList( Variable, ErlStack.Name(), NumErlStacks );
+					StackNum2 = FindItemInList( Variable, ErlStack );
 					if ( StackNum2 == 0 ) {
 						AddError( StackNum, LineNum, "Program or Subroutine name [" + Variable + "] not found for the RUN instruction." );
 					} else {
@@ -1084,7 +1117,6 @@ namespace RuntimeLanguageProcessor {
 		bool ErrorFlag;
 		bool OperatorProcessing;
 		int CountDoLooping;
-		int i;
 		bool LastED; // last character in a numeric was an E or D
 
 		// Object Data
@@ -1671,7 +1703,6 @@ namespace RuntimeLanguageProcessor {
 		int OperatorNum;
 		int NumOperands;
 		int ParenthWhileCounter; // used to trap for unbalanced parentheses
-		int i;
 
 		// Object Data
 		Array1D< TokenType > Token( TokenIN );
@@ -1974,10 +2005,8 @@ namespace RuntimeLanguageProcessor {
 		Real64 thisMax; // local temporary
 		Real64 thisMin; // local temporary
 		int OperandNum;
-		int SeedElementInt;
 		int SeedN; // number of digits in the number used to seed the generator
 		Array1D_int SeedIntARR; // local temporary for random seed
-		int Pos; // local temporary for string position.
 		Real64 tmpRANDU1; // local temporary for uniform random number
 		Real64 tmpRANDU2; // local temporary for uniform random number
 		Real64 tmpRANDG; // local temporary for gaussian random number
@@ -2467,8 +2496,6 @@ namespace RuntimeLanguageProcessor {
 		using CurveManager::GetCurveIndex;
 		using CurveManager::GetCurveType;
 		using DataHeatBalance::Construct;
-		using DataHeatBalance::TotConstructs;
-		using OutputProcessor::UnitsStringLength;
 
 		// Locals
 		// SUBROUTINE PARAMETER DEFINITIONS:
@@ -2704,7 +2731,7 @@ namespace RuntimeLanguageProcessor {
 						continue;
 					}
 
-					ConstructNum = FindItemInList( cAlphaArgs( 2 ), Construct.Name(), TotConstructs );
+					ConstructNum = FindItemInList( cAlphaArgs( 2 ), Construct );
 
 					if ( ConstructNum == 0 ) {
 						if ( lAlphaFieldBlanks( 2 ) ) {
@@ -2734,7 +2761,7 @@ namespace RuntimeLanguageProcessor {
 					GetObjectItem( cCurrentModuleObject, StackNum, cAlphaArgs, NumAlphas, rNumericArgs, NumNums, IOStat, lNumericFieldBlanks, lAlphaFieldBlanks, cAlphaFieldNames, cNumericFieldNames );
 					IsNotOK = false;
 					IsBlank = false;
-					VerifyName( cAlphaArgs( 1 ), ErlStack.Name(), StackNum - 1, IsNotOK, IsBlank, cCurrentModuleObject + " Name" );
+					VerifyName( cAlphaArgs( 1 ), ErlStack, StackNum - 1, IsNotOK, IsBlank, cCurrentModuleObject + " Name" );
 					if ( IsNotOK ) {
 						ErrorsFound = true;
 						if ( IsBlank ) cAlphaArgs( 1 ) = "xxxxx";
@@ -2761,7 +2788,7 @@ namespace RuntimeLanguageProcessor {
 
 					IsNotOK = false;
 					IsBlank = false;
-					VerifyName( cAlphaArgs( 1 ), ErlStack.Name(), StackNum - 1, IsNotOK, IsBlank, cCurrentModuleObject + " Name" );
+					VerifyName( cAlphaArgs( 1 ), ErlStack, StackNum - 1, IsNotOK, IsBlank, cCurrentModuleObject + " Name" );
 					if ( IsNotOK ) {
 						ErrorsFound = true;
 						if ( IsBlank ) cAlphaArgs( 1 ) = "xxxxx";
@@ -2789,7 +2816,7 @@ namespace RuntimeLanguageProcessor {
 					GetObjectItem( cCurrentModuleObject, TrendNum, cAlphaArgs, NumAlphas, rNumericArgs, NumNums, IOStat, lNumericFieldBlanks, lAlphaFieldBlanks, cAlphaFieldNames, cNumericFieldNames );
 					IsNotOK = false;
 					IsBlank = false;
-					VerifyName( cAlphaArgs( 1 ), TrendVariable.Name(), TrendNum - 1, IsNotOK, IsBlank, cCurrentModuleObject + " Name" );
+					VerifyName( cAlphaArgs( 1 ), TrendVariable, TrendNum - 1, IsNotOK, IsBlank, cCurrentModuleObject + " Name" );
 					if ( IsNotOK ) {
 						ErrorsFound = true;
 						if ( IsBlank ) cAlphaArgs( 1 ) = "xxxxx";
@@ -2877,7 +2904,7 @@ namespace RuntimeLanguageProcessor {
 
 					IsNotOK = false;
 					IsBlank = false;
-					VerifyName( cAlphaArgs( 1 ), RuntimeReportVar.Name(), RuntimeReportVarNum - 1, IsNotOK, IsBlank, cCurrentModuleObject + " Name" );
+					VerifyName( cAlphaArgs( 1 ), RuntimeReportVar, RuntimeReportVarNum - 1, IsNotOK, IsBlank, cCurrentModuleObject + " Name" );
 					if ( IsNotOK ) {
 						ErrorsFound = true;
 						if ( IsBlank ) cAlphaArgs( 1 ) = "xxxxx";
@@ -3017,7 +3044,7 @@ namespace RuntimeLanguageProcessor {
 
 					IsNotOK = false;
 					IsBlank = false;
-					VerifyName( cAlphaArgs( 1 ), RuntimeReportVar.Name(), RuntimeReportVarNum - 1, IsNotOK, IsBlank, cCurrentModuleObject + " Name" );
+					VerifyName( cAlphaArgs( 1 ), RuntimeReportVar, RuntimeReportVarNum - 1, IsNotOK, IsBlank, cCurrentModuleObject + " Name" );
 					if ( IsNotOK ) {
 						ErrorsFound = true;
 						if ( IsBlank ) cAlphaArgs( 1 ) = "xxxxx";
@@ -3131,6 +3158,7 @@ namespace RuntimeLanguageProcessor {
 						ErrorsFound = true;
 					}}
 
+					//Resource Type
 					{ auto const SELECT_CASE_var( cAlphaArgs( 5 ) );
 
 					if ( SELECT_CASE_var == "ELECTRICITY" ) {
@@ -3185,6 +3213,7 @@ namespace RuntimeLanguageProcessor {
 						ErrorsFound = true;
 					}}
 
+					//Group Type
 					{ auto const SELECT_CASE_var( cAlphaArgs( 6 ) );
 
 					if ( SELECT_CASE_var == "BUILDING" ) {
@@ -3193,12 +3222,15 @@ namespace RuntimeLanguageProcessor {
 						GroupTypeString = "HVAC";
 					} else if ( SELECT_CASE_var == "PLANT" ) {
 						GroupTypeString = "Plant";
+					} else if (SELECT_CASE_var == "SYSTEM") {
+						GroupTypeString = "System";
 					} else {
 						ShowSevereError( RoutineName + cCurrentModuleObject + "=\"" + cAlphaArgs( 1 ) + " invalid field." );
 						ShowContinueError( "Invalid " + cAlphaFieldNames( 6 ) + '=' + cAlphaArgs( 6 ) );
 						ErrorsFound = true;
 					}}
 
+					//End Use Type
 					{ auto const SELECT_CASE_var( cAlphaArgs( 7 ) );
 
 					if ( SELECT_CASE_var == "HEATING" ) {
@@ -3229,11 +3261,33 @@ namespace RuntimeLanguageProcessor {
 						EndUseTypeString = "Refrigeration";
 					} else if ( SELECT_CASE_var == "ONSITEGENERATION" ) {
 						EndUseTypeString = "Cogeneration";
+					} else if ( SELECT_CASE_var == "HEATINGCOILS" ) {
+						EndUseTypeString = "HeatingCoils";
+					} else if ( SELECT_CASE_var == "COOLINGCOILS" ) {
+						EndUseTypeString = "CoolingCoils";
+					} else if ( SELECT_CASE_var == "CHILLERS" ) {
+						EndUseTypeString = "Chillers";
+					} else if ( SELECT_CASE_var == "BOILERS" ) {
+						EndUseTypeString = "Boilers";
+					} else if ( SELECT_CASE_var == "BASEBOARD" ) {
+						EndUseTypeString = "Baseboard";
+					} else if ( SELECT_CASE_var == "HEATRECOVERYFORCOOLING" ) {
+						EndUseTypeString = "HeatRecoveryForCooling";
+					} else if ( SELECT_CASE_var == "HEATRECOVERYFORHEATING" ) {
+						EndUseTypeString = "HeatRecoveryForHeating";
 					} else {
 						ShowSevereError( RoutineName + cCurrentModuleObject + "=\"" + cAlphaArgs( 1 ) + " invalid field." );
 						ShowContinueError( "Invalid " + cAlphaFieldNames( 7 ) + '=' + cAlphaArgs( 7 ) );
 						ErrorsFound = true;
 					}}
+					
+					//Additional End Use Types Only Used for EnergyTransfer
+					if ( ( ResourceTypeString != "EnergyTransfer" ) && ( EndUseTypeString == "HeatingCoils" || EndUseTypeString == "CoolingCoils" || EndUseTypeString == "Chillers" || EndUseTypeString == "Boilers" || EndUseTypeString == "Baseboard" || EndUseTypeString == "HeatRecoveryForCooling" || EndUseTypeString == "HeatRecoveryForHeating" ) ) {
+						ShowWarningError( RoutineName + cCurrentModuleObject + "=\"" + cAlphaArgs( 1 ) + " invalid field." );
+						ShowContinueError( "Invalid " + cAlphaFieldNames( 5 ) + "=" + cAlphaArgs( 5 ) + " for " + cAlphaFieldNames( 7 ) + "=" + cAlphaArgs( 7 ) );
+						ShowContinueError( "Field " + cAlphaFieldNames( 5 ) + " is reset from " + cAlphaArgs( 5 ) + " to EnergyTransfer" );
+						ResourceTypeString = "EnergyTransfer";
+					}
 
 					if ( ! lAlphaFieldBlanks( 8 ) ) {
 						EndUseSubCatString = cAlphaArgs( 8 );
@@ -4028,7 +4082,7 @@ namespace RuntimeLanguageProcessor {
 
 	//     NOTICE
 
-	//     Copyright © 1996-2014 The Board of Trustees of the University of Illinois
+	//     Copyright (c) 1996-2015 The Board of Trustees of the University of Illinois
 	//     and The Regents of the University of California through Ernest Orlando Lawrence
 	//     Berkeley National Laboratory.  All rights reserved.
 

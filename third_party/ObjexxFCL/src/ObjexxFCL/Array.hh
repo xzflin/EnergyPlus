@@ -30,6 +30,7 @@
 #include <ObjexxFCL/TypeTraits.hh>
 #include <ObjexxFCL/Vector2.hh>
 #include <ObjexxFCL/Vector3.hh>
+#include <ObjexxFCL/Vector4.hh>
 
 // C++ Headers
 #include <algorithm>
@@ -42,6 +43,7 @@
 #include <initializer_list>
 #include <iomanip>
 #include <istream>
+#include <iterator>
 #include <limits>
 #include <ostream>
 #include <type_traits>
@@ -49,9 +51,9 @@
 #include <utility>
 #include <vector>
 
-#ifndef OBJEXXFCL_ARRAY_ALIGN
-#define OBJEXXFCL_ARRAY_ALIGN 128u
-#endif
+//#ifndef OBJEXXFCL_ARRAY_ALIGN
+//#define OBJEXXFCL_ARRAY_ALIGN 128u
+//#endif
 
 namespace ObjexxFCL {
 
@@ -92,6 +94,10 @@ public: // Types
 	typedef  T const &  const_reference;
 	typedef  T *  pointer;
 	typedef  T const *  const_pointer;
+	typedef  T *  iterator;
+	typedef  T const *  const_iterator;
+	typedef  std::reverse_iterator< T * >  reverse_iterator;
+	typedef  std::reverse_iterator< T const * >  const_reverse_iterator;
 	typedef  std::size_t  size_type;
 	typedef  std::ptrdiff_t  difference_type;
 
@@ -101,6 +107,10 @@ public: // Types
 	typedef  T const &  ConstReference;
 	typedef  T *  Pointer;
 	typedef  T const *  ConstPointer;
+	typedef  T *  Iterator;
+	typedef  T const *  ConstIterator;
+	typedef  std::reverse_iterator< T * >  ReverseIterator;
+	typedef  std::reverse_iterator< T const * >  ConstReverseIterator;
 	typedef  std::size_t  Size;
 	typedef  std::ptrdiff_t  Difference;
 
@@ -109,7 +119,7 @@ protected: // Creation
 	// Default Constructor
 	inline
 	Array() :
-	 data_size_( 0u ),
+	 capacity_( 0u ),
 	 data_( nullptr ),
 	 size_( 0u ),
 	 owner_( true ),
@@ -121,13 +131,13 @@ protected: // Creation
 	inline
 	Array( Array const & a ) :
 	 BArray( a ),
-	 data_size_( size_of( a.size_ ) ),
-#ifdef OBJEXXFCL_ARRAY_NOALIGN
-	 data_( a.data_ ? new T[ data_size_ ] : nullptr ),
+	 capacity_( size_of( a.size_ ) ),
+#ifndef OBJEXXFCL_ARRAY_ALIGN
+	 data_( a.data_ ? new T[ capacity_ ] : nullptr ),
 #else
 	 data_( a.data_ ? new_array< T >() : nullptr ),
 #endif
-	 size_( data_size_ ),
+	 size_( capacity_ ),
 	 owner_( true ),
 	 shift_( a.shift_ ),
 	 sdata_( data_ - shift_ )
@@ -141,14 +151,14 @@ protected: // Creation
 	inline
 	Array( Array && a ) NOEXCEPT :
 	 BArray( std::move( a ) ),
-	 data_size_( a.data_size_ ),
+	 capacity_( a.capacity_ ),
 	 data_( a.data_ ),
 	 size_( a.size_ ),
 	 owner_( a.owner_ ),
 	 shift_( a.shift_ ),
 	 sdata_( a.sdata_ )
 	{
-		a.data_size_ = 0u;
+		a.capacity_ = 0u;
 		a.data_ = nullptr;
 		a.size_ = 0u;
 		a.shift_ = 0;
@@ -160,13 +170,13 @@ protected: // Creation
 	inline
 	explicit
 	Array( Array< U > const & a ) :
-	 data_size_( size_of( a.size() ) ),
-#ifdef OBJEXXFCL_ARRAY_NOALIGN
-	 data_( a.data_ ? new T[ data_size_ ] : nullptr ),
+	 capacity_( size_of( a.size() ) ),
+#ifndef OBJEXXFCL_ARRAY_ALIGN
+	 data_( a.data_ ? new T[ capacity_ ] : nullptr ),
 #else
 	 data_( a.data_ ? new_array< T >() : nullptr ),
 #endif
-	 size_( data_size_ ),
+	 size_( capacity_ ),
 	 owner_( true ),
 	 shift_( a.shift_ ),
 	 sdata_( data_ - shift_ )
@@ -181,13 +191,13 @@ protected: // Creation
 	inline
 	explicit
 	Array( ArrayS< U > const & a ) :
-	 data_size_( size_of( a.size() ) ),
-#ifdef OBJEXXFCL_ARRAY_NOALIGN
-	 data_( new T[ data_size_ ] ),
+	 capacity_( size_of( a.size() ) ),
+#ifndef OBJEXXFCL_ARRAY_ALIGN
+	 data_( new T[ capacity_ ] ),
 #else
 	 data_( new_array< T >() ),
 #endif
-	 size_( data_size_ ),
+	 size_( capacity_ ),
 	 owner_( true ),
 	 shift_( 0 ),
 	 sdata_( nullptr )
@@ -198,13 +208,13 @@ protected: // Creation
 	inline
 	explicit
 	Array( MArray< A, M > const & a ) :
-	 data_size_( size_of( a.size() ) ),
-#ifdef OBJEXXFCL_ARRAY_NOALIGN
-	 data_( new T[ data_size_ ] ),
+	 capacity_( size_of( a.size() ) ),
+#ifndef OBJEXXFCL_ARRAY_ALIGN
+	 data_( new T[ capacity_ ] ),
 #else
 	 data_( new_array< T >() ),
 #endif
-	 size_( data_size_ ),
+	 size_( capacity_ ),
 	 owner_( true ),
 	 shift_( 0 ),
 	 sdata_( nullptr )
@@ -214,13 +224,13 @@ protected: // Creation
 	inline
 	explicit
 	Array( size_type const size ) :
-	 data_size_( size_of( size ) ),
-#ifdef OBJEXXFCL_ARRAY_NOALIGN
-	 data_( new T[ data_size_ ] ),
+	 capacity_( size_of( size ) ),
+#ifndef OBJEXXFCL_ARRAY_ALIGN
+	 data_( new T[ capacity_ ] ),
 #else
 	 data_( new_array< T >() ),
 #endif
-	 size_( data_size_ ),
+	 size_( capacity_ ),
 	 owner_( true ),
 	 shift_( 0 ),
 	 sdata_( nullptr )
@@ -233,13 +243,13 @@ protected: // Creation
 	// Size + InitializerSentinel Constructor
 	inline
 	Array( size_type const size, InitializerSentinel const & ) :
-	 data_size_( size_of( size ) ),
-#ifdef OBJEXXFCL_ARRAY_NOALIGN
-	 data_( new T[ data_size_ ] ),
+	 capacity_( size_of( size ) ),
+#ifndef OBJEXXFCL_ARRAY_ALIGN
+	 data_( new T[ capacity_ ] ),
 #else
 	 data_( new_array< T >() ),
 #endif
-	 size_( data_size_ ),
+	 size_( capacity_ ),
 	 owner_( true ),
 	 shift_( 0 ),
 	 sdata_( nullptr )
@@ -249,13 +259,13 @@ protected: // Creation
 	template< typename U, class = typename std::enable_if< std::is_constructible< T, U >::value >::type >
 	inline
 	Array( std::initializer_list< U > const l ) :
-	 data_size_( l.size() ),
-#ifdef OBJEXXFCL_ARRAY_NOALIGN
-	 data_( new T[ data_size_ ] ),
+	 capacity_( l.size() ),
+#ifndef OBJEXXFCL_ARRAY_ALIGN
+	 data_( new T[ capacity_ ] ),
 #else
 	 data_( new_array< T >() ),
 #endif
-	 size_( data_size_ ),
+	 size_( capacity_ ),
 	 owner_( true ),
 	 shift_( 0 ),
 	 sdata_( nullptr )
@@ -270,13 +280,13 @@ protected: // Creation
 	template< typename U, Size s, class = typename std::enable_if< std::is_constructible< T, U >::value >::type >
 	inline
 	Array( std::array< U, s > const & a ) :
-	 data_size_( s ),
-#ifdef OBJEXXFCL_ARRAY_NOALIGN
-	 data_( new T[ data_size_ ] ),
+	 capacity_( s ),
+#ifndef OBJEXXFCL_ARRAY_ALIGN
+	 data_( new T[ capacity_ ] ),
 #else
 	 data_( new_array< T >() ),
 #endif
-	 size_( data_size_ ),
+	 size_( capacity_ ),
 	 owner_( true ),
 	 shift_( 0 ),
 	 sdata_( nullptr )
@@ -291,13 +301,13 @@ protected: // Creation
 	template< typename U, class = typename std::enable_if< std::is_constructible< T, U >::value >::type >
 	inline
 	Array( std::vector< U > const & v ) :
-	 data_size_( v.size() ),
-#ifdef OBJEXXFCL_ARRAY_NOALIGN
-	 data_( new T[ data_size_ ] ),
+	 capacity_( v.size() ),
+#ifndef OBJEXXFCL_ARRAY_ALIGN
+	 data_( new T[ capacity_ ] ),
 #else
 	 data_( new_array< T >() ),
 #endif
-	 size_( data_size_ ),
+	 size_( capacity_ ),
 	 owner_( true ),
 	 shift_( 0 ),
 	 sdata_( nullptr )
@@ -312,45 +322,87 @@ protected: // Creation
 	template< typename U, class = typename std::enable_if< std::is_constructible< T, U >::value >::type >
 	inline
 	Array( Vector2< U > const & v ) :
-	 data_size_( 2 ),
-#ifdef OBJEXXFCL_ARRAY_NOALIGN
-	 data_( new T[ data_size_ ] ),
+	 capacity_( 2 ),
+#ifndef OBJEXXFCL_ARRAY_ALIGN
+	 data_( new T[ capacity_ ] ),
 #else
 	 data_( new_array< T >() ),
 #endif
-	 size_( data_size_ ),
+	 size_( capacity_ ),
 	 owner_( true ),
 	 shift_( 0 ),
 	 sdata_( nullptr )
 	{
-		operator []( 0 ) = v[ 0 ];
-		operator []( 1 ) = v[ 1 ];
+		operator []( 0 ) = v.x;
+		operator []( 1 ) = v.y;
 	}
 
 	// Vector3 Constructor Template
 	template< typename U, class = typename std::enable_if< std::is_constructible< T, U >::value >::type >
 	inline
 	Array( Vector3< U > const & v ) :
-	 data_size_( 3 ),
-#ifdef OBJEXXFCL_ARRAY_NOALIGN
-	 data_( new T[ data_size_ ] ),
+	 capacity_( 3 ),
+#ifndef OBJEXXFCL_ARRAY_ALIGN
+	 data_( new T[ capacity_ ] ),
 #else
 	 data_( new_array< T >() ),
 #endif
-	 size_( data_size_ ),
+	 size_( capacity_ ),
 	 owner_( true ),
 	 shift_( 0 ),
 	 sdata_( nullptr )
 	{
-		operator []( 0 ) = v[ 0 ];
-		operator []( 1 ) = v[ 1 ];
-		operator []( 2 ) = v[ 2 ];
+		operator []( 0 ) = v.x;
+		operator []( 1 ) = v.y;
+		operator []( 2 ) = v.z;
+	}
+
+	// Vector4 Constructor Template
+	template< typename U, class = typename std::enable_if< std::is_constructible< T, U >::value >::type >
+	inline
+	Array( Vector4< U > const & v ) :
+	 capacity_( 4 ),
+#ifndef OBJEXXFCL_ARRAY_ALIGN
+	 data_( new T[ capacity_ ] ),
+#else
+	 data_( new_array< T >() ),
+#endif
+	 size_( capacity_ ),
+	 owner_( true ),
+	 shift_( 0 ),
+	 sdata_( nullptr )
+	{
+		operator []( 0 ) = v.x;
+		operator []( 1 ) = v.y;
+		operator []( 2 ) = v.z;
+		operator []( 3 ) = v.w;
+	}
+
+	// Iterator Range Constructor Template
+	template< class Iterator, typename = decltype( *std::declval< Iterator & >(), void(), ++std::declval< Iterator & >(), void() ) >
+	inline
+	Array( Iterator const beg, Iterator const end ) :
+	 capacity_( end - beg ),
+#ifndef OBJEXXFCL_ARRAY_ALIGN
+	 data_( new T[ capacity_ ] ),
+#else
+	 data_( new_array< T >() ),
+#endif
+	 size_( capacity_ ),
+	 owner_( true ),
+	 shift_( 0 ),
+	 sdata_( nullptr )
+	{
+		size_type j( 0u );
+		for ( Iterator i = beg; i != end; ++i, ++j ) {
+			operator []( j ) = *i;
+		}
 	}
 
 	// Default Proxy Constructor
 	inline
 	Array( ProxySentinel const & ) :
-	 data_size_( 0u ),
+	 capacity_( 0u ),
 	 data_( nullptr ),
 	 size_( 0u ),
 	 owner_( false ),
@@ -361,7 +413,7 @@ protected: // Creation
 	// Array Proxy Constructor
 	inline
 	Array( Array const & a, ProxySentinel const & ) :
-	 data_size_( a.data_size_ ),
+	 capacity_( a.capacity_ ),
 	 data_( a.data_ ),
 	 size_( a.size_ ),
 	 owner_( false ),
@@ -372,7 +424,7 @@ protected: // Creation
 	// Slice Proxy Constructor
 	inline
 	Array( ArrayS< T > const & a, ProxySentinel const & ) :
-	 data_size_( a.size() ),
+	 capacity_( a.size() ),
 	 data_( a.data_beg_ ),
 	 size_( a.size() ),
 	 owner_( false ),
@@ -385,9 +437,9 @@ protected: // Creation
 	// Tail Proxy Constructor
 	inline
 	Array( Tail const & s, ProxySentinel const & ) :
-	 data_size_( s.size() ),
+	 capacity_( s.size() ),
 	 data_( s.data_ ),
-	 size_( data_size_ ),
+	 size_( capacity_ ),
 	 owner_( false ),
 	 shift_( 0 ),
 	 sdata_( nullptr )
@@ -396,7 +448,7 @@ protected: // Creation
 	// Value Proxy Constructor
 	inline
 	Array( T const & t, ProxySentinel const & ) :
-	 data_size_( npos ), // Unknown
+	 capacity_( npos ), // Unknown
 	 data_( const_cast< T * >( &t ) ),
 	 size_( npos ), // Unbounded
 	 owner_( false ),
@@ -411,7 +463,7 @@ public: // Creation
 	virtual
 	~Array()
 	{
-#ifdef OBJEXXFCL_ARRAY_NOALIGN
+#ifndef OBJEXXFCL_ARRAY_ALIGN
 		if ( owner_ ) delete[] data_;
 #else
 		if ( owner_ ) del_array();
@@ -449,17 +501,17 @@ protected: // Assignment: Array
 	{
 		assert( this != &a );
 		assert( owner_ == a.owner_ );
-#ifdef OBJEXXFCL_ARRAY_NOALIGN
+#ifndef OBJEXXFCL_ARRAY_ALIGN
 		if ( owner_ ) delete[] data_;
 #else
 		if ( owner_ ) del_array();
 #endif
-		data_size_ = a.data_size_;
+		capacity_ = a.capacity_;
 		data_ = a.data_;
 		size_ = a.size_;
 		shift_ = a.shift_;
 		sdata_ = a.sdata_;
-		a.data_size_ = 0u;
+		a.capacity_ = 0u;
 		a.data_ = nullptr;
 		a.size_ = 0u;
 		a.shift_ = 0;
@@ -485,7 +537,6 @@ protected: // Assignment: Array
 	void
 	operator =( std::initializer_list< U > const l )
 	{
-		assert( size_bounded() );
 		assert( size_ == l.size() );
 		std::copy( l.begin(), l.end(), data_ );
 	}
@@ -496,7 +547,6 @@ protected: // Assignment: Array
 	void
 	operator =( std::array< U, s > const & a )
 	{
-		assert( size_bounded() );
 		assert( size_ == s );
 		std::copy( a.begin(), a.end(), data_ );
 	}
@@ -507,7 +557,6 @@ protected: // Assignment: Array
 	void
 	operator =( std::vector< U > const & v )
 	{
-		assert( size_bounded() );
 		assert( size_ == v.size() );
 		std::copy( v.begin(), v.end(), data_ );
 	}
@@ -518,10 +567,9 @@ protected: // Assignment: Array
 	void
 	operator =( Vector2< U > const & v )
 	{
-		assert( size_bounded() );
 		assert( size_ == 2u );
-		operator []( 0 ) = v[ 0 ];
-		operator []( 1 ) = v[ 1 ];
+		operator []( 0 ) = v.x;
+		operator []( 1 ) = v.y;
 	}
 
 	// Vector3 Assignment Template
@@ -530,11 +578,23 @@ protected: // Assignment: Array
 	void
 	operator =( Vector3< U > const & v )
 	{
-		assert( size_bounded() );
 		assert( size_ == 3u );
-		operator []( 0 ) = v[ 0 ];
-		operator []( 1 ) = v[ 1 ];
-		operator []( 2 ) = v[ 2 ];
+		operator []( 0 ) = v.x;
+		operator []( 1 ) = v.y;
+		operator []( 2 ) = v.z;
+	}
+
+	// Vector4 Assignment Template
+	template< typename U, class = typename std::enable_if< std::is_assignable< T&, U >::value >::type >
+	inline
+	void
+	operator =( Vector4< U > const & v )
+	{
+		assert( size_ == 4u );
+		operator []( 0 ) = v.x;
+		operator []( 1 ) = v.y;
+		operator []( 2 ) = v.z;
+		operator []( 3 ) = v.w;
 	}
 
 	// += Array
@@ -686,7 +746,6 @@ protected: // Assignment: Array
 	void
 	operator +=( std::initializer_list< U > const l )
 	{
-		assert( size_bounded() );
 		assert( size_ == l.size() );
 		auto r( l.begin() );
 		for ( size_type i = 0; i < size_; ++i, ++r ) {
@@ -700,7 +759,6 @@ protected: // Assignment: Array
 	void
 	operator -=( std::initializer_list< U > const l )
 	{
-		assert( size_bounded() );
 		assert( size_ == l.size() );
 		auto r( l.begin() );
 		for ( size_type i = 0; i < size_; ++i, ++r ) {
@@ -714,7 +772,6 @@ protected: // Assignment: Array
 	void
 	operator *=( std::initializer_list< U > const l )
 	{
-		assert( size_bounded() );
 		assert( size_ == l.size() );
 		auto r( l.begin() );
 		for ( size_type i = 0; i < size_; ++i, ++r ) {
@@ -728,7 +785,6 @@ protected: // Assignment: Array
 	void
 	operator /=( std::initializer_list< U > const l )
 	{
-		assert( size_bounded() );
 		assert( size_ == l.size() );
 		auto r( l.begin() );
 		for ( size_type i = 0; i < size_; ++i, ++r ) {
@@ -743,7 +799,6 @@ protected: // Assignment: Array
 	void
 	operator +=( std::array< U, s > const & a )
 	{
-		assert( size_bounded() );
 		assert( size_ == s );
 		for ( size_type i = 0; i < size_; ++i ) {
 			data_[ i ] += a[ i ];
@@ -756,7 +811,6 @@ protected: // Assignment: Array
 	void
 	operator -=( std::array< U, s > const & a )
 	{
-		assert( size_bounded() );
 		assert( size_ == s );
 		for ( size_type i = 0; i < size_; ++i ) {
 			data_[ i ] -= a[ i ];
@@ -769,7 +823,6 @@ protected: // Assignment: Array
 	void
 	operator *=( std::array< U, s > const & a )
 	{
-		assert( size_bounded() );
 		assert( size_ == s );
 		for ( size_type i = 0; i < size_; ++i ) {
 			data_[ i ] *= a[ i ];
@@ -782,7 +835,6 @@ protected: // Assignment: Array
 	void
 	operator /=( std::array< U, s > const & a )
 	{
-		assert( size_bounded() );
 		assert( size_ == s );
 		for ( size_type i = 0; i < size_; ++i ) {
 			assert( a[ i ] != T( 0 ) );
@@ -796,7 +848,6 @@ protected: // Assignment: Array
 	void
 	operator +=( std::vector< U > const & v )
 	{
-		assert( size_bounded() );
 		assert( size_ == v.size() );
 		for ( size_type i = 0; i < size_; ++i ) {
 			data_[ i ] += v[ i ];
@@ -809,7 +860,6 @@ protected: // Assignment: Array
 	void
 	operator -=( std::vector< U > const & v )
 	{
-		assert( size_bounded() );
 		assert( size_ == v.size() );
 		for ( size_type i = 0; i < size_; ++i ) {
 			data_[ i ] -= v[ i ];
@@ -822,7 +872,6 @@ protected: // Assignment: Array
 	void
 	operator *=( std::vector< U > const & v )
 	{
-		assert( size_bounded() );
 		assert( size_ == v.size() );
 		for ( size_type i = 0; i < size_; ++i ) {
 			data_[ i ] *= v[ i ];
@@ -835,7 +884,6 @@ protected: // Assignment: Array
 	void
 	operator /=( std::vector< U > const & v )
 	{
-		assert( size_bounded() );
 		assert( size_ == v.size() );
 		for ( size_type i = 0; i < size_; ++i ) {
 			assert( v[ i ] != T( 0 ) );
@@ -849,10 +897,9 @@ protected: // Assignment: Array
 	void
 	operator +=( Vector2< U > const & v )
 	{
-		assert( size_bounded() );
 		assert( size_ == 2u );
-		data_[ 0 ] += v[ 0 ];
-		data_[ 1 ] += v[ 1 ];
+		data_[ 0 ] += v.x;
+		data_[ 1 ] += v.y;
 	}
 
 	// -= Vector2 Template
@@ -861,10 +908,9 @@ protected: // Assignment: Array
 	void
 	operator -=( Vector2< U > const & v )
 	{
-		assert( size_bounded() );
 		assert( size_ == 2u );
-		data_[ 0 ] -= v[ 0 ];
-		data_[ 1 ] -= v[ 1 ];
+		data_[ 0 ] -= v.x;
+		data_[ 1 ] -= v.y;
 	}
 
 	// *= Vector2 Template
@@ -873,10 +919,9 @@ protected: // Assignment: Array
 	void
 	operator *=( Vector2< U > const & v )
 	{
-		assert( size_bounded() );
 		assert( size_ == 2u );
-		data_[ 0 ] *= v[ 0 ];
-		data_[ 1 ] *= v[ 1 ];
+		data_[ 0 ] *= v.x;
+		data_[ 1 ] *= v.y;
 	}
 
 	// /= Vector2 Template
@@ -885,12 +930,11 @@ protected: // Assignment: Array
 	void
 	operator /=( Vector2< U > const & v )
 	{
-		assert( size_bounded() );
 		assert( size_ == 2u );
-		assert( v[ 0 ] != T( 0 ) );
-		assert( v[ 1 ] != T( 0 ) );
-		data_[ 0 ] /= v[ 0 ];
-		data_[ 1 ] /= v[ 1 ];
+		assert( v.x != T( 0 ) );
+		assert( v.y != T( 0 ) );
+		data_[ 0 ] /= v.x;
+		data_[ 1 ] /= v.y;
 	}
 
 	// += Vector3 Template
@@ -899,11 +943,10 @@ protected: // Assignment: Array
 	void
 	operator +=( Vector3< U > const & v )
 	{
-		assert( size_bounded() );
 		assert( size_ == 3u );
-		data_[ 0 ] += v[ 0 ];
-		data_[ 1 ] += v[ 1 ];
-		data_[ 2 ] += v[ 2 ];
+		data_[ 0 ] += v.x;
+		data_[ 1 ] += v.y;
+		data_[ 2 ] += v.z;
 	}
 
 	// -= Vector3 Template
@@ -912,11 +955,10 @@ protected: // Assignment: Array
 	void
 	operator -=( Vector3< U > const & v )
 	{
-		assert( size_bounded() );
 		assert( size_ == 3u );
-		data_[ 0 ] -= v[ 0 ];
-		data_[ 1 ] -= v[ 1 ];
-		data_[ 2 ] -= v[ 2 ];
+		data_[ 0 ] -= v.x;
+		data_[ 1 ] -= v.y;
+		data_[ 2 ] -= v.z;
 	}
 
 	// *= Vector3 Template
@@ -925,11 +967,10 @@ protected: // Assignment: Array
 	void
 	operator *=( Vector3< U > const & v )
 	{
-		assert( size_bounded() );
 		assert( size_ == 3u );
-		data_[ 0 ] *= v[ 0 ];
-		data_[ 1 ] *= v[ 1 ];
-		data_[ 2 ] *= v[ 2 ];
+		data_[ 0 ] *= v.x;
+		data_[ 1 ] *= v.y;
+		data_[ 2 ] *= v.z;
 	}
 
 	// /= Vector3 Template
@@ -938,14 +979,69 @@ protected: // Assignment: Array
 	void
 	operator /=( Vector3< U > const & v )
 	{
-		assert( size_bounded() );
 		assert( size_ == 3u );
-		assert( v[ 0 ] != T( 0 ) );
-		assert( v[ 1 ] != T( 0 ) );
-		assert( v[ 2 ] != T( 0 ) );
-		data_[ 0 ] /= v[ 0 ];
-		data_[ 1 ] /= v[ 1 ];
-		data_[ 2 ] /= v[ 2 ];
+		assert( v.x != T( 0 ) );
+		assert( v.y != T( 0 ) );
+		assert( v.z != T( 0 ) );
+		data_[ 0 ] /= v.x;
+		data_[ 1 ] /= v.y;
+		data_[ 2 ] /= v.z;
+	}
+
+	// += Vector4 Template
+	template< typename U, class = typename std::enable_if< std::is_assignable< T&, U >::value >::type >
+	inline
+	void
+	operator +=( Vector4< U > const & v )
+	{
+		assert( size_ == 4u );
+		data_[ 0 ] += v.x;
+		data_[ 1 ] += v.y;
+		data_[ 2 ] += v.z;
+		data_[ 3 ] += v.w;
+	}
+
+	// -= Vector4 Template
+	template< typename U, class = typename std::enable_if< std::is_assignable< T&, U >::value >::type >
+	inline
+	void
+	operator -=( Vector4< U > const & v )
+	{
+		assert( size_ == 4u );
+		data_[ 0 ] -= v.x;
+		data_[ 1 ] -= v.y;
+		data_[ 2 ] -= v.z;
+		data_[ 3 ] -= v.w;
+	}
+
+	// *= Vector4 Template
+	template< typename U, class = typename std::enable_if< std::is_assignable< T&, U >::value >::type >
+	inline
+	void
+	operator *=( Vector4< U > const & v )
+	{
+		assert( size_ == 4u );
+		data_[ 0 ] *= v.x;
+		data_[ 1 ] *= v.y;
+		data_[ 2 ] *= v.z;
+		data_[ 3 ] *= v.w;
+	}
+
+	// /= Vector4 Template
+	template< typename U, class = typename std::enable_if< std::is_assignable< T&, U >::value >::type >
+	inline
+	void
+	operator /=( Vector4< U > const & v )
+	{
+		assert( size_ == 4u );
+		assert( v.x != T( 0 ) );
+		assert( v.y != T( 0 ) );
+		assert( v.z != T( 0 ) );
+		assert( v.w != T( 0 ) );
+		data_[ 0 ] /= v.x;
+		data_[ 1 ] /= v.y;
+		data_[ 2 ] /= v.z;
+		data_[ 3 ] /= v.w;
 	}
 
 public: // Assignment: Value
@@ -1103,7 +1199,6 @@ protected: // Assignment: Logical
 	void
 	and_equals( std::initializer_list< U > const l )
 	{
-		assert( size_bounded() );
 		assert( size_ == l.size() );
 		auto r( l.begin() );
 		for ( size_type i = 0; i < size_; ++i, ++r ) {
@@ -1117,7 +1212,6 @@ protected: // Assignment: Logical
 	void
 	or_equals( std::initializer_list< U > const l )
 	{
-		assert( size_bounded() );
 		assert( size_ == l.size() );
 		auto r( l.begin() );
 		for ( size_type i = 0; i < size_; ++i, ++r ) {
@@ -1131,7 +1225,6 @@ protected: // Assignment: Logical
 	void
 	and_equals( std::array< U, s > const & a )
 	{
-		assert( size_bounded() );
 		assert( size_ == s );
 		for ( size_type i = 0; i < size_; ++i ) {
 			data_[ i ] = data_[ i ] && a[ i ];
@@ -1144,7 +1237,6 @@ protected: // Assignment: Logical
 	void
 	or_equals( std::array< U, s > const & a )
 	{
-		assert( size_bounded() );
 		assert( size_ == s );
 		for ( size_type i = 0; i < size_; ++i ) {
 			data_[ i ] = data_[ i ] || a[ i ];
@@ -1157,7 +1249,6 @@ protected: // Assignment: Logical
 	void
 	and_equals( std::vector< U > const & v )
 	{
-		assert( size_bounded() );
 		assert( size_ == v.size() );
 		for ( size_type i = 0; i < size_; ++i ) {
 			data_[ i ] = data_[ i ] && v[ i ];
@@ -1170,7 +1261,6 @@ protected: // Assignment: Logical
 	void
 	or_equals( std::vector< U > const & v )
 	{
-		assert( size_bounded() );
 		assert( size_ == v.size() );
 		for ( size_type i = 0; i < size_; ++i ) {
 			data_[ i ] = data_[ i ] || v[ i ];
@@ -1183,10 +1273,9 @@ protected: // Assignment: Logical
 	void
 	and_equals( Vector2< U > const & v )
 	{
-		assert( size_bounded() );
 		assert( size_ == 2u );
-		data_[ 0 ] = data_[ 0 ] && v[ 0 ];
-		data_[ 1 ] = data_[ 1 ] && v[ 1 ];
+		data_[ 0 ] = data_[ 0 ] && v.x;
+		data_[ 1 ] = data_[ 1 ] && v.y;
 	}
 
 	// ||= Vector2 Template
@@ -1195,10 +1284,9 @@ protected: // Assignment: Logical
 	void
 	or_equals( Vector2< U > const & v )
 	{
-		assert( size_bounded() );
 		assert( size_ == 2u );
-		data_[ 0 ] = data_[ 0 ] || v[ 0 ];
-		data_[ 1 ] = data_[ 1 ] || v[ 1 ];
+		data_[ 0 ] = data_[ 0 ] || v.x;
+		data_[ 1 ] = data_[ 1 ] || v.y;
 	}
 
 	// &&= Vector3 Template
@@ -1207,11 +1295,10 @@ protected: // Assignment: Logical
 	void
 	and_equals( Vector3< U > const & v )
 	{
-		assert( size_bounded() );
 		assert( size_ == 3u );
-		data_[ 0 ] = data_[ 0 ] && v[ 0 ];
-		data_[ 1 ] = data_[ 1 ] && v[ 1 ];
-		data_[ 2 ] = data_[ 2 ] && v[ 2 ];
+		data_[ 0 ] = data_[ 0 ] && v.x;
+		data_[ 1 ] = data_[ 1 ] && v.y;
+		data_[ 2 ] = data_[ 2 ] && v.z;
 	}
 
 	// ||= Vector3 Template
@@ -1220,11 +1307,36 @@ protected: // Assignment: Logical
 	void
 	or_equals( Vector3< U > const & v )
 	{
-		assert( size_bounded() );
 		assert( size_ == 3u );
-		data_[ 0 ] = data_[ 0 ] || v[ 0 ];
-		data_[ 1 ] = data_[ 1 ] || v[ 1 ];
-		data_[ 2 ] = data_[ 2 ] || v[ 2 ];
+		data_[ 0 ] = data_[ 0 ] || v.x;
+		data_[ 1 ] = data_[ 1 ] || v.y;
+		data_[ 2 ] = data_[ 2 ] || v.z;
+	}
+
+	// &&= Vector4 Template
+	template< typename U, class = typename std::enable_if< std::is_assignable< T&, U >::value >::type >
+	inline
+	void
+	and_equals( Vector4< U > const & v )
+	{
+		assert( size_ == 4u );
+		data_[ 0 ] = data_[ 0 ] && v.x;
+		data_[ 1 ] = data_[ 1 ] && v.y;
+		data_[ 2 ] = data_[ 2 ] && v.z;
+		data_[ 3 ] = data_[ 3 ] && v.w;
+	}
+
+	// ||= Vector4 Template
+	template< typename U, class = typename std::enable_if< std::is_assignable< T&, U >::value >::type >
+	inline
+	void
+	or_equals( Vector4< U > const & v )
+	{
+		assert( size_ == 4u );
+		data_[ 0 ] = data_[ 0 ] || v.x;
+		data_[ 1 ] = data_[ 1 ] || v.y;
+		data_[ 2 ] = data_[ 2 ] || v.z;
+		data_[ 3 ] = data_[ 3 ] || v.w;
 	}
 
 public: // Subscript
@@ -1281,17 +1393,17 @@ public: // Predicate
 	// Data Size Bounded?
 	inline
 	bool
-	data_size_bounded() const
+	capacity_bounded() const
 	{
-		return ( data_size_ != npos );
+		return ( capacity_ != npos );
 	}
 
 	// Data Size Unbounded?
 	inline
 	bool
-	data_size_unbounded() const
+	capacity_unbounded() const
 	{
-		return ( data_size_ == npos );
+		return ( capacity_ == npos );
 	}
 
 	// Active Array Empty?
@@ -1420,9 +1532,9 @@ public: // Inspector
 	// Data Size
 	inline
 	size_type
-	data_size() const
+	capacity() const
 	{
-		return data_size_;
+		return capacity_;
 	}
 
 	// Active Array Size
@@ -1467,7 +1579,71 @@ public: // Inspector
 	int
 	isize( int const d ) const = 0;
 
-	// Array Data Pointer
+	// Begin Iterator
+	inline
+	const_iterator
+	begin() const
+	{
+		return data_;
+	}
+
+	// Begin Iterator
+	inline
+	iterator
+	begin()
+	{
+		return data_;
+	}
+
+	// End Iterator
+	inline
+	const_iterator
+	end() const
+	{
+		return ( ( data_ != nullptr ) && ( size_ != npos ) ? data_ + size_ : nullptr );
+	}
+
+	// End Iterator
+	inline
+	iterator
+	end()
+	{
+		return ( ( data_ != nullptr ) && ( size_ != npos ) ? data_ + size_ : nullptr );
+	}
+
+	// Reverse Begin Iterator
+	inline
+	const_reverse_iterator
+	rbegin() const
+	{
+		return const_reverse_iterator( ( data_ != nullptr ) && ( size_ != npos ) ? data_ + size_ : nullptr );
+	}
+
+	// Reverse Begin Iterator
+	inline
+	reverse_iterator
+	rbegin()
+	{
+		return reverse_iterator( ( data_ != nullptr ) && ( size_ != npos ) ? data_ + size_ : nullptr );
+	}
+
+	// Reverse End Iterator
+	inline
+	const_reverse_iterator
+	rend() const
+	{
+		return const_reverse_iterator( data_ );
+	}
+
+	// Reverse End Iterator
+	inline
+	reverse_iterator
+	rend()
+	{
+		return reverse_iterator( data_ );
+	}
+
+	// Data Pointer
 	inline
 	T const *
 	data() const
@@ -1475,7 +1651,7 @@ public: // Inspector
 		return data_;
 	}
 
-	// Array Data Pointer
+	// Data Pointer
 	inline
 	T *
 	data()
@@ -1483,7 +1659,7 @@ public: // Inspector
 		return data_;
 	}
 
-	// Array Data Begin Pointer
+	// Data Begin Pointer
 	inline
 	T const *
 	data_beg() const
@@ -1491,7 +1667,7 @@ public: // Inspector
 		return data_;
 	}
 
-	// Array Data Begin Pointer
+	// Data Begin Pointer
 	inline
 	T *
 	data_beg()
@@ -1499,7 +1675,7 @@ public: // Inspector
 		return data_;
 	}
 
-	// Array Data End Pointer
+	// Data End Pointer
 	inline
 	T const *
 	data_end() const
@@ -1507,7 +1683,7 @@ public: // Inspector
 		return ( ( data_ != nullptr ) && ( size_ > 0u ) && ( size_ != npos ) ? data_ + size_ - 1 : nullptr );
 	}
 
-	// Array Data End Pointer
+	// Data End Pointer
 	inline
 	T *
 	data_end()
@@ -1523,26 +1699,16 @@ public: // Modifier
 	Array &
 	clear()
 	{
-#ifdef OBJEXXFCL_ARRAY_NOALIGN
+#ifndef OBJEXXFCL_ARRAY_ALIGN
 		if ( owner_ ) delete[] data_;
 #else
 		if ( owner_ ) del_array();
 #endif
 		data_ = nullptr;
-		data_size_ = 0u;
+		capacity_ = 0u;
 		size_ = 0u;
 		shift_ = 0;
 		sdata_ = nullptr;
-		return *this;
-	}
-
-	// Assign Default Value to all Elements
-	inline
-	virtual
-	Array &
-	to_default()
-	{
-		if ( data_ ) std::fill_n( data_, size_, Traits::initial_array_value() );
 		return *this;
 	}
 
@@ -1594,7 +1760,7 @@ public: // Modifier
 		assert( owner_ );
 		assert( v.owner_ );
 		assert( size_ == v.size_ );
-		swap( data_size_, v.data_size_ );
+		swap( capacity_, v.capacity_ );
 		swap( data_, v.data_ );
 		swap( shift_, v.shift_ );
 		swap( sdata_, v.sdata_ );
@@ -1603,8 +1769,8 @@ public: // Modifier
 public: // Comparison: Predicate
 
 	// Array == Value
-	inline
 	friend
+	inline
 	bool
 	eq( Array const & a, T const & t )
 	{
@@ -1617,8 +1783,8 @@ public: // Comparison: Predicate
 	}
 
 	// Value == Array
-	inline
 	friend
+	inline
 	bool
 	eq( T const & t, Array const & a )
 	{
@@ -1626,8 +1792,8 @@ public: // Comparison: Predicate
 	}
 
 	// Array != Value
-	inline
 	friend
+	inline
 	bool
 	ne( Array const & a, T const & t )
 	{
@@ -1635,8 +1801,8 @@ public: // Comparison: Predicate
 	}
 
 	// Value != Array
-	inline
 	friend
+	inline
 	bool
 	ne( T const & t, Array const & a )
 	{
@@ -1644,8 +1810,8 @@ public: // Comparison: Predicate
 	}
 
 	// Array < Value
-	inline
 	friend
+	inline
 	bool
 	lt( Array const & a, T const & t )
 	{
@@ -1658,8 +1824,8 @@ public: // Comparison: Predicate
 	}
 
 	// Value < Array
-	inline
 	friend
+	inline
 	bool
 	lt( T const & t, Array const & a )
 	{
@@ -1672,8 +1838,8 @@ public: // Comparison: Predicate
 	}
 
 	// Array <= Value
-	inline
 	friend
+	inline
 	bool
 	le( Array const & a, T const & t )
 	{
@@ -1686,8 +1852,8 @@ public: // Comparison: Predicate
 	}
 
 	// Value <= Array
-	inline
 	friend
+	inline
 	bool
 	le( T const & t, Array const & a )
 	{
@@ -1700,8 +1866,8 @@ public: // Comparison: Predicate
 	}
 
 	// Array > Value
-	inline
 	friend
+	inline
 	bool
 	gt( Array const & a, T const & t )
 	{
@@ -1709,8 +1875,8 @@ public: // Comparison: Predicate
 	}
 
 	// Value > Array
-	inline
 	friend
+	inline
 	bool
 	gt( T const & t, Array const & a )
 	{
@@ -1718,8 +1884,8 @@ public: // Comparison: Predicate
 	}
 
 	// Array >= Value
-	inline
 	friend
+	inline
 	bool
 	ge( Array const & a, T const & t )
 	{
@@ -1727,8 +1893,8 @@ public: // Comparison: Predicate
 	}
 
 	// Value >= Array
-	inline
 	friend
+	inline
 	bool
 	ge( T const & t, Array const & a )
 	{
@@ -1738,8 +1904,8 @@ public: // Comparison: Predicate
 public: // Comparison: Predicate: Any
 
 	// Any Array == Value
-	inline
 	friend
+	inline
 	bool
 	any_eq( Array const & a, T const & t )
 	{
@@ -1752,8 +1918,8 @@ public: // Comparison: Predicate: Any
 	}
 
 	// Any Value == Array
-	inline
 	friend
+	inline
 	bool
 	any_eq( T const & t, Array const & a )
 	{
@@ -1761,8 +1927,8 @@ public: // Comparison: Predicate: Any
 	}
 
 	// Any Array != Value
-	inline
 	friend
+	inline
 	bool
 	any_ne( Array const & a, T const & t )
 	{
@@ -1770,8 +1936,8 @@ public: // Comparison: Predicate: Any
 	}
 
 	// Any Value != Array
-	inline
 	friend
+	inline
 	bool
 	any_ne( T const & t, Array const & a )
 	{
@@ -1779,8 +1945,8 @@ public: // Comparison: Predicate: Any
 	}
 
 	// Any Array < Value
-	inline
 	friend
+	inline
 	bool
 	any_lt( Array const & a, T const & t )
 	{
@@ -1793,8 +1959,8 @@ public: // Comparison: Predicate: Any
 	}
 
 	// Any Value < Array
-	inline
 	friend
+	inline
 	bool
 	any_lt( T const & t, Array const & a )
 	{
@@ -1807,8 +1973,8 @@ public: // Comparison: Predicate: Any
 	}
 
 	// Any Array <= Value
-	inline
 	friend
+	inline
 	bool
 	any_le( Array const & a, T const & t )
 	{
@@ -1821,8 +1987,8 @@ public: // Comparison: Predicate: Any
 	}
 
 	// Any Value <= Array
-	inline
 	friend
+	inline
 	bool
 	any_le( T const & t, Array const & a )
 	{
@@ -1835,8 +2001,8 @@ public: // Comparison: Predicate: Any
 	}
 
 	// Any Array > Value
-	inline
 	friend
+	inline
 	bool
 	any_gt( Array const & a, T const & t )
 	{
@@ -1844,8 +2010,8 @@ public: // Comparison: Predicate: Any
 	}
 
 	// Any Value > Array
-	inline
 	friend
+	inline
 	bool
 	any_gt( T const & t, Array const & a )
 	{
@@ -1853,8 +2019,8 @@ public: // Comparison: Predicate: Any
 	}
 
 	// Any Array >= Value
-	inline
 	friend
+	inline
 	bool
 	any_ge( Array const & a, T const & t )
 	{
@@ -1862,8 +2028,8 @@ public: // Comparison: Predicate: Any
 	}
 
 	// Any Value >= Array
-	inline
 	friend
+	inline
 	bool
 	any_ge( T const & t, Array const & a )
 	{
@@ -1873,8 +2039,8 @@ public: // Comparison: Predicate: Any
 public: // Comparison: Predicate: All
 
 	// All Array == Value
-	inline
 	friend
+	inline
 	bool
 	all_eq( Array const & a, T const & t )
 	{
@@ -1882,8 +2048,8 @@ public: // Comparison: Predicate: All
 	}
 
 	// All Value == Array
-	inline
 	friend
+	inline
 	bool
 	all_eq( T const & t, Array const & a )
 	{
@@ -1891,8 +2057,8 @@ public: // Comparison: Predicate: All
 	}
 
 	// All Array != Value
-	inline
 	friend
+	inline
 	bool
 	all_ne( Array const & a, T const & t )
 	{
@@ -1900,8 +2066,8 @@ public: // Comparison: Predicate: All
 	}
 
 	// All Value != Array
-	inline
 	friend
+	inline
 	bool
 	all_ne( T const & t, Array const & a )
 	{
@@ -1909,8 +2075,8 @@ public: // Comparison: Predicate: All
 	}
 
 	// All Array < Value
-	inline
 	friend
+	inline
 	bool
 	all_lt( Array const & a, T const & t )
 	{
@@ -1918,8 +2084,8 @@ public: // Comparison: Predicate: All
 	}
 
 	// All Value < Array
-	inline
 	friend
+	inline
 	bool
 	all_lt( T const & t, Array const & a )
 	{
@@ -1927,8 +2093,8 @@ public: // Comparison: Predicate: All
 	}
 
 	// All Array <= Value
-	inline
 	friend
+	inline
 	bool
 	all_le( Array const & a, T const & t )
 	{
@@ -1936,8 +2102,8 @@ public: // Comparison: Predicate: All
 	}
 
 	// All Value <= Array
-	inline
 	friend
+	inline
 	bool
 	all_le( T const & t, Array const & a )
 	{
@@ -1945,8 +2111,8 @@ public: // Comparison: Predicate: All
 	}
 
 	// All Array > Value
-	inline
 	friend
+	inline
 	bool
 	all_gt( Array const & a, T const & t )
 	{
@@ -1954,8 +2120,8 @@ public: // Comparison: Predicate: All
 	}
 
 	// All Value > Array
-	inline
 	friend
+	inline
 	bool
 	all_gt( T const & t, Array const & a )
 	{
@@ -1963,8 +2129,8 @@ public: // Comparison: Predicate: All
 	}
 
 	// All Array >= Value
-	inline
 	friend
+	inline
 	bool
 	all_ge( Array const & a, T const & t )
 	{
@@ -1972,8 +2138,8 @@ public: // Comparison: Predicate: All
 	}
 
 	// All Value >= Array
-	inline
 	friend
+	inline
 	bool
 	all_ge( T const & t, Array const & a )
 	{
@@ -1983,8 +2149,8 @@ public: // Comparison: Predicate: All
 public: // Comparison: Count
 
 	// Count Array == Value
-	inline
 	friend
+	inline
 	size_type
 	count_eq( Array const & a, T const & t )
 	{
@@ -1998,8 +2164,8 @@ public: // Comparison: Count
 	}
 
 	// Count Value == Array
-	inline
 	friend
+	inline
 	size_type
 	count_eq( T const & t, Array const & a )
 	{
@@ -2007,8 +2173,8 @@ public: // Comparison: Count
 	}
 
 	// Count Array != Value
-	inline
 	friend
+	inline
 	size_type
 	count_ne( Array const & a, T const & t )
 	{
@@ -2022,8 +2188,8 @@ public: // Comparison: Count
 	}
 
 	// Count Value != Array
-	inline
 	friend
+	inline
 	size_type
 	count_ne( T const & t, Array const & a )
 	{
@@ -2031,8 +2197,8 @@ public: // Comparison: Count
 	}
 
 	// Count Array < Value
-	inline
 	friend
+	inline
 	size_type
 	count_lt( Array const & a, T const & t )
 	{
@@ -2046,8 +2212,8 @@ public: // Comparison: Count
 	}
 
 	// Count Value < Array
-	inline
 	friend
+	inline
 	size_type
 	count_lt( T const & t, Array const & a )
 	{
@@ -2055,8 +2221,8 @@ public: // Comparison: Count
 	}
 
 	// Count Array <= Value
-	inline
 	friend
+	inline
 	size_type
 	count_le( Array const & a, T const & t )
 	{
@@ -2070,8 +2236,8 @@ public: // Comparison: Count
 	}
 
 	// Count Value <= Array
-	inline
 	friend
+	inline
 	size_type
 	count_le( T const & t, Array const & a )
 	{
@@ -2079,8 +2245,8 @@ public: // Comparison: Count
 	}
 
 	// Count Array > Value
-	inline
 	friend
+	inline
 	size_type
 	count_gt( Array const & a, T const & t )
 	{
@@ -2094,8 +2260,8 @@ public: // Comparison: Count
 	}
 
 	// Count Value > Array
-	inline
 	friend
+	inline
 	size_type
 	count_gt( T const & t, Array const & a )
 	{
@@ -2103,8 +2269,8 @@ public: // Comparison: Count
 	}
 
 	// Count Array >= Value
-	inline
 	friend
+	inline
 	size_type
 	count_ge( Array const & a, T const & t )
 	{
@@ -2118,8 +2284,8 @@ public: // Comparison: Count
 	}
 
 	// Count Value >= Array
-	inline
 	friend
+	inline
 	size_type
 	count_ge( T const & t, Array const & a )
 	{
@@ -2129,8 +2295,8 @@ public: // Comparison: Count
 protected: // Comparison: Predicate
 
 	// Array == Array
-	inline
 	friend
+	inline
 	bool
 	eq( Array const & a, Array const & b )
 	{
@@ -2144,8 +2310,8 @@ protected: // Comparison: Predicate
 	}
 
 	// Array != Array
-	inline
 	friend
+	inline
 	bool
 	ne( Array const & a, Array const & b )
 	{
@@ -2153,8 +2319,8 @@ protected: // Comparison: Predicate
 	}
 
 	// Array < Array
-	inline
 	friend
+	inline
 	bool
 	lt( Array const & a, Array const & b )
 	{
@@ -2168,8 +2334,8 @@ protected: // Comparison: Predicate
 	}
 
 	// Array <= Array
-	inline
 	friend
+	inline
 	bool
 	le( Array const & a, Array const & b )
 	{
@@ -2183,8 +2349,8 @@ protected: // Comparison: Predicate
 	}
 
 	// Array > Array
-	inline
 	friend
+	inline
 	bool
 	gt( Array const & a, Array const & b )
 	{
@@ -2192,8 +2358,8 @@ protected: // Comparison: Predicate
 	}
 
 	// Array >= Array
-	inline
 	friend
+	inline
 	bool
 	ge( Array const & a, Array const & b )
 	{
@@ -2203,8 +2369,8 @@ protected: // Comparison: Predicate
 protected: // Comparison: Predicate: Any
 
 	// Any Array == Array
-	inline
 	friend
+	inline
 	bool
 	any_eq( Array const & a, Array const & b )
 	{
@@ -2219,8 +2385,8 @@ protected: // Comparison: Predicate: Any
 	}
 
 	// Any Array != Array
-	inline
 	friend
+	inline
 	bool
 	any_ne( Array const & a, Array const & b )
 	{
@@ -2228,8 +2394,8 @@ protected: // Comparison: Predicate: Any
 	}
 
 	// Any Array < Array
-	inline
 	friend
+	inline
 	bool
 	any_lt( Array const & a, Array const & b )
 	{
@@ -2244,8 +2410,8 @@ protected: // Comparison: Predicate: Any
 	}
 
 	// Any Array <= Array
-	inline
 	friend
+	inline
 	bool
 	any_le( Array const & a, Array const & b )
 	{
@@ -2260,8 +2426,8 @@ protected: // Comparison: Predicate: Any
 	}
 
 	// Any Array > Array
-	inline
 	friend
+	inline
 	bool
 	any_gt( Array const & a, Array const & b )
 	{
@@ -2269,8 +2435,8 @@ protected: // Comparison: Predicate: Any
 	}
 
 	// Any Array >= Array
-	inline
 	friend
+	inline
 	bool
 	any_ge( Array const & a, Array const & b )
 	{
@@ -2280,8 +2446,8 @@ protected: // Comparison: Predicate: Any
 protected: // Comparison: Predicate: All
 
 	// All Array == Array
-	inline
 	friend
+	inline
 	bool
 	all_eq( Array const & a, Array const & b )
 	{
@@ -2289,8 +2455,8 @@ protected: // Comparison: Predicate: All
 	}
 
 	// All Array != Array
-	inline
 	friend
+	inline
 	bool
 	all_ne( Array const & a, Array const & b )
 	{
@@ -2298,8 +2464,8 @@ protected: // Comparison: Predicate: All
 	}
 
 	// All Array < Array
-	inline
 	friend
+	inline
 	bool
 	all_lt( Array const & a, Array const & b )
 	{
@@ -2307,8 +2473,8 @@ protected: // Comparison: Predicate: All
 	}
 
 	// All Array <= Array
-	inline
 	friend
+	inline
 	bool
 	all_le( Array const & a, Array const & b )
 	{
@@ -2316,8 +2482,8 @@ protected: // Comparison: Predicate: All
 	}
 
 	// All Array > Array
-	inline
 	friend
+	inline
 	bool
 	all_gt( Array const & a, Array const & b )
 	{
@@ -2325,8 +2491,8 @@ protected: // Comparison: Predicate: All
 	}
 
 	// All Array >= Array
-	inline
 	friend
+	inline
 	bool
 	all_ge( Array const & a, Array const & b )
 	{
@@ -2336,8 +2502,8 @@ protected: // Comparison: Predicate: All
 protected: // Comparison: Count
 
 	// Count Array == Array
-	inline
 	friend
+	inline
 	size_type
 	count_eq( Array const & a, Array const & b )
 	{
@@ -2353,8 +2519,8 @@ protected: // Comparison: Count
 	}
 
 	// Count Array != Array
-	inline
 	friend
+	inline
 	size_type
 	count_ne( Array const & a, Array const & b )
 	{
@@ -2370,8 +2536,8 @@ protected: // Comparison: Count
 	}
 
 	// Count Array < Array
-	inline
 	friend
+	inline
 	size_type
 	count_lt( Array const & a, Array const & b )
 	{
@@ -2387,8 +2553,8 @@ protected: // Comparison: Count
 	}
 
 	// Count Array <= Array
-	inline
 	friend
+	inline
 	size_type
 	count_le( Array const & a, Array const & b )
 	{
@@ -2404,8 +2570,8 @@ protected: // Comparison: Count
 	}
 
 	// Count Array > Array
-	inline
 	friend
+	inline
 	size_type
 	count_gt( Array const & a, Array const & b )
 	{
@@ -2413,8 +2579,8 @@ protected: // Comparison: Count
 	}
 
 	// Count Array >= Array
-	inline
 	friend
+	inline
 	size_type
 	count_ge( Array const & a, Array const & b )
 	{
@@ -2424,8 +2590,8 @@ protected: // Comparison: Count
 protected: // Comparison: Elemental
 
 	// Array == Array
-	inline
 	friend
+	inline
 	void
 	eq_elemental( Array const & a, Array const & b, Array< bool > & r )
 	{
@@ -2437,8 +2603,8 @@ protected: // Comparison: Elemental
 	}
 
 	// Array != Array
-	inline
 	friend
+	inline
 	void
 	ne_elemental( Array const & a, Array const & b, Array< bool > & r )
 	{
@@ -2450,8 +2616,8 @@ protected: // Comparison: Elemental
 	}
 
 	// Array < Array
-	inline
 	friend
+	inline
 	void
 	lt_elemental( Array const & a, Array const & b, Array< bool > & r )
 	{
@@ -2463,8 +2629,8 @@ protected: // Comparison: Elemental
 	}
 
 	// Array <= Array
-	inline
 	friend
+	inline
 	void
 	le_elemental( Array const & a, Array const & b, Array< bool > & r )
 	{
@@ -2476,8 +2642,8 @@ protected: // Comparison: Elemental
 	}
 
 	// Array > Array
-	inline
 	friend
+	inline
 	void
 	gt_elemental( Array const & a, Array const & b, Array< bool > & r )
 	{
@@ -2489,8 +2655,8 @@ protected: // Comparison: Elemental
 	}
 
 	// Array >= Array
-	inline
 	friend
+	inline
 	void
 	ge_elemental( Array const & a, Array const & b, Array< bool > & r )
 	{
@@ -2502,8 +2668,8 @@ protected: // Comparison: Elemental
 	}
 
 	// Array == Value
-	inline
 	friend
+	inline
 	void
 	eq_elemental( Array const & a, T const & t, Array< bool > & r )
 	{
@@ -2514,8 +2680,8 @@ protected: // Comparison: Elemental
 	}
 
 	// Array != Value
-	inline
 	friend
+	inline
 	void
 	ne_elemental( Array const & a, T const & t, Array< bool > & r )
 	{
@@ -2526,8 +2692,8 @@ protected: // Comparison: Elemental
 	}
 
 	// Array < Value
-	inline
 	friend
+	inline
 	void
 	lt_elemental( Array const & a, T const & t, Array< bool > & r )
 	{
@@ -2538,8 +2704,8 @@ protected: // Comparison: Elemental
 	}
 
 	// Array <= Value
-	inline
 	friend
+	inline
 	void
 	le_elemental( Array const & a, T const & t, Array< bool > & r )
 	{
@@ -2550,8 +2716,8 @@ protected: // Comparison: Elemental
 	}
 
 	// Array > Value
-	inline
 	friend
+	inline
 	void
 	gt_elemental( Array const & a, T const & t, Array< bool > & r )
 	{
@@ -2562,8 +2728,8 @@ protected: // Comparison: Elemental
 	}
 
 	// Array >= Value
-	inline
 	friend
+	inline
 	void
 	ge_elemental( Array const & a, T const & t, Array< bool > & r )
 	{
@@ -2574,8 +2740,8 @@ protected: // Comparison: Elemental
 	}
 
 	// Value == Array
-	inline
 	friend
+	inline
 	void
 	eq_elemental( T const & t, Array const & b, Array< bool > & r )
 	{
@@ -2586,8 +2752,8 @@ protected: // Comparison: Elemental
 	}
 
 	// Value != Array
-	inline
 	friend
+	inline
 	void
 	ne_elemental( T const & t, Array const & b, Array< bool > & r )
 	{
@@ -2598,8 +2764,8 @@ protected: // Comparison: Elemental
 	}
 
 	// Value < Array
-	inline
 	friend
+	inline
 	void
 	lt_elemental( T const & t, Array const & b, Array< bool > & r )
 	{
@@ -2610,8 +2776,8 @@ protected: // Comparison: Elemental
 	}
 
 	// Value <= Array
-	inline
 	friend
+	inline
 	void
 	le_elemental( T const & t, Array const & b, Array< bool > & r )
 	{
@@ -2622,8 +2788,8 @@ protected: // Comparison: Elemental
 	}
 
 	// Value > Array
-	inline
 	friend
+	inline
 	void
 	gt_elemental( T const & t, Array const & b, Array< bool > & r )
 	{
@@ -2634,8 +2800,8 @@ protected: // Comparison: Elemental
 	}
 
 	// Value >= Array
-	inline
 	friend
+	inline
 	void
 	ge_elemental( T const & t, Array const & b, Array< bool > & r )
 	{
@@ -2661,32 +2827,516 @@ protected: // Methods
 	void
 	size_set( size_type const size )
 	{
-		assert( size <= data_size_ );
+		assert( size <= capacity_ );
 		size_ = size;
 	}
 
 	// Resize a Real Array
 	inline
-	Array &
+	void
 	resize( size_type const size )
 	{
 		assert( owner_ );
 		assert( size != npos );
-		if ( ( data_size_ != size ) || ( ! data_ ) ) {
-#ifdef OBJEXXFCL_ARRAY_NOALIGN
+		if ( ( data_ == nullptr ) || ( capacity_ < size ) || ( ( capacity_ == size_ ) && ( size != size_ ) ) ) {
+#ifndef OBJEXXFCL_ARRAY_ALIGN
 			delete[] data_;
-			size_ = data_size_ = size;
-			data_ = new T[ data_size_ ]; // Allocate even if size==0 for consistency with Fortran
+			size_ = capacity_ = size;
+			data_ = new T[ capacity_ ]; // Allocate even if size==0 for consistency with Fortran
 #else
 			del_array();
-			size_ = data_size_ = size;
+			size_ = capacity_ = size;
 			data_ = new_array< T >(); // Allocate even if size==0 for consistency with Fortran
 #endif
+		} else {
+			size_ = size;
 		}
 #if defined(OBJEXXFCL_ARRAY_INIT) || defined(OBJEXXFCL_ARRAY_INIT_DEBUG)
 		if ( ! initializer_active() ) std::fill_n( data_, size_, Traits::initial_array_value() );
 #endif // OBJEXXFCL_ARRAY_INIT || OBJEXXFCL_ARRAY_INIT_DEBUG
-		return *this;
+	}
+
+	// Reserve Capacity in a Real Array
+	inline
+	void
+	reserve_capacity( size_type const n )
+	{
+		assert( owner_ );
+		assert( n != npos );
+		if ( capacity_ < n ) {
+#ifndef OBJEXXFCL_ARRAY_ALIGN
+			T * new_data = new T[ n ];
+#else
+			T * new_data = new_array< T >( n );
+#endif
+			if ( size_ > 0u ) move_or_copy( data_, data_ + size_, new_data );
+#ifndef OBJEXXFCL_ARRAY_ALIGN
+			delete[] data_;
+#else
+			del_array();
+#endif
+			capacity_ = n;
+			data_ = new_data;
+			sdata_ = data_ - shift_;
+		}
+	}
+
+	// Grow Capacity of a Real Array
+	inline
+	void
+	grow_capacity( size_type const n = 1u )
+	{
+		assert( owner_ );
+		assert( size_ < npos - n );
+		size_type const new_size( size_ + n );
+		if ( capacity_ < new_size ) {
+			size_type const lim_size( std::min( new_size, npos >> 1 ) );
+			size_type new_capacity( std::max( capacity_ << 1, size_type( 1u ) ) );
+			while( new_capacity < lim_size ) new_capacity <<= 1;
+			if ( new_capacity < new_size ) new_capacity = max_size;
+#ifndef OBJEXXFCL_ARRAY_ALIGN
+			T * new_data = new T[ new_capacity ];
+#else
+			T * new_data = new_array< T >( new_capacity );
+#endif
+			if ( size_ > 0u ) move_or_copy( data_, data_ + size_, new_data );
+#ifndef OBJEXXFCL_ARRAY_ALIGN
+			delete[] data_;
+#else
+			del_array();
+#endif
+			capacity_ = new_capacity;
+			data_ = new_data;
+			sdata_ = data_ - shift_;
+		}
+		size_ = new_size;
+	}
+
+	// Shrink Capacity to Size in a Real Array
+	inline
+	void
+	shrink_capacity()
+	{
+		assert( owner_ );
+		if ( capacity_ > size_ ) {
+#ifndef OBJEXXFCL_ARRAY_ALIGN
+			T * new_data = new T[ size_ ];
+#else
+			T * new_data = new_array< T >( size_ );
+#endif
+			if ( size_ > 0u ) move_or_copy( data_, data_ + size_, new_data );
+#ifndef OBJEXXFCL_ARRAY_ALIGN
+			delete[] data_;
+#else
+			del_array();
+#endif
+			capacity_ = size_;
+			data_ = new_data;
+			sdata_ = data_ - shift_;
+		}
+	}
+
+	// Append Value by Copy in a Real Array
+	inline
+	void
+	do_push_back_copy( T const & t )
+	{
+		assert( owner_ );
+		assert( size_ < npos - 1 );
+		size_type const new_size( size_ + 1 );
+		if ( capacity_ < new_size ) {
+			size_type new_capacity( std::max( capacity_ << 1, size_type( 1u ) ) );
+			if ( new_capacity < new_size ) new_capacity = max_size;
+#ifndef OBJEXXFCL_ARRAY_ALIGN
+			T * new_data = new T[ new_capacity ];
+#else
+			T * new_data = new_array< T >( new_capacity );
+#endif
+			new_data[ size_ ] = t;
+			if ( size_ > 0u ) move_or_copy( data_, data_ + size_, new_data );
+#ifndef OBJEXXFCL_ARRAY_ALIGN
+			delete[] data_;
+#else
+			del_array();
+#endif
+			capacity_ = new_capacity;
+			data_ = new_data;
+			sdata_ = data_ - shift_;
+		} else {
+			data_[ size_ ] = t;
+		}
+		size_ = new_size;
+	}
+
+	// Append Value by Move in a Real Array
+	inline
+	void
+	do_push_back_move( T && t )
+	{
+		assert( owner_ );
+		assert( size_ < npos - 1 );
+		size_type const new_size( size_ + 1 );
+		if ( capacity_ < new_size ) {
+			size_type new_capacity( std::max( capacity_ << 1, size_type( 1u ) ) );
+			if ( new_capacity < new_size ) new_capacity = max_size;
+#ifndef OBJEXXFCL_ARRAY_ALIGN
+			T * new_data = new T[ new_capacity ];
+#else
+			T * new_data = new_array< T >( new_capacity );
+#endif
+			new_data[ size_ ] = std::move( t );
+			if ( size_ > 0u ) move_or_copy( data_, data_ + size_, new_data );
+#ifndef OBJEXXFCL_ARRAY_ALIGN
+			delete[] data_;
+#else
+			del_array();
+#endif
+			capacity_ = new_capacity;
+			data_ = new_data;
+			sdata_ = data_ - shift_;
+		} else {
+			data_[ size_ ] = t;
+		}
+		size_ = new_size;
+	}
+
+	// Insert Value by Copy in a Real Array
+	inline
+	iterator
+	do_insert_copy( const_iterator pos, T const & t )
+	{
+		assert( owner_ );
+		assert( size_ < npos - 1 );
+		assert( data_ <= pos );
+		assert( pos <= end() );
+		size_type const new_size( size_ + 1 );
+		iterator const old_pos( data_ + ( pos - data_ ) );
+		if ( capacity_ < new_size ) {
+			size_type new_capacity( std::max( capacity_ << 1, size_type( 1u ) ) );
+			if ( new_capacity < new_size ) new_capacity = max_size;
+#ifndef OBJEXXFCL_ARRAY_ALIGN
+			T * new_data = new T[ new_capacity ];
+#else
+			T * new_data = new_array< T >( new_capacity );
+#endif
+			iterator const new_pos( new_data + ( pos - data_ ) );
+			*new_pos = t;
+			if ( data_ < pos ) move_or_copy( data_, old_pos, new_data );
+			iterator const old_end( end() );
+			if ( pos < old_end ) move_or_copy( old_pos, old_end, new_pos + 1 );
+#ifndef OBJEXXFCL_ARRAY_ALIGN
+			delete[] data_;
+#else
+			del_array();
+#endif
+			capacity_ = new_capacity;
+			data_ = new_data;
+			sdata_ = data_ - shift_;
+			size_ = new_size;
+			return new_pos;
+		} else {
+			iterator const old_end( end() );
+			size_ = new_size;
+			if ( pos != old_end ) move_or_copy_backward( old_pos, old_end, old_end + 1 );
+			*old_pos = t;
+			return old_pos;
+		}
+	}
+
+	// Insert Value by Move in a Real Array
+	inline
+	iterator
+	do_insert_move( const_iterator pos, T && t )
+	{
+		assert( owner_ );
+		assert( size_ < npos - 1 );
+		assert( data_ <= pos );
+		assert( pos <= end() );
+		size_type const new_size( size_ + 1 );
+		iterator const old_pos( data_ + ( pos - data_ ) );
+		if ( capacity_ < new_size ) {
+			size_type new_capacity( std::max( capacity_ << 1, size_type( 1u ) ) );
+			if ( new_capacity < new_size ) new_capacity = max_size;
+#ifndef OBJEXXFCL_ARRAY_ALIGN
+			T * new_data = new T[ new_capacity ];
+#else
+			T * new_data = new_array< T >( new_capacity );
+#endif
+			iterator const new_pos( new_data + ( pos - data_ ) );
+			*new_pos = std::move( t );
+			if ( data_ < pos ) move_or_copy( data_, old_pos, new_data );
+			iterator const old_end( end() );
+			if ( pos < old_end ) move_or_copy( old_pos, old_end, new_pos + 1 );
+#ifndef OBJEXXFCL_ARRAY_ALIGN
+			delete[] data_;
+#else
+			del_array();
+#endif
+			capacity_ = new_capacity;
+			data_ = new_data;
+			sdata_ = data_ - shift_;
+			size_ = new_size;
+			return new_pos;
+		} else {
+			iterator const old_end( end() );
+			size_ = new_size;
+			if ( pos != old_end ) move_or_copy_backward( old_pos, old_end, old_end + 1 );
+			*old_pos = std::move( t );
+			return old_pos;
+		}
+	}
+
+	// Insert Multiples of a Value by Copy in a Real Array
+	inline
+	iterator
+	do_insert_n_copy( const_iterator pos, size_type n, T const & t )
+	{
+		assert( owner_ );
+		assert( size_ < npos - n );
+		assert( data_ <= pos );
+		assert( pos <= end() );
+		size_type const new_size( size_ + n );
+		iterator const old_pos( data_ + ( pos - data_ ) );
+		if ( capacity_ < new_size ) {
+			size_type const lim_size( std::min( new_size, npos >> 1 ) );
+			size_type new_capacity( std::max( capacity_ << 1, size_type( 1u ) ) );
+			while( new_capacity < lim_size ) new_capacity <<= 1;
+			if ( new_capacity < new_size ) new_capacity = max_size;
+#ifndef OBJEXXFCL_ARRAY_ALIGN
+			T * new_data = new T[ new_capacity ];
+#else
+			T * new_data = new_array< T >( new_capacity );
+#endif
+			iterator const new_pos( new_data + ( pos - data_ ) );
+			std::fill_n( new_pos, n, t );
+			if ( data_ < pos ) move_or_copy( data_, old_pos, new_data );
+			iterator const old_end( end() );
+			if ( pos < old_end ) move_or_copy( old_pos, old_end, new_pos + n );
+#ifndef OBJEXXFCL_ARRAY_ALIGN
+			delete[] data_;
+#else
+			del_array();
+#endif
+			capacity_ = new_capacity;
+			data_ = new_data;
+			sdata_ = data_ - shift_;
+			size_ = new_size;
+			return new_pos;
+		} else {
+			iterator const old_end( end() );
+			size_ = new_size;
+			if ( pos != old_end ) move_or_copy_backward( old_pos, old_end, old_end + n );
+			std::fill_n( old_pos, n, t );
+			return old_pos;
+		}
+	}
+
+	// Insert Iterator Range in a Real Array
+	template< typename Iterator, class = typename std::enable_if<
+	 std::is_same< typename std::iterator_traits< Iterator >::iterator_category, std::input_iterator_tag >::value ||
+	 std::is_same< typename std::iterator_traits< Iterator >::iterator_category, std::forward_iterator_tag >::value ||
+	 std::is_same< typename std::iterator_traits< Iterator >::iterator_category, std::bidirectional_iterator_tag >::value ||
+	 std::is_same< typename std::iterator_traits< Iterator >::iterator_category, std::random_access_iterator_tag >::value
+	 >::type >
+	inline
+	iterator
+	do_insert_iterator( const_iterator pos, Iterator first, Iterator last ) // Like std containers first and last can't be iterators to this Array
+	{
+		assert( owner_ );
+		size_type const n( std::distance( first, last ) );
+		assert( size_ < npos - n );
+		assert( data_ <= pos );
+		assert( pos <= end() );
+		size_type const new_size( size_ + n );
+		iterator const old_pos( data_ + ( pos - data_ ) );
+		if ( capacity_ < new_size ) {
+			size_type const lim_size( std::min( new_size, npos >> 1 ) );
+			size_type new_capacity( std::max( capacity_ << 1, size_type( 1u ) ) );
+			while( new_capacity < lim_size ) new_capacity <<= 1;
+			if ( new_capacity < new_size ) new_capacity = max_size;
+#ifndef OBJEXXFCL_ARRAY_ALIGN
+			T * new_data = new T[ new_capacity ];
+#else
+			T * new_data = new_array< T >( new_capacity );
+#endif
+			iterator const new_pos( new_data + ( pos - data_ ) );
+			std::copy( first, last, new_pos );
+			if ( data_ < pos ) move_or_copy( data_, old_pos, new_data );
+			iterator const old_end( end() );
+			if ( pos < old_end ) move_or_copy( old_pos, old_end, new_pos + n );
+#ifndef OBJEXXFCL_ARRAY_ALIGN
+			delete[] data_;
+#else
+			del_array();
+#endif
+			capacity_ = new_capacity;
+			data_ = new_data;
+			sdata_ = data_ - shift_;
+			size_ = new_size;
+			return new_pos;
+		} else {
+			iterator const old_end( end() );
+			size_ = new_size;
+			if ( pos != old_end ) move_or_copy_backward( old_pos, old_end, old_end + n );
+			std::copy( first, last, old_pos );
+			return old_pos;
+		}
+	}
+
+	// Insert Initializer List in a Real Array
+	inline
+	iterator
+	do_insert_initializer_list( const_iterator pos, std::initializer_list< T > il )
+	{
+		assert( owner_ );
+		size_type const n( il.size() );
+		assert( size_ < npos - n );
+		assert( data_ <= pos );
+		assert( pos <= end() );
+		size_type const new_size( size_ + n );
+		iterator const old_pos( data_ + ( pos - data_ ) );
+		if ( capacity_ < new_size ) {
+			size_type const lim_size( std::min( new_size, npos >> 1 ) );
+			size_type new_capacity( std::max( capacity_ << 1, size_type( 1u ) ) );
+			while( new_capacity < lim_size ) new_capacity <<= 1;
+			if ( new_capacity < new_size ) new_capacity = max_size;
+#ifndef OBJEXXFCL_ARRAY_ALIGN
+			T * new_data = new T[ new_capacity ];
+#else
+			T * new_data = new_array< T >( new_capacity );
+#endif
+			iterator const new_pos( new_data + ( pos - data_ ) );
+			std::copy( il.begin(), il.end(), new_pos );
+			if ( data_ < pos ) move_or_copy( data_, old_pos, new_data );
+			iterator const old_end( end() );
+			if ( pos < old_end ) move_or_copy( old_pos, old_end, new_pos + n );
+#ifndef OBJEXXFCL_ARRAY_ALIGN
+			delete[] data_;
+#else
+			del_array();
+#endif
+			capacity_ = new_capacity;
+			data_ = new_data;
+			sdata_ = data_ - shift_;
+			size_ = new_size;
+			return new_pos;
+		} else {
+			iterator const old_end( end() );
+			size_ = new_size;
+			if ( pos != old_end ) move_or_copy_backward( old_pos, old_end, old_end + n );
+			std::copy( il.begin(), il.end(), old_pos );
+			return old_pos;
+		}
+	}
+
+	// Insert Value Constructed in Place in a Real Array
+	template< typename... Args >
+	inline
+	iterator
+	do_emplace( const_iterator pos, Args &&... args )
+	{
+		assert( owner_ );
+		assert( size_ < npos - 1 );
+		assert( data_ <= pos );
+		assert( pos <= end() );
+		size_type const new_size( size_ + 1 );
+		iterator const old_pos( data_ + ( pos - data_ ) );
+		if ( capacity_ < new_size ) {
+			size_type new_capacity( std::max( capacity_ << 1, size_type( 1u ) ) );
+			if ( new_capacity < new_size ) new_capacity = max_size;
+#ifndef OBJEXXFCL_ARRAY_ALIGN
+			T * new_data = new T[ new_capacity ];
+#else
+			T * new_data = new_array< T >( new_capacity );
+#endif
+			iterator const new_pos( new_data + ( pos - data_ ) );
+			*new_pos = T( std::forward< Args >( args )... );
+			if ( data_ < pos ) move_or_copy( data_, old_pos, new_data );
+			iterator const old_end( end() );
+			if ( pos < old_end ) move_or_copy( old_pos, old_end, new_pos + 1 );
+#ifndef OBJEXXFCL_ARRAY_ALIGN
+			delete[] data_;
+#else
+			del_array();
+#endif
+			capacity_ = new_capacity;
+			data_ = new_data;
+			sdata_ = data_ - shift_;
+			size_ = new_size;
+			return new_pos;
+		} else {
+			iterator const old_end( end() );
+			size_ = new_size;
+			if ( pos != old_end ) move_or_copy_backward( old_pos, old_end, old_end + 1 );
+			*pos = T( std::forward< Args >( args )... );
+			return old_pos;
+		}
+	}
+
+	// Append Value Constructed in Place in a Real Array
+	template< typename... Args >
+	inline
+	void
+	do_emplace_back( Args &&... args )
+	{
+		assert( owner_ );
+		assert( size_ < npos - 1 );
+		size_type const new_size( size_ + 1 );
+		if ( capacity_ < new_size ) {
+			size_type new_capacity( std::max( capacity_ << 1, size_type( 1u ) ) );
+			if ( new_capacity < new_size ) new_capacity = max_size;
+#ifndef OBJEXXFCL_ARRAY_ALIGN
+			T * new_data = new T[ new_capacity ];
+#else
+			T * new_data = new_array< T >( new_capacity );
+#endif
+			new_data[ size_ ] = T( std::forward< Args >( args )... );
+			if ( size_ > 0u ) move_or_copy( data_, data_ + size_, new_data );
+#ifndef OBJEXXFCL_ARRAY_ALIGN
+			delete[] data_;
+#else
+			del_array();
+#endif
+			capacity_ = new_capacity;
+			data_ = new_data;
+			sdata_ = data_ - shift_;
+		} else {
+			data_[ size_ ] = T( std::forward< Args >( args )... );
+		}
+		size_ = new_size;
+	}
+
+	// Erase Iterator in a Real Array
+	inline
+	iterator
+	do_erase( const_iterator pos )
+	{
+		assert( owner_ );
+		assert( data_ <= pos );
+		assert( pos < end() );
+		iterator const old_pos( data_ + ( pos - data_ ) );
+		move_or_copy( old_pos + 1, end(), old_pos );
+		--size_;
+		return old_pos;
+	}
+
+	// Erase Iterator Range in a Real Array
+	inline
+	iterator
+	do_erase_iterator( const_iterator first, const_iterator last )
+	{
+		assert( owner_ );
+		assert( ( data_ <= first ) || ( first == last ) );
+		assert( ( first <= last ) || ( first == last ) );
+		assert( ( last <= end() ) || ( first == last ) );
+		size_type const n( std::distance( first, last ) );
+		iterator const start( data_ + ( first - data_ ) );
+		iterator const stop( data_ + ( last - data_ ) );
+		if ( n > 0u ) {
+			move_or_copy( stop, end(), start );
+			size_ -= n;
+		}
+		return start;
 	}
 
 	// Attach Proxy/Argument Array to Const Array of Same Rank
@@ -2695,7 +3345,7 @@ protected: // Methods
 	attach( Array const & a )
 	{
 		assert( ! owner_ );
-		data_size_ = a.data_size_;
+		capacity_ = a.capacity_;
 		data_ = a.data_;
 		size_ = a.size_;
 		shift_ = a.shift_;
@@ -2708,7 +3358,7 @@ protected: // Methods
 	attach( Array & a )
 	{
 		assert( ! owner_ );
-		data_size_ = a.data_size_;
+		capacity_ = a.capacity_;
 		data_ = a.data_;
 		size_ = a.size_;
 		shift_ = a.shift_;
@@ -2722,7 +3372,7 @@ protected: // Methods
 	attach( Array const & a )
 	{
 		assert( ! owner_ );
-		data_size_ = a.data_size_;
+		capacity_ = a.capacity_;
 		data_ = a.data_;
 		size_ = a.size_;
 		shift_ = shift;
@@ -2736,7 +3386,7 @@ protected: // Methods
 	attach( Array & a )
 	{
 		assert( ! owner_ );
-		data_size_ = a.data_size_;
+		capacity_ = a.capacity_;
 		data_ = a.data_;
 		size_ = a.size_;
 		shift_ = shift;
@@ -2750,9 +3400,9 @@ protected: // Methods
 	attach( Tail const & s )
 	{
 		assert( ! owner_ );
-		data_size_ = s.size();
+		capacity_ = s.size();
 		data_ = s.data_;
-		size_ = data_size_;
+		size_ = capacity_;
 		shift_ = shift;
 		sdata_ = data_ - shift_;
 	}
@@ -2764,9 +3414,9 @@ protected: // Methods
 	attach( Tail & s )
 	{
 		assert( ! owner_ );
-		data_size_ = s.size();
+		capacity_ = s.size();
 		data_ = s.data_;
-		size_ = data_size_;
+		size_ = capacity_;
 		shift_ = shift;
 		sdata_ = data_ - shift_;
 	}
@@ -2778,7 +3428,7 @@ protected: // Methods
 	attach( T const & t )
 	{
 		assert( ! owner_ );
-		data_size_ = npos; // Unknown
+		capacity_ = npos; // Unknown
 		data_ = const_cast< T * >( &t );
 		size_ = npos; // Unbounded
 		shift_ = shift;
@@ -2792,7 +3442,7 @@ protected: // Methods
 	attach( T & t )
 	{
 		assert( ! owner_ );
-		data_size_ = npos; // Unknown
+		capacity_ = npos; // Unknown
 		data_ = &t;
 		size_ = npos; // Unbounded
 		shift_ = shift;
@@ -2805,7 +3455,7 @@ protected: // Methods
 	detach()
 	{
 		assert( ! owner_ );
-		data_size_ = 0u;
+		capacity_ = 0u;
 		data_ = nullptr;
 		size_ = 0u;
 		shift_ = 0;
@@ -2818,7 +3468,7 @@ protected: // Methods
 	update_to( Array const & a )
 	{
 		assert( ! owner_ );
-		data_size_ = a.data_size_;
+		capacity_ = a.capacity_;
 		data_ = a.data_;
 	}
 
@@ -2828,7 +3478,7 @@ protected: // Methods
 	update_to( Array & a )
 	{
 		assert( ! owner_ );
-		data_size_ = a.data_size_;
+		capacity_ = a.capacity_;
 		data_ = a.data_;
 	}
 
@@ -2839,7 +3489,7 @@ protected: // Methods
 	{
 		assert( owner_ );
 		assert( v.owner_ );
-		std::swap( data_size_, v.data_size_ );
+		std::swap( capacity_, v.capacity_ );
 		std::swap( data_, v.data_ );
 		std::swap( size_, v.size_ );
 		std::swap( shift_, v.shift_ );
@@ -2902,13 +3552,13 @@ protected: // Methods
 	reconstruct_by_size( size_type const size )
 	{
 		assert( owner_ );
-#ifdef OBJEXXFCL_ARRAY_NOALIGN
+#ifndef OBJEXXFCL_ARRAY_ALIGN
 		delete[] data_;
-		size_ = data_size_ = size;
-		data_ = new T[ data_size_ ];
+		size_ = capacity_ = size;
+		data_ = new T[ capacity_ ];
 #else
 		del_array();
-		size_ = data_size_ = size;
+		size_ = capacity_ = size;
 		data_ = new_array< T >();
 #endif
 #if defined(OBJEXXFCL_ARRAY_INIT) || defined(OBJEXXFCL_ARRAY_INIT_DEBUG)
@@ -2923,15 +3573,15 @@ protected: // Methods
 	{
 		assert( this != &a );
 		assert( owner_ == a.owner_ );
-#ifdef OBJEXXFCL_ARRAY_NOALIGN
+#ifndef OBJEXXFCL_ARRAY_ALIGN
 		if ( owner_ ) delete[] data_;
 #else
 		if ( owner_ ) del_array();
 #endif
-		data_size_ = a.data_size_;
+		capacity_ = a.capacity_;
 		data_ = a.data_;
 		sdata_ = data_ - shift_;
-		a.data_size_ = 0u;
+		a.capacity_ = 0u;
 		a.data_ = nullptr;
 		a.size_ = 0u;
 		a.shift_ = 0;
@@ -3100,6 +3750,66 @@ protected: // Static Methods
 		return i * multiplier;
 	}
 
+	// Move if Movable: Movable Overload
+	template< typename U, class = typename std::enable_if< std::is_move_assignable< U >::value >::type >
+	inline
+	static
+	U &&
+	move_if( U & u )
+	{
+		return std::move( u );
+	}
+
+	// Move if Movable: Non-Movable Overload
+	template< typename U, class = typename std::enable_if< !std::is_move_assignable< U >::value >::type, typename = void >
+	inline
+	static
+	U &
+	move_if( U & u )
+	{
+		return u;
+	}
+
+	// Move or Copy: Move Overload
+	template< typename InputIterator, typename OutputIterator, typename U = T, class = typename std::enable_if< std::is_move_assignable< U >::value >::type >
+	inline
+	static
+	OutputIterator
+	move_or_copy( InputIterator beg, InputIterator end, OutputIterator out )
+	{
+		return std::move( beg, end, out );
+	}
+
+	// Move or Copy: Copy Overload
+	template< typename InputIterator, typename OutputIterator, typename U = T, class = typename std::enable_if< !std::is_move_assignable< U >::value >::type, typename = void >
+	inline
+	static
+	OutputIterator
+	move_or_copy( InputIterator beg, InputIterator end, OutputIterator out )
+	{
+		return std::copy( beg, end, out );
+	}
+
+	// Move or Copy Backward: Move Overload
+	template< typename InputIterator, typename OutputIterator, typename U = T, class = typename std::enable_if< std::is_move_assignable< U >::value >::type >
+	inline
+	static
+	OutputIterator
+	move_or_copy_backward( InputIterator beg, InputIterator end, OutputIterator out )
+	{
+		return std::move_backward( beg, end, out );
+	}
+
+	// Move or Copy Backward: Copy Overload
+	template< typename InputIterator, typename OutputIterator, typename U = T, class = typename std::enable_if< !std::is_move_assignable< U >::value >::type, typename = void >
+	inline
+	static
+	OutputIterator
+	move_or_copy_backward( InputIterator beg, InputIterator end, OutputIterator out )
+	{
+		return std::copy_backward( beg, end, out );
+	}
+
 private: // Methods
 
 	// Array Heap Allocator for POD Types
@@ -3108,16 +3818,16 @@ private: // Methods
 	T *
 	new_array()
 	{
-#ifdef OBJEXXFCL_ARRAY_NOALIGN
-		return new T[ data_size_ ];
+#ifndef OBJEXXFCL_ARRAY_ALIGN
+		return new T[ capacity_ ];
 #else
 #if defined(_WIN32)
-		return static_cast< T * >( _aligned_malloc( data_size_ * sizeof( T ), OBJEXXFCL_ARRAY_ALIGN ) );
+		return static_cast< T * >( _aligned_malloc( capacity_ * sizeof( T ), OBJEXXFCL_ARRAY_ALIGN ) );
 #elif defined(__linux__)
 		void * p;
-		return ( posix_memalign( &p, OBJEXXFCL_ARRAY_ALIGN, data_size_ * sizeof( T ) ) == 0 ? static_cast< T * >( p ) : nullptr );
+		return ( posix_memalign( &p, OBJEXXFCL_ARRAY_ALIGN, capacity_ * sizeof( T ) ) == 0 ? static_cast< T * >( p ) : nullptr );
 #else
-		return new T[ data_size_ ];
+		return new T[ capacity_ ];
 #endif
 #endif
 	}
@@ -3128,21 +3838,21 @@ private: // Methods
 	T *
 	new_array()
 	{
-#ifdef OBJEXXFCL_ARRAY_NOALIGN
-		return new T[ data_size_ ];
+#ifndef OBJEXXFCL_ARRAY_ALIGN
+		return new T[ capacity_ ];
 #else
 #if defined(_WIN32)
-		T * pT( static_cast< T * >( _aligned_malloc( data_size_ * sizeof( T ), OBJEXXFCL_ARRAY_ALIGN ) ) );
-		for ( size_t i = 0; i < data_size_; ++i ) {
+		T * pT( static_cast< T * >( _aligned_malloc( capacity_ * sizeof( T ), OBJEXXFCL_ARRAY_ALIGN ) ) );
+		for ( size_t i = 0; i < capacity_; ++i ) {
 			pT[ i ] = *( new( pT + i ) T() );
 		}
 		return pT;
 #elif defined(__linux__)
 		void * p;
-		int const status( posix_memalign( &p, OBJEXXFCL_ARRAY_ALIGN, data_size_ * sizeof( T ) ) );
+		int const status( posix_memalign( &p, OBJEXXFCL_ARRAY_ALIGN, capacity_ * sizeof( T ) ) );
 		if ( status == 0 ) { // Success
 			T * pT( static_cast< T * >( p ) );
-			for ( size_t i = 0; i < data_size_; ++i ) {
+			for ( size_t i = 0; i < capacity_; ++i ) {
 				pT[ i ] = *( new( pT + i ) T() );
 			}
 			return pT;
@@ -3150,7 +3860,60 @@ private: // Methods
 			return nullptr;
 		}
 #else
-		return new T[ data_size_ ];
+		return new T[ capacity_ ];
+#endif
+#endif
+	}
+
+	// Array Heap Allocator for POD Types
+	template< typename U, class = typename std::enable_if< std::is_fundamental< U >::value >::type >
+	inline
+	T *
+	new_array( size_type const n )
+	{
+#ifndef OBJEXXFCL_ARRAY_ALIGN
+		return new T[ n ];
+#else
+#if defined(_WIN32)
+		return static_cast< T * >( _aligned_malloc( n * sizeof( T ), OBJEXXFCL_ARRAY_ALIGN ) );
+#elif defined(__linux__)
+		void * p;
+		return ( posix_memalign( &p, OBJEXXFCL_ARRAY_ALIGN, n * sizeof( T ) ) == 0 ? static_cast< T * >( p ) : nullptr );
+#else
+		return new T[ n ];
+#endif
+#endif
+	}
+
+	// Array Heap Allocator for Class Types
+	template< typename U, class = typename std::enable_if< ! std::is_fundamental< U >::value >::type, typename = void >
+	inline
+	T *
+	new_array( size_type const n )
+	{
+#ifndef OBJEXXFCL_ARRAY_ALIGN
+		return new T[ n ];
+#else
+#if defined(_WIN32)
+		T * pT( static_cast< T * >( _aligned_malloc( n * sizeof( T ), OBJEXXFCL_ARRAY_ALIGN ) ) );
+		for ( size_t i = 0; i < n; ++i ) {
+			pT[ i ] = *( new( pT + i ) T() );
+		}
+		return pT;
+#elif defined(__linux__)
+		void * p;
+		int const status( posix_memalign( &p, OBJEXXFCL_ARRAY_ALIGN, n * sizeof( T ) ) );
+		if ( status == 0 ) { // Success
+			T * pT( static_cast< T * >( p ) );
+			for ( size_t i = 0; i < n; ++i ) {
+				pT[ i ] = *( new( pT + i ) T() );
+			}
+			return pT;
+		} else {
+			return nullptr;
+		}
+#else
+		return new T[ n ];
 #endif
 #endif
 	}
@@ -3161,15 +3924,15 @@ private: // Methods
 	del_array()
 	{
 		assert( owner_ );
-#ifdef OBJEXXFCL_ARRAY_NOALIGN
+#ifndef OBJEXXFCL_ARRAY_ALIGN
 		delete[] data_;
 #else
 #if defined(_WIN32)
-		size_type i( data_size_ );
+		size_type i( capacity_ );
 		while ( i ) data_[ --i ].~T();
 		_aligned_free( data_ );
 #elif defined(__linux__)
-		size_type i( data_size_ );
+		size_type i( capacity_ );
 		while ( i ) data_[ --i ].~T();
 		free( data_ );
 #else
@@ -3185,7 +3948,7 @@ public: // Data
 
 protected: // Data
 
-	size_type data_size_; // Size of data array
+	size_type capacity_; // Size of data array
 	T * data_; // Pointer to data array
 	size_type size_; // Size of active array
 	bool const owner_; // Owner of data array?

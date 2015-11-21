@@ -191,7 +191,7 @@ namespace DesiccantDehumidifiers {
 
 		// Get the desiccant dehumidifier unit index
 		if ( CompIndex == 0 ) {
-			DesicDehumNum = FindItemInList( CompName, DesicDehum.Name(), NumDesicDehums );
+			DesicDehumNum = FindItemInList( CompName, DesicDehum );
 			if ( DesicDehumNum == 0 ) {
 				ShowFatalError( "SimDesiccantDehumidifier: Unit not found=" + CompName );
 			}
@@ -293,7 +293,6 @@ namespace DesiccantDehumidifiers {
 		using SteamCoils::GetCoilSteamInletNode;
 		auto & GetCoilMaxSteamFlowRate( SteamCoils::GetCoilMaxSteamFlowRate );
 		using SteamCoils::GetTypeOfCoil;
-		using SteamCoils::ZoneLoadControl;
 		using SteamCoils::GetSteamCoilControlNodeNum;
 		using OutAirNodeManager::CheckOutAirNodeNumber;
 		using OutAirNodeManager::CheckAndAddAirNodeNumber;
@@ -385,7 +384,7 @@ namespace DesiccantDehumidifiers {
 			DesicDehumNum = DesicDehumIndex;
 			IsNotOK = false;
 			IsBlank = false;
-			VerifyName( Alphas( 1 ), DesicDehum.Name(), DesicDehumNum - 1, IsNotOK, IsBlank, CurrentModuleObject + " Name" );
+			VerifyName( Alphas( 1 ), DesicDehum, DesicDehumNum - 1, IsNotOK, IsBlank, CurrentModuleObject + " Name" );
 			if ( IsNotOK ) {
 				ErrorsFound = true;
 				if ( IsBlank ) Alphas( 1 ) = "xxxxx";
@@ -675,7 +674,7 @@ namespace DesiccantDehumidifiers {
 
 			IsNotOK = false;
 			IsBlank = false;
-			VerifyName( Alphas( 1 ), DesicDehum.Name(), DesicDehumNum - 1, IsNotOK, IsBlank, DesicDehum( DesicDehumNum ).DehumType + " Name" );
+			VerifyName( Alphas( 1 ), DesicDehum, DesicDehumNum - 1, IsNotOK, IsBlank, DesicDehum( DesicDehumNum ).DehumType + " Name" );
 
 			if ( IsNotOK ) {
 				ErrorsFoundGeneric = true;
@@ -1330,7 +1329,6 @@ namespace DesiccantDehumidifiers {
 		using EMSManager::iHumidityRatioMaxSetPoint;
 		using SteamCoils::SimulateSteamCoilComponents;
 		auto & GetCoilMaxSteamFlowRate( SteamCoils::GetCoilMaxSteamFlowRate );
-		auto & GetSteamCoilCapacity( SteamCoils::GetCoilCapacity );
 		using WaterCoils::GetCoilMaxWaterFlowRate;
 		using WaterCoils::SimulateWaterCoilComponents;
 		using DataPlant::TypeOf_CoilSteamAirHeating;
@@ -1567,7 +1565,7 @@ namespace DesiccantDehumidifiers {
 	ControlDesiccantDehumidifier(
 		int const DesicDehumNum, // number of the current dehumidifier being simulated
 		Real64 & HumRatNeeded, // process air leaving humidity ratio set by controller [kg water/kg air]
-		bool const FirstHVACIteration // TRUE if 1st HVAC simulation of system timestep !unused1208
+		bool const EP_UNUSED( FirstHVACIteration ) // TRUE if 1st HVAC simulation of system timestep !unused1208
 	)
 	{
 
@@ -2829,7 +2827,7 @@ namespace DesiccantDehumidifiers {
 
 	//     NOTICE
 
-	//     Copyright © 1996-2014 The Board of Trustees of the University of Illinois
+	//     Copyright (c) 1996-2015 The Board of Trustees of the University of Illinois
 	//     and The Regents of the University of California through Ernest Orlando Lawrence
 	//     Berkeley National Laboratory.  All rights reserved.
 

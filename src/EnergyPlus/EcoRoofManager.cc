@@ -137,9 +137,7 @@ namespace EcoRoofManager {
 		//SUBROUTINE PARAMETER DEFINITIONS:
 		Real64 const Kv( 0.4 ); // Von Karmen's constant (source FASST)
 		Real64 const rch( 0.63 ); // Turbulent Schimdt Number
-		Real64 const Ks( 0.2 ); // W/m.k. Thermal Conductivity of soil
 		Real64 const rche( 0.71 ); // Turbulent Prandtl Number
-		Real64 const Rv( 461.53 ); // Gas Constant of Water Vapor J/kg K
 		Real64 const Rair( 0.286e3 ); // Gas Constant of air J/Kg K
 		Real64 const g1( 9.81 ); // Gravity. In m/sec^2.
 		Real64 const Sigma( 5.6697e-08 ); // Stefan-Boltzmann constant W/m^2K^4
@@ -611,10 +609,10 @@ namespace EcoRoofManager {
 		Real64 const Vfluxg, // Water mass flux from soil surface [m/s]
 		int & ConstrNum, // Indicator for contruction index for the current surface
 		Real64 & Alphag,
-		int const unit, // unused1208
-		Real64 const Tg, // unused1208
-		Real64 const Tf, // unused1208
-		Real64 const Qsoil // unused1208
+		int const EP_UNUSED( unit ), // unused1208
+		Real64 const EP_UNUSED( Tg ), // unused1208
+		Real64 const EP_UNUSED( Tf ), // unused1208
+		Real64 const EP_UNUSED( Qsoil ) // unused1208
 	)
 	{
 		// SUBROUTINE INFORMATION
@@ -734,12 +732,19 @@ namespace EcoRoofManager {
 			if ( Material( Construct( ConstrNum ).LayerPoint( 1 ) ).EcoRoofCalculationMethod == 2 ) {
 				Real64 const depth_limit( depth_fac * std::pow( TopDepth + RootDepth, 2.07 ) );
 				for ( index1 = 1; index1 <= 20; ++index1 ) {
-					if ( double( MinutesPerTimeStep / index1 ) <= depth_limit ) break; //Autodesk RootDepth was used uninitialized here
+					if ( double( MinutesPerTimeStep / index1 ) <= depth_limit ) break;
 				}
 				if ( index1 > 1 ) {
-					ShowSevereError( "CalcEcoRoof: Too few time steps per hour for stability." );
-					ShowContinueError( "...Entered Timesteps per hour=[" + RoundSigDigits( NumOfTimeStepInHour ) + "], Change to some value greater than [" + RoundSigDigits( 60 * index1 / MinutesPerTimeStep ) + "] for assured stability." );
-					//      CALL ShowFatalError('Program terminates due to previous condition.')
+					ShowWarningError( "CalcEcoRoof: Too few time steps per hour for stability." );
+					if ( ceil( 60 * index1 / MinutesPerTimeStep ) <= 60 ) {
+						ShowContinueError( "...Entered Timesteps per hour=[" + RoundSigDigits( NumOfTimeStepInHour ) + "], Change to some value greater than or equal to [" + RoundSigDigits( 60 * index1 / MinutesPerTimeStep ) + "] for assured stability." );
+						ShowContinueError( "...Note that EnergyPlus has a maximum of 60 timesteps per hour" );
+						ShowContinueError( "...The program will continue, but if the simulation fails due to too low/high temperatures, instability here could be the reason." );
+					} else {
+						ShowContinueError( "...Entered Timesteps per hour=[" + RoundSigDigits( NumOfTimeStepInHour ) + "], however the required frequency for stability [" + RoundSigDigits( 60 * index1 / MinutesPerTimeStep ) + "] is over the EnergyPlus maximum of 60." );
+						ShowContinueError( "...Consider using the simple moisture diffusion calculation method for this application" );
+						ShowContinueError( "...The program will continue, but if the simulation fails due to too low/high temperatures, instability here could be the reason." );
+					}
 				}
 			}
 
@@ -1038,7 +1043,7 @@ namespace EcoRoofManager {
 
 	//     NOTICE
 
-	//     Copyright © 1996-2014 The Board of Trustees of the University of Illinois
+	//     Copyright (c) 1996-2015 The Board of Trustees of the University of Illinois
 	//     and The Regents of the University of California through Ernest Orlando Lawrence
 	//     Berkeley National Laboratory.  All rights reserved.
 

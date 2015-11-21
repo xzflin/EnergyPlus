@@ -151,11 +151,28 @@ namespace SimulationManager {
 	bool RunPeriodsInInput( false );
 	bool RunControlInInput( false );
 
+	namespace {
+		// These were static variables within different functions. They were pulled out into the namespace
+		// to facilitate easier unit testing of those functions.
+		// These are purposefully not in the header file as an extern variable. No one outside of SimulationManager should
+		// use these. They are cleared by clear_state() for use by unit tests, but normal simulations should be unaffected.
+		// This is purposefully in an anonymous namespace so nothing outside this implementation file can use it.
+		bool PreP_Fatal( false );
+	}
+
 	// SUBROUTINE SPECIFICATIONS FOR MODULE SimulationManager
 
 	// MODULE SUBROUTINES:
 
 	// Functions
+	void
+	clear_state()
+	{
+		RunPeriodsInInput = false;
+		RunControlInInput = false;
+		PreP_Fatal = false;
+	}
+
 
 	void
 	ManageSimulation()
@@ -195,6 +212,7 @@ namespace SimulationManager {
 		using OutputReportTabular::WriteTabularReports;
 		using OutputReportTabular::OpenOutputTabularFile;
 		using OutputReportTabular::CloseOutputTabularFile;
+		using OutputReportTabular::ResetTabularReports;
 		using DataErrorTracking::AskForConnectionsReport;
 		using DataErrorTracking::ExitDuringSimulations;
 		using OutputProcessor::SetupTimePointers;
@@ -227,15 +245,15 @@ namespace SimulationManager {
 		using PlantManager::CheckIfAnyPlant;
 		using CurveManager::InitCurveReporting;
 		using namespace DataTimings;
-		using DataSystemVariables::DeveloperFlag;
-		using DataSystemVariables::TimingFlag;
 		using DataSystemVariables::FullAnnualRun;
 		using SetPointManager::CheckIfAnyIdealCondEntSetPoint;
 		using Psychrometrics::InitializePsychRoutines;
-		using namespace FaultsManager;
+		using FaultsManager::CheckAndReadFaults;
 		using PlantPipingSystemsManager::InitAndSimGroundDomains;
 		using PlantPipingSystemsManager::CheckIfAnySlabs;
 		using PlantPipingSystemsManager::CheckIfAnyBasements;
+		using OutputProcessor::ResetAccumulationWhenWarmupComplete;
+		using OutputProcessor::isFinalYear;
 
 		// Locals
 		// SUBROUTINE PARAMETER DEFINITIONS:
@@ -302,12 +320,12 @@ namespace SimulationManager {
 		CheckIfAnyBasements();
 		CheckIfAnyIdealCondEntSetPoint();
 
-		CheckAndReadFaults();
-
 		ManageBranchInput(); // just gets input and returns.
 
 		DoingSizing = true;
 		ManageSizing();
+
+		CheckAndReadFaults();
 
 		BeginFullSimFlag = true;
 		SimsDone = false;
@@ -438,6 +456,9 @@ namespace SimulationManager {
 			DayOfSim = 0;
 			DayOfSimChr = "0";
 			NumOfWarmupDays = 0;
+			if ( NumOfDayInEnvrn <= 365 ){
+				isFinalYear = true;
+			}
 
 			ManageEMS( emsCallFromBeginNewEvironment ); // calling point
 
@@ -457,6 +478,7 @@ namespace SimulationManager {
 				BeginDayFlag = true;
 				EndDayFlag = false;
 
+
 				if ( WarmupFlag ) {
 					++NumOfWarmupDays;
 					cWarmupDay = TrimSigDigits( NumOfWarmupDays );
@@ -464,9 +486,15 @@ namespace SimulationManager {
 				} else if ( DayOfSim == 1 ) {
 					DisplayString( "Starting Simulation at " + CurMnDy + " for " + EnvironmentName );
 					gio::write( OutputFileInits, Format_700 ) << NumOfWarmupDays;
+					ResetAccumulationWhenWarmupComplete();
 				} else if ( DisplayPerfSimulationFlag ) {
 					DisplayString( "Continuing Simulation at " + CurMnDy + " for " + EnvironmentName );
 					DisplayPerfSimulationFlag = false;
+				}
+				// for simulations that last longer than a week, identify when the last year of the simulation is started
+				if ( ( DayOfSim > 365 ) && ( (NumOfDayInEnvrn - DayOfSim) == 364 ) && !WarmupFlag ){
+					DisplayString( "Starting last  year of environment at:  " + DayOfSimChr );
+					ResetTabularReports();
 				}
 
 				for ( HourOfDay = 1; HourOfDay <= 24; ++HourOfDay ) { // Begin hour loop ...
@@ -1782,7 +1810,6 @@ namespace SimulationManager {
 		using DataLoopNode::NumOfNodes;
 		using DataLoopNode::NodeID;
 		using namespace DataHVACGlobals;
-		using DataHeatBalance::Zone;
 		using namespace DataPlant;
 		using namespace DataZoneEquipment;
 		using OutAirNodeManager::OutsideAirNodeList;
@@ -2382,7 +2409,9 @@ namespace SimulationManager {
 		// na
 
 		// SUBROUTINE LOCAL VARIABLE DECLARATIONS:
-		static bool PreP_Fatal( false ); // True if a preprocessor flags a fatal error
+		//////////// hoisted into namespace ////////////////////////////////////////////////
+		// static bool PreP_Fatal( false ); // True if a preprocessor flags a fatal error
+		////////////////////////////////////////////////////////////////////////////////////
 
 		DoingInputProcessing = false;
 
@@ -2483,7 +2512,7 @@ namespace SimulationManager {
 		std::string ErrorMessage;
 
 		gio::close( CacheIPErrorFile );
-		gio::open( CacheIPErrorFile, "eplusout.iperr" );
+		gio::open( CacheIPErrorFile, DataStringGlobals::outputIperrFileName );
 		iostatus = 0;
 		while ( iostatus == 0 ) {
 			{ IOFlags flags; gio::read( CacheIPErrorFile, fmtA, flags ) >> ErrorMessage; iostatus = flags.ios(); }
@@ -2755,7 +2784,6 @@ Resimulate(
 	using ZoneTempPredictorCorrector::ManageZoneAirUpdates;
 	using DataHeatBalFanSys::iGetZoneSetPoints;
 	using DataHeatBalFanSys::iPredictStep;
-	using DataHeatBalFanSys::iCorrectStep;
 	using HVACManager::SimHVAC;
 	//using HVACManager::CalcAirFlowSimple;
 	using DataHVACGlobals::UseZoneTimeStepHistory; // , InitDSwithZoneHistory
@@ -2782,8 +2810,8 @@ Resimulate(
 	if ( ResimHB ) {
 		// Surface simulation
 		InitSurfaceHeatBalance();
-		CalcHeatBalanceOutsideSurf();
-		CalcHeatBalanceInsideSurf();
+		HeatBalanceSurfaceManager::CalcHeatBalanceOutsideSurf();
+		HeatBalanceSurfaceManager::CalcHeatBalanceInsideSurf();
 
 		// Air simulation
 		InitAirHeatBalance();
@@ -2808,7 +2836,7 @@ Resimulate(
 }
 
 //     NOTICE
-//     Copyright © 1996-2014 The Board of Trustees of the University of Illinois
+	//     Copyright (c) 1996-2015 The Board of Trustees of the University of Illinois
 //     and The Regents of the University of California through Ernest Orlando Lawrence
 //     Berkeley National Laboratory.  All rights reserved.
 //     Portions of the EnergyPlus software package have been developed and copyrighted

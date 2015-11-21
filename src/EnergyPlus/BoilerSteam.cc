@@ -93,7 +93,7 @@ namespace BoilerSteam {
 
 	void
 	SimSteamBoiler(
-		std::string const & BoilerType, // boiler type (used in CASE statement)
+		std::string const & EP_UNUSED( BoilerType ), // boiler type (used in CASE statement)
 		std::string const & BoilerName, // boiler identifier
 		int const EquipFlowCtrl, // Flow control mode for the equipment
 		int & CompIndex, // boiler counter/identifier
@@ -146,7 +146,7 @@ namespace BoilerSteam {
 
 		// Find the correct Equipment
 		if ( CompIndex == 0 ) {
-			BoilerNum = FindItemInList( BoilerName, Boiler.Name(), NumBoilers );
+			BoilerNum = FindItemInList( BoilerName, Boiler );
 			if ( BoilerNum == 0 ) {
 				ShowFatalError( "SimBoiler: Unit not found=" + BoilerName );
 			}
@@ -257,7 +257,7 @@ namespace BoilerSteam {
 
 			IsNotOK = false;
 			IsBlank = false;
-			VerifyName( cAlphaArgs( 1 ), Boiler.Name(), BoilerNum - 1, IsNotOK, IsBlank, cCurrentModuleObject + " Name" );
+			VerifyName( cAlphaArgs( 1 ), Boiler, BoilerNum - 1, IsNotOK, IsBlank, cCurrentModuleObject + " Name" );
 			if ( IsNotOK ) {
 				ErrorsFound = true;
 				if ( IsBlank ) cAlphaArgs( 1 ) = "xxxxx";
@@ -421,7 +421,6 @@ namespace BoilerSteam {
 		using DataPlant::ScanPlantLoopsForObject;
 		using DataPlant::PlantLoop;
 		using DataPlant::PlantFirstSizesOkayToFinalize;
-		using DataPlant::PlantFirstSizeCompleted;
 		using DataPlant::SingleSetPoint;
 		using DataPlant::DualSetPointDeadBand;
 		using PlantUtilities::InitComponentNodes;
@@ -955,7 +954,7 @@ namespace BoilerSteam {
 		Real64 const MyLoad, // boiler operating load
 		bool const RunFlag, // boiler on when TRUE
 		int const Num, // boiler number
-		bool const FirstHVACIteration // TRUE if First iteration of simulation
+		bool const EP_UNUSED( FirstHVACIteration ) // TRUE if First iteration of simulation
 	)
 	{
 		// SUBROUTINE INFORMATION:
@@ -1041,7 +1040,7 @@ namespace BoilerSteam {
 
 	//     NOTICE
 
-	//     Copyright © 1996-2014 The Board of Trustees of the University of Illinois
+	//     Copyright (c) 1996-2015 The Board of Trustees of the University of Illinois
 	//     and The Regents of the University of California through Ernest Orlando Lawrence
 	//     Berkeley National Laboratory.  All rights reserved.
 

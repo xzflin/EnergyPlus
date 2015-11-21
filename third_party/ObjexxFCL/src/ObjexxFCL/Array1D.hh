@@ -42,22 +42,30 @@ public: // Types
 	typedef  typename Super::IR  IR;
 
 	// STL Style
-	typedef  typename Base::value_type  value_type;
-	typedef  typename Base::reference  reference;
-	typedef  typename Base::const_reference  const_reference;
-	typedef  typename Base::pointer  pointer;
-	typedef  typename Base::const_pointer  const_pointer;
-	typedef  typename Base::size_type  size_type;
-	typedef  typename Base::difference_type  difference_type;
+	typedef  typename Super::value_type  value_type;
+	typedef  typename Super::reference  reference;
+	typedef  typename Super::const_reference  const_reference;
+	typedef  typename Super::pointer  pointer;
+	typedef  typename Super::const_pointer  const_pointer;
+	typedef  typename Super::iterator  iterator;
+	typedef  typename Super::const_iterator  const_iterator;
+	typedef  typename Super::reverse_iterator  reverse_iterator;
+	typedef  typename Super::const_reverse_iterator  const_reverse_iterator;
+	typedef  typename Super::size_type  size_type;
+	typedef  typename Super::difference_type  difference_type;
 
 	// C++ Style
-	typedef  typename Base::Value  Value;
-	typedef  typename Base::Reference  Reference;
-	typedef  typename Base::ConstReference  ConstReference;
-	typedef  typename Base::Pointer  Pointer;
-	typedef  typename Base::ConstPointer  ConstPointer;
-	typedef  typename Base::Size  Size;
-	typedef  typename Base::Difference  Difference;
+	typedef  typename Super::Value  Value;
+	typedef  typename Super::Reference  Reference;
+	typedef  typename Super::ConstReference  ConstReference;
+	typedef  typename Super::Pointer  Pointer;
+	typedef  typename Super::ConstPointer  ConstPointer;
+	typedef  typename Super::Iterator  Iterator;
+	typedef  typename Super::ConstIterator  ConstIterator;
+	typedef  typename Super::ReverseIterator  ReverseIterator;
+	typedef  typename Super::ConstReverseIterator  ConstReverseIterator;
+	typedef  typename Super::Size  Size;
+	typedef  typename Super::Difference  Difference;
 
 	typedef  ArrayInitializer< T, ObjexxFCL::Array1D >  Initializer;
 	typedef  typename Initializer::Function  InitializerFunction;
@@ -69,6 +77,7 @@ public: // Types
 	using Super::initialize;
 	using Super::isize1;
 	using Super::l;
+	using Super::move_if;
 	using Super::operator ();
 	using Super::operator [];
 	using Super::resize;
@@ -77,8 +86,8 @@ public: // Types
 	using Super::size_of;
 	using Super::swap1;
 	using Super::u;
+	using Super::capacity_;
 	using Super::data_;
-	using Super::data_size_;
 	using Super::I_;
 	using Super::sdata_;
 	using Super::shift_;
@@ -89,7 +98,9 @@ public: // Creation
 	// Default Constructor
 	inline
 	Array1D()
-	{}
+	{
+		shift_set( 1 ); // For std::vector-like API
+	}
 
 	// Copy Constructor
 	inline
@@ -462,6 +473,24 @@ public: // Creation
 		setup_real();
 	}
 
+	// Vector4 Constructor Template
+	template< typename U, class = typename std::enable_if< std::is_constructible< T, U >::value >::type >
+	inline
+	Array1D( Vector4< U > const & v ) :
+	 Super( v )
+	{
+		setup_real();
+	}
+
+	// Iterator Range Constructor Template
+	template< class Iterator, typename = decltype( *std::declval< Iterator & >(), void(), ++std::declval< Iterator & >(), void() ) >
+	inline
+	Array1D( Iterator const beg, Iterator const end ) :
+	 Super( beg, end )
+	{
+		setup_real();
+	}
+
 	// Range Named Constructor Template
 	template< typename U >
 	inline
@@ -705,6 +734,16 @@ public: // Assignment: Array
 	inline
 	Array1D &
 	operator =( Vector3< U > const & v )
+	{
+		Base::operator =( v );
+		return *this;
+	}
+
+	// Vector4 Assignment Template
+	template< typename U, class = typename std::enable_if< std::is_assignable< T&, U >::value >::type >
+	inline
+	Array1D &
+	operator =( Vector4< U > const & v )
 	{
 		Base::operator =( v );
 		return *this;
@@ -1030,6 +1069,46 @@ public: // Assignment: Array
 		return *this;
 	}
 
+	// += Vector4 Template
+	template< typename U, class = typename std::enable_if< std::is_assignable< T&, U >::value >::type >
+	inline
+	Array1D &
+	operator +=( Vector4< U > const & v )
+	{
+		Base::operator +=( v );
+		return *this;
+	}
+
+	// -= Vector4 Template
+	template< typename U, class = typename std::enable_if< std::is_assignable< T&, U >::value >::type >
+	inline
+	Array1D &
+	operator -=( Vector4< U > const & v )
+	{
+		Base::operator -=( v );
+		return *this;
+	}
+
+	// *= Vector4 Template
+	template< typename U, class = typename std::enable_if< std::is_assignable< T&, U >::value >::type >
+	inline
+	Array1D &
+	operator *=( Vector4< U > const & v )
+	{
+		Base::operator *=( v );
+		return *this;
+	}
+
+	// /= Vector4 Template
+	template< typename U, class = typename std::enable_if< std::is_assignable< T&, U >::value >::type >
+	inline
+	Array1D &
+	operator /=( Vector4< U > const & v )
+	{
+		Base::operator /=( v );
+		return *this;
+	}
+
 public: // Assignment: Array: Logical
 
 	// &&= Array Template
@@ -1192,6 +1271,26 @@ public: // Assignment: Array: Logical
 		return *this;
 	}
 
+	// &&= Vector4 Template
+	template< typename U, class = typename std::enable_if< std::is_assignable< T&, U >::value >::type >
+	inline
+	Array1D &
+	and_equals( Vector4< U > const & v )
+	{
+		Super::and_equals( v );
+		return *this;
+	}
+
+	// ||= Vector4 Template
+	template< typename U, class = typename std::enable_if< std::is_assignable< T&, U >::value >::type >
+	inline
+	Array1D &
+	or_equals( Vector4< U > const & v )
+	{
+		Super::or_equals( v );
+		return *this;
+	}
+
 public: // Assignment: Value
 
 	// = Value
@@ -1247,7 +1346,7 @@ public: // Subscript
 	a( int const i ) const
 	{
 		assert( contains( i ) );
-		return Tail( static_cast< T const * >( sdata_ + i ), data_size_ - ( i - shift_ ) );
+		return Tail( static_cast< T const * >( sdata_ + i ), size_ - ( i - shift_ ) );
 	}
 
 	// Tail Starting at array( i )
@@ -1256,7 +1355,7 @@ public: // Subscript
 	a( int const i )
 	{
 		assert( contains( i ) );
-		return Tail( sdata_ + i, data_size_ - ( i - shift_ ) );
+		return Tail( sdata_ + i, size_ - ( i - shift_ ) );
 	}
 
 public: // Predicate
@@ -1375,7 +1474,7 @@ public: // Modifier
 		Array1D o( I );
 		int const b( std::max( I.l(), l() ) ), e( std::min( I.u(), u() ) );
 		for ( int i = b; i <= e; ++i ) {
-			o( i ) = operator ()( i );
+			o( i ) = move_if( operator ()( i ) );
 		}
 		return swap( o );
 	}
@@ -1399,7 +1498,7 @@ public: // Modifier
 		}
 		if ( l_max_ <= u_min_ ) { // Ranges overlap
 			for ( int i = l_max_; i <= u_min_; ++i ) { // Copy array data in overlap
-				o( i ) = operator ()( i );
+				o( i ) = move_if( operator ()( i ) );
 			}
 		}
 		if ( u_ < I_u_ ) {
@@ -1419,7 +1518,7 @@ public: // Modifier
 		Array1D o( a.I_ );
 		int const b( std::max( a.l(), l() ) ), e( std::min( a.u(), u() ) );
 		for ( int i = b; i <= e; ++i ) {
-			o( i ) = operator ()( i );
+			o( i ) = move_if( operator ()( i ) );
 		}
 		return swap( o );
 	}
@@ -1445,7 +1544,7 @@ public: // Modifier
 		}
 		if ( l_max_ <= u_min_ ) { // Ranges overlap
 			for ( int i = l_max_; i <= u_min_; ++i ) { // Copy array data in overlap
-				o( i ) = operator ()( i );
+				o( i ) = move_if( operator ()( i ) );
 			}
 		}
 		if ( u_ < I_u_ ) {
@@ -1454,6 +1553,43 @@ public: // Modifier
 			}
 		}
 		return swap( o );
+	}
+
+	// Append Value: Grow by 1
+	inline
+	Array1D &
+	append( T const & t )
+	{
+		if ( capacity_ == size_ ) { // Grow by 1
+			Array1D o( IndexRange( l(), u() + 1 ) );
+			for ( int i = l(), e = u(); i <= e; ++i ) {
+				o( i ) = move_if( operator ()( i ) );
+			}
+			swap( o );
+		} else {
+			I_.grow();
+		}
+		operator ()( u() ) = t;
+		return *this;
+	}
+
+	// Append Value: Grow by 1
+	template< typename U = T, class = typename std::enable_if< std::is_move_assignable< U >::value >::type >
+	inline
+	Array1D &
+	append( T && t )
+	{
+		if ( capacity_ == size_ ) { // Grow by 1
+			Array1D o( IndexRange( l(), u() + 1 ) );
+			for ( int i = l(), e = u(); i <= e; ++i ) {
+				o( i ) = std::move( operator ()( i ) );
+			}
+			swap( o );
+		} else {
+			I_.grow();
+		}
+		operator ()( u() ) = std::move( t );
+		return *this;
 	}
 
 	// Set Initializer Value
@@ -1506,6 +1642,183 @@ public: // Modifier
 		using std::swap;
 		swap1( v );
 		swap( initializer_, v.initializer_ );
+		return *this;
+	}
+
+public: // std::vector-like API
+
+	// First Value
+	inline
+	T const &
+	front() const
+	{
+		assert( size_ > 0u );
+		return operator []( 0u );
+	}
+
+	// First Value
+	inline
+	T &
+	front()
+	{
+		assert( size_ > 0u );
+		return operator []( 0u );
+	}
+
+	// Last Value
+	inline
+	T const &
+	back() const
+	{
+		assert( size_ > 0u );
+		return operator []( size_ - 1 );
+	}
+
+	// Last Value
+	inline
+	T &
+	back()
+	{
+		assert( size_ > 0u );
+		return operator []( size_ - 1 );
+	}
+
+	// Append Value by Copy
+	inline
+	Array1D &
+	push_back( T const & t )
+	{
+		I_.grow();
+		Base::do_push_back_copy( t );
+		return *this;
+	}
+
+	// Append Value by Move
+	template< typename U = T, class = typename std::enable_if< std::is_move_assignable< U >::value >::type >
+	inline
+	Array1D &
+	push_back( T && t )
+	{
+		I_.grow();
+		Base::do_push_back_move( std::move( t ) );
+		return *this;
+	}
+
+	// Remove Last Value
+	inline
+	Array1D &
+	pop_back()
+	{
+		if ( size_ > 0u ) --size_;
+		return *this;
+	}
+
+	// Insert Value by Copy
+	inline
+	iterator
+	insert( const_iterator pos, T const & t )
+	{
+		I_.grow();
+		return Base::do_insert_copy( pos, t );
+	}
+
+	// Insert Value by Move
+	template< typename U = T, class = typename std::enable_if< std::is_move_assignable< U >::value >::type >
+	inline
+	iterator
+	insert( const_iterator pos, T && t )
+	{
+		I_.grow();
+		return Base::do_insert_move( pos, std::move( t ) );
+	}
+
+	// Insert Multiples of a Value by Copy
+	inline
+	iterator
+	insert( const_iterator pos, size_type n, T const & t )
+	{
+		I_.grow( static_cast< int >( n ) );
+		return Base::do_insert_n_copy( pos, n, t );
+	}
+
+	// Insert Iterator Range
+	template< typename Iterator, class = typename std::enable_if<
+	 std::is_same< typename std::iterator_traits< Iterator >::iterator_category, std::input_iterator_tag >::value ||
+	 std::is_same< typename std::iterator_traits< Iterator >::iterator_category, std::forward_iterator_tag >::value ||
+	 std::is_same< typename std::iterator_traits< Iterator >::iterator_category, std::bidirectional_iterator_tag >::value ||
+	 std::is_same< typename std::iterator_traits< Iterator >::iterator_category, std::random_access_iterator_tag >::value
+	 >::type >
+	inline
+	iterator
+	insert( const_iterator pos, Iterator first, Iterator last )
+	{
+		I_.grow( std::distance( first, last ) );
+		return Base::do_insert_iterator( pos, first, last );
+	}
+
+	// Insert Initializer List
+	inline
+	iterator
+	insert( const_iterator pos, std::initializer_list< T > il )
+	{
+		I_.grow( static_cast< int >( il.size() ) );
+		return Base::do_insert_initializer_list( pos, il );
+	}
+
+	// Insert Value Constructed in Place
+	template< typename... Args >
+	inline
+	iterator
+	emplace( const_iterator pos, Args &&... args )
+	{
+		I_.grow();
+		return Base::do_emplace( pos, std::forward< Args >( args )... );
+	}
+
+	// Append Value Constructed in Place
+	template< typename... Args >
+	inline
+	Array1D &
+	emplace_back( Args &&... args )
+	{
+		I_.grow();
+		Base::do_emplace_back( std::forward< Args >( args )... );
+		return *this;
+	}
+
+	// Erase Iterator
+	inline
+	iterator
+	erase( const_iterator pos )
+	{
+		I_.shrink();
+		return Base::do_erase( pos );
+	}
+
+	// Erase Iterator Range
+	inline
+	iterator
+	erase( const_iterator first, const_iterator last )
+	{
+		I_.shrink( std::distance( first, last ) );
+		return Base::do_erase_iterator( first, last );
+	}
+
+	// Reserve Capacity
+	inline
+	Array1D &
+	reserve( size_type const n )
+	{
+		Base::reserve_capacity( n );
+		return *this;
+	}
+
+	// Shrink Capacity to Size
+	inline
+	Array1D &
+	shrink_to_fit()
+	{
+		Base::shrink_capacity();
 		return *this;
 	}
 
@@ -3323,29 +3636,228 @@ operator ||( MArray1< A, T > const & a, MArray1< A, T > const & b )
 	return r;
 }
 
-// Cross Product of Two 3-Tuple Vectors
+// Cross Product of 3-Tuples
 template< typename T >
 inline
 Array1D< T >
 cross( Array1< T > const & a, Array1< T > const & b )
 {
 	assert( conformable( a, b ) );
-	assert( a.size() == 3 );
-	Array1D< T > c( Array1D< T >::one_based( a ) );
-	typename Array1D< T >::size_type const x( 0 ), y( 1 ), z( 2 );
-	c[ x ] = ( a[ y ] * b[ z ] ) - ( a[ z ] * b[ y ] );
-	c[ y ] = ( a[ z ] * b[ x ] ) - ( a[ x ] * b[ z ] );
-	c[ z ] = ( a[ x ] * b[ y ] ) - ( a[ y ] * b[ x ] );
+	assert( a.size() == 3u );
+	Array1D< T > c( 3 );
+	c[ 0 ] = ( a[ 1 ] * b[ 2 ] ) - ( a[ 2 ] * b[ 1 ] );
+	c[ 1 ] = ( a[ 2 ] * b[ 0 ] ) - ( a[ 0 ] * b[ 2 ] );
+	c[ 2 ] = ( a[ 0 ] * b[ 1 ] ) - ( a[ 1 ] * b[ 0 ] );
 	return c;
 }
 
-// Cross Product of Two 3-Tuple Vectors
+// Cross Product of 3-Tuples
+template< typename T >
+inline
+Array1D< T >
+cross( Array1< T > const & a, Array1S< T > const & b )
+{
+	assert( conformable( a, b ) );
+	assert( a.size() == 3u );
+	Array1D< T > c( 3 );
+	c[ 0 ] = ( a[ 1 ] * b[ 2 ] ) - ( a[ 2 ] * b[ 1 ] );
+	c[ 1 ] = ( a[ 2 ] * b[ 0 ] ) - ( a[ 0 ] * b[ 2 ] );
+	c[ 2 ] = ( a[ 0 ] * b[ 1 ] ) - ( a[ 1 ] * b[ 0 ] );
+	return c;
+}
+
+// Cross Product of 3-Tuples
+template< typename T >
+inline
+Array1D< T >
+cross( Array1S< T > const & a, Array1< T > const & b )
+{
+	assert( conformable( a, b ) );
+	assert( a.size() == 3u );
+	Array1D< T > c( 3 );
+	c[ 0 ] = ( a[ 1 ] * b[ 2 ] ) - ( a[ 2 ] * b[ 1 ] );
+	c[ 1 ] = ( a[ 2 ] * b[ 0 ] ) - ( a[ 0 ] * b[ 2 ] );
+	c[ 2 ] = ( a[ 0 ] * b[ 1 ] ) - ( a[ 1 ] * b[ 0 ] );
+	return c;
+}
+
+// Cross Product of 3-Tuples
+template< typename T >
+inline
+Array1D< T >
+cross( Array1S< T > const & a, Array1S< T > const & b )
+{
+	assert( conformable( a, b ) );
+	assert( a.size() == 3u );
+	Array1D< T > c( 3 );
+	c[ 0 ] = ( a[ 1 ] * b[ 2 ] ) - ( a[ 2 ] * b[ 1 ] );
+	c[ 1 ] = ( a[ 2 ] * b[ 0 ] ) - ( a[ 0 ] * b[ 2 ] );
+	c[ 2 ] = ( a[ 0 ] * b[ 1 ] ) - ( a[ 1 ] * b[ 0 ] );
+	return c;
+}
+
+// Cross Product of 3-Tuples
 template< typename T >
 inline
 Array1D< T >
 cross_product( Array1< T > const & a, Array1< T > const & b )
 {
 	return cross( a, b );
+}
+
+// Cross Product of 3-Tuples
+template< typename T >
+inline
+Array1D< T >
+cross_product( Array1< T > const & a, Array1S< T > const & b )
+{
+	return cross( a, b );
+}
+
+// Cross Product of 3-Tuples
+template< typename T >
+inline
+Array1D< T >
+cross_product( Array1S< T > const & a, Array1< T > const & b )
+{
+	return cross( a, b );
+}
+
+// Cross Product of 3-Tuples
+template< typename T >
+inline
+Array1D< T >
+cross_product( Array1S< T > const & a, Array1S< T > const & b )
+{
+	return cross( a, b );
+}
+
+// Cross Product of 3-Tuples
+template< typename T >
+inline
+Array1D< T >
+cross3( Array1< T > const & a, Array1< T > const & b )
+{
+	return cross( a, b );
+}
+
+// Cross Product of 3-Tuples
+template< typename T >
+inline
+Array1D< T >
+cross3( Array1S< T > const & a, Array1< T > const & b )
+{
+	return cross( a, b );
+}
+
+// Cross Product of 3-Tuples
+template< typename T >
+inline
+Array1D< T >
+cross3( Array1< T > const & a, Array1S< T > const & b )
+{
+	return cross( a, b );
+}
+
+// Cross Product of 3-Tuples
+template< typename T >
+inline
+Array1D< T >
+cross3( Array1S< T > const & a, Array1S< T > const & b )
+{
+	return cross( a, b );
+}
+
+// Cross Product of 3-Tuples
+template< typename T >
+inline
+Array1D< T >
+Array_cross( Array1< T > const & a, Vector3< T > const & b )
+{
+	assert( a.size() == 3u );
+	Array1D< T > c( 3 );
+	c[ 0 ] = ( a[ 1 ] * b.z ) - ( a[ 2 ] * b.y );
+	c[ 1 ] = ( a[ 2 ] * b.x ) - ( a[ 0 ] * b.z );
+	c[ 2 ] = ( a[ 0 ] * b.y ) - ( a[ 1 ] * b.x );
+	return c;
+}
+
+// Cross Product of 3-Tuples
+template< typename T >
+inline
+Array1D< T >
+Array_cross( Vector3< T > const & a, Array1< T > const & b )
+{
+	assert( b.size() == 3u );
+	Array1D< T > c( 3 );
+	c[ 0 ] = ( a.y * b[ 2 ] ) - ( a.z * b[ 1 ] );
+	c[ 1 ] = ( a.z * b[ 0 ] ) - ( a.x * b[ 2 ] );
+	c[ 2 ] = ( a.x * b[ 1 ] ) - ( a.y * b[ 0 ] );
+	return c;
+}
+
+// Cross Product of 3-Tuples
+template< typename T >
+inline
+Array1D< T >
+Array_cross3( Array1< T > const & a, Vector3< T > const & b )
+{
+	return Array_cross( a, b );
+}
+
+// Cross Product of 3-Tuples
+template< typename T >
+inline
+Array1D< T >
+Array_cross3( Vector3< T > const & a, Array1< T > const & b )
+{
+	return Array_cross( a, b );
+}
+
+// Cross Product of 3-Tuples
+template< typename T >
+inline
+Vector3< T >
+Vector_cross( Array1< T > const & a, Vector3< T > const & b )
+{
+	assert( a.size() == 3u );
+	Vector3< T > c;
+	c.x = ( a[ 1 ] * b.z ) - ( a[ 2 ] * b.y );
+	c.y = ( a[ 2 ] * b.x ) - ( a[ 0 ] * b.z );
+	c.z = ( a[ 0 ] * b.y ) - ( a[ 1 ] * b.x );
+	return c;
+}
+
+// Cross Product of 3-Tuples
+template< typename T >
+inline
+Vector3< T >
+Vector_cross( Vector3< T > const & a, Array1< T > const & b )
+{
+	assert( b.size() == 3u );
+	Vector3< T > c;
+	c.x = ( a.y * b[ 2 ] ) - ( a.z * b[ 1 ] );
+	c.y = ( a.z * b[ 0 ] ) - ( a.x * b[ 2 ] );
+	c.z = ( a.x * b[ 1 ] ) - ( a.y * b[ 0 ] );
+	return c;
+}
+
+// Cross Product of 3-Tuples
+template< typename T >
+inline
+Vector3< T >
+Vector_cross3( Array1< T > const & a, Vector3< T > const & b )
+{
+	return Vector_cross( a, b );
+}
+
+// Cross Product of 3-Tuples
+template< typename T >
+inline
+Vector3< T >
+Vector_cross3( Vector3< T > const & a, Array1< T > const & b )
+{
+	return Vector_cross( a, b );
 }
 
 } // ObjexxFCL

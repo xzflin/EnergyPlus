@@ -665,17 +665,14 @@ CheckThisAirSystemForSizing(
 	// na
 	int ThisAirSysSizineInputLoop;
 
+	AirLoopWasSized = false;
 	if ( SysSizingRunDone ) {
 		for ( ThisAirSysSizineInputLoop = 1; ThisAirSysSizineInputLoop <= NumSysSizInput; ++ThisAirSysSizineInputLoop ) {
 			if ( SysSizInput( ThisAirSysSizineInputLoop ).AirLoopNum == AirLoopNum ) {
 				AirLoopWasSized = true;
 				break;
-			} else {
-				AirLoopWasSized = false;
 			}
 		}
-	} else {
-		AirLoopWasSized = false;
 	}
 
 }
@@ -779,17 +776,14 @@ CheckThisZoneForSizing(
 	// SUBROUTINE LOCAL VARIABLE DECLARATIONS:
 	int ThisSizingInput;
 
+	ZoneWasSized = false;
 	if ( ZoneSizingRunDone ) {
 		for ( ThisSizingInput = 1; ThisSizingInput <= NumZoneSizingInput; ++ThisSizingInput ) {
 			if ( ZoneSizingInput( ThisSizingInput ).ZoneNum == ZoneNum ) {
 				ZoneWasSized = true;
 				break;
-			} else {
-				ZoneWasSized = false;
 			}
 		}
-	} else {
-		ZoneWasSized = false;
 	}
 
 }
@@ -906,7 +900,6 @@ CalcPassiveExteriorBaffleGap(
 	using namespace DataPrecisionGlobals;
 	using DataEnvironment::SkyTemp;
 	using DataEnvironment::WindSpeedAt;
-	using DataEnvironment::SunIsUp;
 	using DataEnvironment::OutBaroPress;
 	using DataEnvironment::IsRain;
 	// USE DataLoopNode    , ONLY: Node
@@ -931,7 +924,6 @@ CalcPassiveExteriorBaffleGap(
 	Real64 const g( 9.807 ); // gravitational constant (m/s**2)
 	Real64 const nu( 15.66e-6 ); // kinematic viscosity (m**2/s) for air at 300 K (Mills 1999 Heat Transfer)
 	Real64 const k( 0.0267 ); // thermal conductivity (W/m K) for air at 300 K (Mills 1999 Heat Transfer)
-	Real64 const Pr( 0.71 ); // Prandtl number for air
 	Real64 const Sigma( 5.6697e-08 ); // Stefan-Boltzmann constant
 	Real64 const KelvinConv( 273.15 ); // Conversion from Celsius to Kelvin
 	static std::string const RoutineName( "CalcPassiveExteriorBaffleGap" );
@@ -1324,7 +1316,6 @@ TestAirPathIntegrity( bool & ErrFound )
 
 	// Using/Aliasing
 	using namespace DataPrecisionGlobals;
-	using DataGlobals::OutputFileBNDetails;
 	using namespace DataLoopNode;
 	using DataHVACGlobals::NumPrimaryAirSys;
 	using DataAirLoop::AirToZoneNodeInfo;
@@ -2052,24 +2043,27 @@ TestReturnAirPathIntegrity(
 
 }
 
-//     NOTICE
-//     Copyright © 1996-2014 The Board of Trustees of the University of Illinois
-//     and The Regents of the University of California through Ernest Orlando Lawrence
-//     Berkeley National Laboratory.  All rights reserved.
-//     Portions of the EnergyPlus software package have been developed and copyrighted
-//     by other individuals, companies and institutions.  These portions have been
-//     incorporated into the EnergyPlus software package under license.   For a complete
-//     list of contributors, see "Notice" located in main.cc.
-//     NOTICE: The U.S. Government is granted for itself and others acting on its
-//     behalf a paid-up, nonexclusive, irrevocable, worldwide license in this data to
-//     reproduce, prepare derivative works, and perform publicly and display publicly.
-//     Beginning five (5) years after permission to assert copyright is granted,
-//     subject to two possible five year renewals, the U.S. Government is granted for
-//     itself and others acting on its behalf a paid-up, non-exclusive, irrevocable
-//     worldwide license in this data to reproduce, prepare derivative works,
-//     distribute copies to the public, perform publicly and display publicly, and to
-//     permit others to do so.
-//     TRADEMARKS: EnergyPlus is a trademark of the US Department of Energy.
+	//     NOTICE
+
+	//     Copyright (c) 1996-2015 The Board of Trustees of the University of Illinois
+	//     and The Regents of the University of California through Ernest Orlando Lawrence
+	//     Berkeley National Laboratory.  All rights reserved.
+
+	//     Portions of the EnergyPlus software package have been developed and copyrighted
+	//     by other individuals, companies and institutions.  These portions have been
+	//     incorporated into the EnergyPlus software package under license.   For a complete
+	//     list of contributors, see "Notice" located in main.cc.
+
+	//     NOTICE: The U.S. Government is granted for itself and others acting on its
+	//     behalf a paid-up, nonexclusive, irrevocable, worldwide license in this data to
+	//     reproduce, prepare derivative works, and perform publicly and display publicly.
+	//     Beginning five (5) years after permission to assert copyright is granted,
+	//     subject to two possible five year renewals, the U.S. Government is granted for
+	//     itself and others acting on its behalf a paid-up, non-exclusive, irrevocable
+	//     worldwide license in this data to reproduce, prepare derivative works,
+	//     distribute copies to the public, perform publicly and display publicly, and to
+	//     permit others to do so.
+	//     TRADEMARKS: EnergyPlus is a trademark of the US Department of Energy.
 
 
 } // EnergyPlus

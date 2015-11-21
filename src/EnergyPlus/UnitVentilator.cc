@@ -191,7 +191,7 @@ namespace UnitVentilator {
 
 		// Find the correct Unit Ventilator Equipment
 		if ( CompIndex == 0 ) {
-			UnitVentNum = FindItemInList( CompName, UnitVent.Name(), NumOfUnitVents );
+			UnitVentNum = FindItemInList( CompName, UnitVent );
 			if ( UnitVentNum == 0 ) {
 				ShowFatalError( "SimUnitVentilator: Unit not found=" + CompName );
 			}
@@ -270,13 +270,10 @@ namespace UnitVentilator {
 		using DataHVACGlobals::FanType_SimpleConstVolume;
 		using DataHVACGlobals::FanType_SimpleVAV;
 		using DataHVACGlobals::FanType_SimpleOnOff;
-		using DataHVACGlobals::ZoneComp;
 
 		using DataSizing::AutoSize;
 		using DataSizing::ZoneHVACSizing;
-		using DataSizing::NumZoneHVACSizing;
 		using General::TrimSigDigits;
-		using DataZoneEquipment::UnitVentilator_Num;
 		using DataZoneEquipment::ZoneEquipConfig;
 		using DataGlobals::NumOfZones;
 		using DataGlobals::ScheduleAlwaysOn;
@@ -357,7 +354,7 @@ namespace UnitVentilator {
 
 			IsNotOK = false;
 			IsBlank = false;
-			VerifyName( Alphas( 1 ), UnitVent.Name(), UnitVentNum - 1, IsNotOK, IsBlank, CurrentModuleObject + " Name" );
+			VerifyName( Alphas( 1 ), UnitVent, UnitVentNum - 1, IsNotOK, IsBlank, CurrentModuleObject + " Name" );
 			if ( IsNotOK ) {
 				ErrorsFound = true;
 				if ( IsBlank ) Alphas( 1 ) = "xxxxx";
@@ -545,7 +542,7 @@ namespace UnitVentilator {
 
 			UnitVent( UnitVentNum ).HVACSizingIndex = 0;
 			if (!lAlphaBlanks( 20 )) {
-				UnitVent( UnitVentNum ).HVACSizingIndex = FindItemInList( Alphas( 20 ), ZoneHVACSizing.Name(), NumZoneHVACSizing );
+				UnitVent( UnitVentNum ).HVACSizingIndex = FindItemInList( Alphas( 20 ), ZoneHVACSizing );
 				if (UnitVent( UnitVentNum ).HVACSizingIndex == 0) {
 					ShowSevereError( cAlphaFields( 20 ) + " = " + Alphas( 20 ) + " not found.");
 					ShowContinueError( "Occurs in " + cMO_UnitVentilator + " = " + UnitVent(UnitVentNum).Name );
@@ -895,7 +892,6 @@ namespace UnitVentilator {
 		// na
 
 		// Using/Aliasing
-		using DataEnvironment::StdBaroPress;
 		using DataEnvironment::StdRhoAir;
 		using DataZoneEquipment::ZoneEquipInputsFilled;
 		using DataZoneEquipment::CheckZoneEquipmentList;
@@ -1224,12 +1220,6 @@ namespace UnitVentilator {
 		int PltSizHeatNum; // index of plant sizing object for 1st heating loop
 		int PltSizCoolNum; // index of plant sizing object for 1st cooling loop
 		bool ErrorsFound;
-		Real64 CoilInTemp;
-		Real64 CoilOutTemp;
-		Real64 CoilOutHumRat;
-		Real64 CoilInHumRat;
-		Real64 CoilInEnthalpy;
-		Real64 CoilOutEnthalpy;
 		Real64 DesCoolingLoad;
 		Real64 DesHeatingLoad;
 		Real64 TempSteamIn;
@@ -1264,7 +1254,6 @@ namespace UnitVentilator {
 		std::string CompName; // component name
 		std::string CompType; // component type
 		std::string SizingString; // input field sizing description (e.g., Nominal Capacity)
-		bool bPRINT = true; // TRUE if sizing is reported to output (eio)
 		Real64 TempSize; // autosized value of coil input field
 		int FieldNum = 2; // IDD numeric field number where input field description is found
 		int SizingMethod; // Integer representation of sizing method name (e.g., CoolingAirflowSizing, HeatingAirflowSizing, CoolingCapacitySizing, HeatingCapacitySizing, etc.)
@@ -3248,7 +3237,7 @@ namespace UnitVentilator {
 
 	//     NOTICE
 
-	//     Copyright © 1996-2014 The Board of Trustees of the University of Illinois
+	//     Copyright (c) 1996-2015 The Board of Trustees of the University of Illinois
 	//     and The Regents of the University of California through Ernest Orlando Lawrence
 	//     Berkeley National Laboratory.  All rights reserved.
 

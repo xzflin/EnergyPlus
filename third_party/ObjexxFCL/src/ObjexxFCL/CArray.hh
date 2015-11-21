@@ -26,6 +26,7 @@
 #include <initializer_list>
 #include <iomanip>
 #include <istream>
+#include <iterator>
 #include <ostream>
 #include <type_traits>
 #include <utility>
@@ -44,6 +45,8 @@ private: // Friend
 public: // Types
 
 	typedef  TypeTraits< T >  Traits;
+	typedef  typename std::conditional< std::is_scalar< T >::value, T const, T const & >::type  Tc;
+	typedef  typename std::conditional< std::is_scalar< T >::value, typename std::remove_const< T >::type, T const & >::type  Tr;
 
 	// STL Style
 	typedef  T  value_type;
@@ -53,6 +56,8 @@ public: // Types
 	typedef  T const *  const_pointer;
 	typedef  T *  iterator;
 	typedef  T const *  const_iterator;
+	typedef  std::reverse_iterator< T * >  reverse_iterator;
+	typedef  std::reverse_iterator< T const * >  const_reverse_iterator;
 	typedef  std::size_t  size_type;
 	typedef  std::ptrdiff_t  difference_type;
 
@@ -64,6 +69,8 @@ public: // Types
 	typedef  T const *  ConstPointer;
 	typedef  T *  Iterator;
 	typedef  T const *  ConstIterator;
+	typedef  std::reverse_iterator< T * >  ReverseIterator;
+	typedef  std::reverse_iterator< T const * >  ConstReverseIterator;
 	typedef  std::size_t  Size;
 	typedef  std::ptrdiff_t  Difference;
 
@@ -172,7 +179,7 @@ public: // Creation
 	inline
 	CArray(
 	 size_type const size,
-	 T const & t
+	 Tc t
 	) :
 	 size_( size ),
 	 data_( size_ > 0u ? new T[ size_ ] : nullptr )
@@ -273,7 +280,7 @@ public: // Assignment
 	// Uniform Value Assignment
 	inline
 	CArray &
-	operator =( T const & t )
+	operator =( Tc t )
 	{
 		for ( size_type i = 0; i < size_; ++i ) {
 			data_[ i ] = t;
@@ -357,13 +364,13 @@ public: // Assignment
 	CArray &
 	assign(
 	 size_type const size,
-	 T const & value
+	 Tc t
 	)
 	{
 		if ( size_ != size ) { // Set to new array with uniform values
-			CArray( size, value ).swap( *this );
+			CArray( size, t ).swap( *this );
 		} else { // Set to uniform value
-			(*this) = value;
+			(*this) = t;
 		}
 		return *this;
 	}
@@ -397,7 +404,7 @@ public: // Assignment
 	// += Value
 	inline
 	CArray &
-	operator +=( T const & t )
+	operator +=( Tc t )
 	{
 		for ( size_type i = 0; i < size_; ++i ) {
 			data_[ i ] += t;
@@ -408,7 +415,7 @@ public: // Assignment
 	// -= Value
 	inline
 	CArray &
-	operator -=( T const & t )
+	operator -=( Tc t )
 	{
 		for ( size_type i = 0; i < size_; ++i ) {
 			data_[ i ] -= t;
@@ -419,7 +426,7 @@ public: // Assignment
 	// *= Value
 	inline
 	CArray &
-	operator *=( T const & t )
+	operator *=( Tc t )
 	{
 		for ( size_type i = 0; i < size_; ++i ) {
 			data_[ i ] *= t;
@@ -500,7 +507,7 @@ public: // Inspector
 
 	// First Element
 	inline
-	T const &
+	Tr
 	front() const
 	{
 		assert( size_ > 0u );
@@ -509,7 +516,7 @@ public: // Inspector
 
 	// Last Element
 	inline
-	T const &
+	Tr
 	back() const
 	{
 		assert( size_ > 0u );
@@ -579,7 +586,7 @@ public: // Modifier
 	CArray &
 	resize(
 	 size_type const size,
-	 T const & fill = T()
+	 Tc fill = T()
 	)
 	{
 		if ( size_ < size ) {
@@ -632,7 +639,7 @@ public: // Subscript
 
 	// CArray( i ) const: 1-Based Indexing
 	inline
-	T const &
+	Tr
 	operator ()( size_type const i ) const
 	{
 		assert( ( i > 0u ) && ( i <= size_ ) );
@@ -650,7 +657,7 @@ public: // Subscript
 
 public: // Iterator
 
-	// const_iterator to Beginning of Array
+	// Begin Iterator
 	inline
 	const_iterator
 	begin() const
@@ -658,7 +665,7 @@ public: // Iterator
 		return data_;
 	}
 
-	// iterator to Beginning of Array
+	// Begin Iterator
 	inline
 	iterator
 	begin()
@@ -666,20 +673,52 @@ public: // Iterator
 		return data_;
 	}
 
-	// const_iterator to Element Past End of Array
+	// End Iterator
 	inline
 	const_iterator
 	end() const
 	{
-		return data_ + size_;
+		return ( data_ != nullptr ? data_ + size_ : nullptr );
 	}
 
-	// iterator to Element Past End of Array
+	// End Iterator
 	inline
 	iterator
 	end()
 	{
-		return data_ + size_;
+		return ( data_ != nullptr ? data_ + size_ : nullptr );
+	}
+
+	// Reverse Begin Iterator
+	inline
+	const_reverse_iterator
+	rbegin() const
+	{
+		return const_reverse_iterator( data_ != nullptr ? data_ + size_ : nullptr );
+	}
+
+	// Reverse Begin Iterator
+	inline
+	reverse_iterator
+	rbegin()
+	{
+		return reverse_iterator( data_ != nullptr ? data_ + size_ : nullptr );
+	}
+
+	// Reverse End Iterator
+	inline
+	const_reverse_iterator
+	rend() const
+	{
+		return const_reverse_iterator( data_ );
+	}
+
+	// Reverse End Iterator
+	inline
+	reverse_iterator
+	rend()
+	{
+		return reverse_iterator( data_ );
 	}
 
 public: // Array Accessor
@@ -918,7 +957,7 @@ operator >( CArray< T > const & a, CArray< T > const & b )
 template< typename T >
 inline
 bool
-operator ==( CArray< T > const & a, T const & t )
+operator ==( CArray< T > const & a, typename CArray< T >::Tc t )
 {
 	for ( typename CArray< T >::size_type i = 0, ie = a.size(); i < ie; ++i ) {
 		if ( a[ i ] != t ) return false;
@@ -930,7 +969,7 @@ operator ==( CArray< T > const & a, T const & t )
 template< typename T >
 inline
 bool
-operator !=( CArray< T > const & a, T const & t )
+operator !=( CArray< T > const & a, typename CArray< T >::Tc t )
 {
 	return !( a == t );
 }
@@ -939,7 +978,7 @@ operator !=( CArray< T > const & a, T const & t )
 template< typename T >
 inline
 bool
-operator <( CArray< T > const & a, T const & t )
+operator <( CArray< T > const & a, typename CArray< T >::Tc t )
 {
 	for ( typename CArray< T >::size_type i = 0, ie = a.size(); i < ie; ++i ) {
 		if ( !( a[ i ] < t ) ) return false;
@@ -951,7 +990,7 @@ operator <( CArray< T > const & a, T const & t )
 template< typename T >
 inline
 bool
-operator <=( CArray< T > const & a, T const & t )
+operator <=( CArray< T > const & a, typename CArray< T >::Tc t )
 {
 	for ( typename CArray< T >::size_type i = 0, ie = a.size(); i < ie; ++i ) {
 		if ( !( a[ i ] <= t ) ) return false;
@@ -963,7 +1002,7 @@ operator <=( CArray< T > const & a, T const & t )
 template< typename T >
 inline
 bool
-operator >=( CArray< T > const & a, T const & t )
+operator >=( CArray< T > const & a, typename CArray< T >::Tc t )
 {
 	for ( typename CArray< T >::size_type i = 0, ie = a.size(); i < ie; ++i ) {
 		if ( !( a[ i ] >= t ) ) return false;
@@ -975,7 +1014,7 @@ operator >=( CArray< T > const & a, T const & t )
 template< typename T >
 inline
 bool
-operator >( CArray< T > const & a, T const & t )
+operator >( CArray< T > const & a, typename CArray< T >::Tc t )
 {
 	for ( typename CArray< T >::size_type i = 0, ie = a.size(); i < ie; ++i ) {
 		if ( !( a[ i ] > t ) ) return false;
@@ -987,7 +1026,7 @@ operator >( CArray< T > const & a, T const & t )
 template< typename T >
 inline
 bool
-operator ==( T const & t, CArray< T > const & a )
+operator ==( typename CArray< T >::Tc t, CArray< T > const & a )
 {
 	return ( a == t );
 }
@@ -996,7 +1035,7 @@ operator ==( T const & t, CArray< T > const & a )
 template< typename T >
 inline
 bool
-operator !=( T const & t, CArray< T > const & a )
+operator !=( typename CArray< T >::Tc t, CArray< T > const & a )
 {
 	return !( t == a );
 }
@@ -1005,7 +1044,7 @@ operator !=( T const & t, CArray< T > const & a )
 template< typename T >
 inline
 bool
-operator <( T const & t, CArray< T > const & a )
+operator <( typename CArray< T >::Tc t, CArray< T > const & a )
 {
 	for ( typename CArray< T >::size_type i = 0, ie = a.size(); i < ie; ++i ) {
 		if ( !( t < a[ i ] ) ) return false;
@@ -1017,7 +1056,7 @@ operator <( T const & t, CArray< T > const & a )
 template< typename T >
 inline
 bool
-operator <=( T const & t, CArray< T > const & a )
+operator <=( typename CArray< T >::Tc t, CArray< T > const & a )
 {
 	for ( typename CArray< T >::size_type i = 0, ie = a.size(); i < ie; ++i ) {
 		if ( !( t <= a[ i ] ) ) return false;
@@ -1029,7 +1068,7 @@ operator <=( T const & t, CArray< T > const & a )
 template< typename T >
 inline
 bool
-operator >=( T const & t, CArray< T > const & a )
+operator >=( typename CArray< T >::Tc t, CArray< T > const & a )
 {
 	for ( typename CArray< T >::size_type i = 0, ie = a.size(); i < ie; ++i ) {
 		if ( !( t >= a[ i ] ) ) return false;
@@ -1041,7 +1080,7 @@ operator >=( T const & t, CArray< T > const & a )
 template< typename T >
 inline
 bool
-operator >( T const & t, CArray< T > const & a )
+operator >( typename CArray< T >::Tc t, CArray< T > const & a )
 {
 	for ( typename CArray< T >::size_type i = 0, ie = a.size(); i < ie; ++i ) {
 		if ( !( t > a[ i ] ) ) return false;
@@ -1088,7 +1127,7 @@ operator -( CArray< T > const & a, CArray< T > const & b )
 template< typename T >
 inline
 CArray< T >
-operator +( CArray< T > const & a, T const & t )
+operator +( CArray< T > const & a, typename CArray< T >::Tc t )
 {
 	CArray< T > r( a );
 	r += t;
@@ -1099,7 +1138,7 @@ operator +( CArray< T > const & a, T const & t )
 template< typename T >
 inline
 CArray< T >
-operator +( T const & t, CArray< T > const & a )
+operator +( typename CArray< T >::Tc t, CArray< T > const & a )
 {
 	CArray< T > r( a );
 	r += t;
@@ -1110,7 +1149,7 @@ operator +( T const & t, CArray< T > const & a )
 template< typename T >
 inline
 CArray< T >
-operator -( CArray< T > const & a, T const & t )
+operator -( CArray< T > const & a, typename CArray< T >::Tc t )
 {
 	CArray< T > r( a );
 	r -= t;
@@ -1121,7 +1160,7 @@ operator -( CArray< T > const & a, T const & t )
 template< typename T >
 inline
 CArray< T >
-operator -( T const & t, CArray< T > const & a )
+operator -( typename CArray< T >::Tc t, CArray< T > const & a )
 {
 	CArray< T > r( -a );
 	r += t;
@@ -1132,7 +1171,7 @@ operator -( T const & t, CArray< T > const & a )
 template< typename T >
 inline
 CArray< T >
-operator *( CArray< T > const & a, T const & t )
+operator *( CArray< T > const & a, typename CArray< T >::Tc t )
 {
 	CArray< T > r( a );
 	r *= t;
@@ -1143,7 +1182,7 @@ operator *( CArray< T > const & a, T const & t )
 template< typename T >
 inline
 CArray< T >
-operator *( T const & t, CArray< T > const & a )
+operator *( typename CArray< T >::Tc t, CArray< T > const & a )
 {
 	CArray< T > r( a );
 	r *= t;
@@ -1154,7 +1193,7 @@ operator *( T const & t, CArray< T > const & a )
 template< typename T >
 inline
 CArray< T >
-operator /( CArray< T > const & a, T const & t )
+operator /( CArray< T > const & a, typename CArray< T >::Tc t )
 {
 	CArray< T > r( a );
 	r /= t;

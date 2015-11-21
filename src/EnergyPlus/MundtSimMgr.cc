@@ -409,8 +409,6 @@ namespace MundtSimMgr {
 		using DataSurfaces::Surface;
 		using DataHeatBalance::Zone;
 		using DataHeatBalance::HConvIn;
-		using DataHeatBalance::ZoneIntGain;
-		using DataHeatBalance::RefrigCaseCredit;
 		using DataZoneEquipment::ZoneEquipConfig;
 		using Psychrometrics::PsyWFnTdpPb;
 		using Psychrometrics::PsyCpAirFnWTdb;
@@ -947,7 +945,7 @@ namespace MundtSimMgr {
 
 	//     NOTICE
 
-	//     Copyright © 1996-2014 The Board of Trustees of the University of Illinois
+	//     Copyright (c) 1996-2015 The Board of Trustees of the University of Illinois
 	//     and The Regents of the University of California through Ernest Orlando Lawrence
 	//     Berkeley National Laboratory.  All rights reserved.
 

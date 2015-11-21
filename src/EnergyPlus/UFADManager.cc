@@ -131,7 +131,6 @@ namespace UFADManager {
 		using namespace DataSurfaces;
 		using namespace DataRoomAirModel;
 		using ConvectionCoefficients::CalcDetailedHcInForDVModel;
-		using DataHVACGlobals::SysTimeElapsed;
 		using namespace DataUCSDSharedData;
 
 		// Locals
@@ -630,13 +629,11 @@ namespace UFADManager {
 		// -
 
 		// Using/Aliasing
-		using DataRoomAirModel::AirModel;
 		using namespace DataHeatBalFanSys;
 		using namespace DataEnvironment;
 		using namespace DataHeatBalance;
 		using namespace InputProcessor;
 		using ScheduleManager::GetScheduleIndex;
-		using DataGlobals::BeginEnvrnFlag;
 
 		// Locals
 		// SUBROUTINE ARGUMENT DEFINITIONS:
@@ -1799,7 +1796,7 @@ namespace UFADManager {
 
 	//     NOTICE
 
-	//     Copyright © 1996-2014 The Board of Trustees of the University of Illinois
+	//     Copyright (c) 1996-2015 The Board of Trustees of the University of Illinois
 	//     and The Regents of the University of California through Ernest Orlando Lawrence
 	//     Berkeley National Laboratory.  All rights reserved.
 

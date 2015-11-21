@@ -171,7 +171,7 @@ namespace HighTempRadiantSystem {
 
 		// Find the correct ZoneHVAC:HighTemperatureRadiant
 		if ( CompIndex == 0 ) {
-			RadSysNum = FindItemInList( CompName, HighTempRadSys.Name(), NumOfHighTempRadSys );
+			RadSysNum = FindItemInList( CompName, HighTempRadSys );
 			if ( RadSysNum == 0 ) {
 				ShowFatalError( "SimHighTempRadiantSystem: Unit not found=" + CompName );
 			}
@@ -226,10 +226,8 @@ namespace HighTempRadiantSystem {
 		// na
 
 		// Using/Aliasing
-		using DataGlobals::NumOfZones;
 		using DataHeatBalance::Zone;
 		using DataSurfaces::Surface;
-		using DataSurfaces::TotSurfaces;
 		using InputProcessor::GetNumObjectsFound;
 		using InputProcessor::GetObjectItem;
 		using InputProcessor::FindItemInList;
@@ -239,7 +237,6 @@ namespace HighTempRadiantSystem {
 		using ScheduleManager::GetScheduleIndex;
 		using General::TrimSigDigits;
 		using DataSizing::AutoSize;
-		using DataSizing::FinalZoneSizing;
 		using DataSizing::HeatingDesignCapacity;
 		using DataSizing::CapacityPerFloorArea;
 		using DataSizing::FractionOfAutosizedHeatingCapacity;
@@ -302,7 +299,7 @@ namespace HighTempRadiantSystem {
 
 			IsNotOK = false;
 			IsBlank = false;
-			VerifyName( cAlphaArgs( 1 ), HighTempRadSys.Name(), Item - 1, IsNotOK, IsBlank, cCurrentModuleObject + " Name" );
+			VerifyName( cAlphaArgs( 1 ), HighTempRadSys, Item - 1, IsNotOK, IsBlank, cCurrentModuleObject + " Name" );
 			if ( IsNotOK ) {
 				ErrorsFound = true;
 				if ( IsBlank ) cAlphaArgs( 1 ) = "xxxxx";
@@ -322,7 +319,7 @@ namespace HighTempRadiantSystem {
 			}
 
 			HighTempRadSys( Item ).ZoneName = cAlphaArgs( 3 );
-			HighTempRadSys( Item ).ZonePtr = FindItemInList( cAlphaArgs( 3 ), Zone.Name(), NumOfZones );
+			HighTempRadSys( Item ).ZonePtr = FindItemInList( cAlphaArgs( 3 ), Zone );
 			if ( HighTempRadSys( Item ).ZonePtr == 0 ) {
 				ShowSevereError( "Invalid " + cAlphaFieldNames( 3 ) + " = " + cAlphaArgs( 3 ) );
 				ShowContinueError( "Occurs for " + cCurrentModuleObject + " = " + cAlphaArgs( 1 ) );
@@ -530,7 +527,7 @@ namespace HighTempRadiantSystem {
 			AllFracsSummed = HighTempRadSys( Item ).FracDistribPerson;
 			for ( SurfNum = 1; SurfNum <= HighTempRadSys( Item ).TotSurfToDistrib; ++SurfNum ) {
 				HighTempRadSys( Item ).SurfaceName( SurfNum ) = cAlphaArgs( SurfNum + 7 );
-				HighTempRadSys( Item ).SurfacePtr( SurfNum ) = FindItemInList( cAlphaArgs( SurfNum + 7 ), Surface.Name(), TotSurfaces );
+				HighTempRadSys( Item ).SurfacePtr( SurfNum ) = FindItemInList( cAlphaArgs( SurfNum + 7 ), Surface );
 				HighTempRadSys( Item ).FracDistribToSurf( SurfNum ) = rNumericArgs( SurfNum + 9 );
 				// Error trap for surfaces that do not exist or surfaces not in the zone the radiant heater is in
 				if ( HighTempRadSys( Item ).SurfacePtr( SurfNum ) == 0 ) {
@@ -577,6 +574,7 @@ namespace HighTempRadiantSystem {
 		} // ...end of DO loop through all of the high temperature radiant heaters
 
 		// Set up the output variables for high temperature radiant heaters
+		// cCurrentModuleObject = "ZoneHVAC:HighTemperatureRadiant"
 		for ( Item = 1; Item <= NumOfHighTempRadSys; ++Item ) {
 			SetupOutputVariable( "Zone Radiant HVAC Heating Rate [W]", HighTempRadSys( Item ).HeatPower, "System", "Average", HighTempRadSys( Item ).Name );
 			SetupOutputVariable( "Zone Radiant HVAC Heating Energy [J]", HighTempRadSys( Item ).HeatEnergy, "System", "Sum", HighTempRadSys( Item ).Name, _, "ENERGYTRANSFER", "HEATINGCOILS", _, "System" );
@@ -622,7 +620,6 @@ namespace HighTempRadiantSystem {
 		// Using/Aliasing
 		using DataGlobals::NumOfZones;
 		using DataGlobals::BeginEnvrnFlag;
-		using DataLoopNode::Node;
 		using DataZoneEquipment::ZoneEquipInputsFilled;
 		using DataZoneEquipment::CheckZoneEquipmentList;
 
@@ -837,7 +834,6 @@ namespace HighTempRadiantSystem {
 		// Using/Aliasing
 		using DataHeatBalance::MRT;
 		using DataHeatBalFanSys::MAT;
-		using DataHVACGlobals::SmallLoad;
 		using namespace DataZoneEnergyDemands;
 		using ScheduleManager::GetCurrentScheduleValue;
 
@@ -902,7 +898,7 @@ namespace HighTempRadiantSystem {
 
 	void
 	CalcHighTempRadiantSystemSP(
-		bool const FirstHVACIteration, // true if this is the first HVAC iteration at this system time step !unused1208
+		bool const EP_UNUSED( FirstHVACIteration ), // true if this is the first HVAC iteration at this system time step !unused1208
 		int const RadSysNum // name of the low temperature radiant system
 	)
 	{
@@ -983,8 +979,8 @@ namespace HighTempRadiantSystem {
 			DistributeHTRadGains();
 
 			// Now "simulate" the system by recalculating the heat balances
-			CalcHeatBalanceOutsideSurf( ZoneNum );
-			CalcHeatBalanceInsideSurf( ZoneNum );
+			HeatBalanceSurfaceManager::CalcHeatBalanceOutsideSurf( ZoneNum );
+			HeatBalanceSurfaceManager::CalcHeatBalanceInsideSurf( ZoneNum );
 
 			// First determine whether or not the unit should be on
 			// Determine the proper temperature on which to control
@@ -1024,8 +1020,8 @@ namespace HighTempRadiantSystem {
 					DistributeHTRadGains();
 
 					// Now "simulate" the system by recalculating the heat balances
-					CalcHeatBalanceOutsideSurf( ZoneNum );
-					CalcHeatBalanceInsideSurf( ZoneNum );
+					HeatBalanceSurfaceManager::CalcHeatBalanceOutsideSurf( ZoneNum );
+					HeatBalanceSurfaceManager::CalcHeatBalanceInsideSurf( ZoneNum );
 
 					// Redetermine the current value of the controlling temperature
 					{ auto const SELECT_CASE_var( HighTempRadSys( RadSysNum ).ControlType );
@@ -1154,8 +1150,8 @@ namespace HighTempRadiantSystem {
 
 			// Now "simulate" the system by recalculating the heat balances
 			ZoneNum = HighTempRadSys( RadSysNum ).ZonePtr;
-			CalcHeatBalanceOutsideSurf( ZoneNum );
-			CalcHeatBalanceInsideSurf( ZoneNum );
+			HeatBalanceSurfaceManager::CalcHeatBalanceOutsideSurf( ZoneNum );
+			HeatBalanceSurfaceManager::CalcHeatBalanceInsideSurf( ZoneNum );
 		}}
 
 		if ( QHTRadSource( RadSysNum ) <= 0.0 ) {
@@ -1266,7 +1262,6 @@ namespace HighTempRadiantSystem {
 		using DataHeatBalFanSys::QHTRadSysSurf;
 		using DataHeatBalFanSys::MaxRadHeatFlux;
 		using DataSurfaces::Surface;
-		using DataSurfaces::TotSurfaces;
 		using General::RoundSigDigits;
 
 		// Locals
@@ -1369,16 +1364,13 @@ namespace HighTempRadiantSystem {
 
 		// Using/Aliasing
 		using DataGlobals::SecInHour;
-		using DataGlobals::OutputFileDebug;
 		using DataHVACGlobals::TimeStepSys;
-		using DataLoopNode::Node;
 		using DataSurfaces::Surface;
 
 		// Locals
 		// SUBROUTINE ARGUMENT DEFINITIONS:
 
 		// SUBROUTINE PARAMETER DEFINITIONS:
-		Real64 const NotOperating( -9999.0 ); // Some unreasonable value that should clue the user in that this is not running
 
 		// INTERFACE BLOCK SPECIFICATIONS
 		// na
@@ -1478,7 +1470,7 @@ namespace HighTempRadiantSystem {
 
 	//     NOTICE
 
-	//     Copyright © 1996-2014 The Board of Trustees of the University of Illinois
+	//     Copyright (c) 1996-2015 The Board of Trustees of the University of Illinois
 	//     and The Regents of the University of California through Ernest Orlando Lawrence
 	//     Berkeley National Laboratory.  All rights reserved.
 
