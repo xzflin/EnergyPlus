@@ -152,6 +152,18 @@ namespace SurfaceGeometry {
 	}
 
 	void
+	PrintPolygon( int SurfNum ) 
+	{
+		SurfaceData &s = Surface( SurfNum );
+		gio::print( fmtA ) << "[";
+		for ( int i = 0; i < s.Sides; ++i ) {
+			Vector &v = s.Vertex[ i ];
+			gio::print( fmtA ) << "{" << v.x << "," << v.y << "," << v.z << "}";
+		}
+		gio::print( fmtA ) << "]\n";
+	}
+
+	void
 	SetupZoneGeometry( bool & ErrorsFound )
 	{
 
@@ -8381,6 +8393,7 @@ namespace SurfaceGeometry {
 		//       MODIFIED        FW, Mar 2002: Add triangular windows
 		//                       FW, May 2002: modify test for 4-sided but non-rectangular subsurfaces
 		//                       FW, Sep 2002: add shape for base surfaces (walls and detached shading surfaces)
+		//                       Amir Roth, Nov 2015: remove surface order dependence (used to require subsurfaces to follow base surfaces) 
 		//       RE-ENGINEERED  na
 
 		// PURPOSE OF THIS SUBROUTINE:
@@ -8435,25 +8448,25 @@ namespace SurfaceGeometry {
 		Real64 X1; // Intermediate Result
 		Real64 Y1; // Intermediate Result
 		Real64 Z1; // Intermediate Result
-		static Real64 XSHIFT; // Shift of X to Lower Left Corner
-		static Real64 YSHIFT; // Shift of Y to Lower Left Corner
+		static Array1D< Real64 > BaseXSHIFT; // Shift of X to Lower Left Corner
+		static Array1D< Real64 > BaseYSHIFT; // Shift of Y to Lower Left Corner
 		Real64 XLLC; // X-coordinate of lower left corner
 		Real64 YLLC; // Y-coordinate of lower left corner
 		Real64 ZLLC; // Z-coordinate of lower left corner
 		//  INTEGER :: I  ! Loop Control
 		//  INTEGER :: J  ! Loop Control
 		int n; // Vertex Number in Loop
-		int ThisBaseSurface; // Current base surface
+		int ThisBaseSurf; // Current base surface
 		Real64 Xp;
 		Real64 Yp;
 		Real64 Zp;
-		static Real64 BaseCosAzimuth;
-		static Real64 BaseCosTilt;
-		static Real64 BaseSinAzimuth;
-		static Real64 BaseSinTilt;
-		static Real64 BaseXLLC;
-		static Real64 BaseYLLC;
-		static Real64 BaseZLLC;
+		static Array1D< Real64 > BaseCosAzimuth;
+		static Array1D< Real64 > BaseCosTilt;
+		static Array1D< Real64 > BaseSinAzimuth;
+		static Array1D< Real64 > BaseSinTilt;
+		static Array1D< Real64 > BaseXLLC;
+		static Array1D< Real64 > BaseYLLC;
+		static Array1D< Real64 > BaseZLLC;
 		Real64 SurfWorldAz; // Surface Azimuth (facing)
 		Real64 SurfTilt; // Surface Tilt
 		//  TYPE(PlaneEq) PlanarEQ
@@ -8495,6 +8508,17 @@ namespace SurfaceGeometry {
 			Xpsv = 0.0;
 			Ypsv = 0.0;
 			Zpsv = 0.0;
+
+			BaseXSHIFT.dimension( TotSurfaces, 0.0 ); 
+			BaseYSHIFT.dimension( TotSurfaces, 0.0 ); 
+			BaseCosAzimuth.dimension( TotSurfaces, 0.0 );
+			BaseCosTilt.dimension( TotSurfaces, 0.0 );
+			BaseSinAzimuth.dimension( TotSurfaces, 0.0 );
+			BaseSinTilt.dimension( TotSurfaces, 0.0 );
+			BaseXLLC.dimension( TotSurfaces, 0.0 );
+			BaseYLLC.dimension( TotSurfaces, 0.0 );
+			BaseZLLC.dimension( TotSurfaces, 0.0 );
+			
 			ProcessSurfaceVerticesOneTimeFlag = false;
 		}
 
@@ -8506,12 +8530,12 @@ namespace SurfaceGeometry {
 			BaseSurface = false;
 		}
 
-		ThisBaseSurface = Surface( ThisSurf ).BaseSurf; // Dont know if this is still needed or not
+		ThisBaseSurf = Surface( ThisSurf ).BaseSurf; 
 		HeatTransSurf = Surface( ThisSurf ).HeatTransSurf;
 
 		// Kludge for daylighting shelves
 		if ( Surface( ThisSurf ).ShadowingSurf ) {
-			ThisBaseSurface = ThisSurf;
+			ThisBaseSurf = ThisSurf;
 			HeatTransSurf = true;
 		}
 
@@ -8531,18 +8555,18 @@ namespace SurfaceGeometry {
 		if ( BaseSurface ) {
 			SurfWorldAz = Surface( ThisSurf ).Azimuth;
 			SurfTilt = Surface( ThisSurf ).Tilt;
-			BaseCosAzimuth = std::cos( SurfWorldAz * DegToRadians );
-			BaseSinAzimuth = std::sin( SurfWorldAz * DegToRadians );
-			BaseCosTilt = std::cos( SurfTilt * DegToRadians );
-			BaseSinTilt = std::sin( SurfTilt * DegToRadians );
+			BaseCosAzimuth( ThisSurf ) = std::cos( SurfWorldAz * DegToRadians );
+			BaseSinAzimuth( ThisSurf ) = std::sin( SurfWorldAz * DegToRadians );
+			BaseCosTilt( ThisSurf ) = std::cos( SurfTilt * DegToRadians );
+			BaseSinTilt( ThisSurf )  = std::sin( SurfTilt * DegToRadians );
 			for ( n = 1; n <= Surface( ThisSurf ).Sides; ++n ) {
 				Xpsv( n ) = Surface( ThisSurf ).Vertex( n ).x;
 				Ypsv( n ) = Surface( ThisSurf ).Vertex( n ).y;
 				Zpsv( n ) = Surface( ThisSurf ).Vertex( n ).z;
 			}
-			BaseXLLC = Surface( ThisSurf ).Vertex( 2 ).x;
-			BaseYLLC = Surface( ThisSurf ).Vertex( 2 ).y;
-			BaseZLLC = Surface( ThisSurf ).Vertex( 2 ).z;
+			BaseXLLC( ThisSurf ) = Surface( ThisSurf ).Vertex( 2 ).x;
+			BaseYLLC( ThisSurf ) = Surface( ThisSurf ).Vertex( 2 ).y;
+			BaseZLLC( ThisSurf ) = Surface( ThisSurf ).Vertex( 2 ).z;
 			TVect = Surface( ThisSurf ).Vertex( 3 ) - Surface( ThisSurf ).Vertex( 2 );
 			ThisWidth = VecLength( TVect );
 			TVect = Surface( ThisSurf ).Vertex( 2 ) - Surface( ThisSurf ).Vertex( 1 );
@@ -8614,12 +8638,12 @@ namespace SurfaceGeometry {
 				ThisReveal = -Pt2Plane( Surface( ThisSurf ).Vertex( 2 ), BasePlane );
 				if ( std::abs( ThisReveal ) < 0.0002 ) ThisReveal = 0.0;
 				Surface( ThisSurf ).Reveal = ThisReveal;
-				Xp = Surface( ThisSurf ).Vertex( 2 ).x - BaseXLLC;
-				Yp = Surface( ThisSurf ).Vertex( 2 ).y - BaseYLLC;
-				Zp = Surface( ThisSurf ).Vertex( 2 ).z - BaseZLLC;
-				XLLC = -Xp * BaseCosAzimuth + Yp * BaseSinAzimuth;
-				YLLC = -Xp * BaseSinAzimuth * BaseCosTilt - Yp * BaseCosAzimuth * BaseCosTilt + Zp * BaseSinTilt;
-				ZLLC = Xp * BaseSinAzimuth * BaseSinTilt + Yp * BaseCosAzimuth * BaseSinTilt + Zp * BaseCosTilt;
+				Xp = Surface( ThisSurf ).Vertex( 2 ).x - BaseXLLC( ThisBaseSurf );
+				Yp = Surface( ThisSurf ).Vertex( 2 ).y - BaseYLLC( ThisBaseSurf );
+				Zp = Surface( ThisSurf ).Vertex( 2 ).z - BaseZLLC( ThisBaseSurf );
+				XLLC = -Xp * BaseCosAzimuth( ThisBaseSurf ) + Yp * BaseSinAzimuth( ThisBaseSurf );
+				YLLC = -Xp * BaseSinAzimuth( ThisBaseSurf ) * BaseCosTilt( ThisBaseSurf ) - Yp * BaseCosAzimuth( ThisBaseSurf ) * BaseCosTilt( ThisBaseSurf ) + Zp * BaseSinTilt( ThisBaseSurf );
+				ZLLC = Xp * BaseSinAzimuth( ThisBaseSurf ) * BaseSinTilt( ThisBaseSurf ) + Yp * BaseCosAzimuth( ThisBaseSurf ) * BaseSinTilt( ThisBaseSurf ) + Zp * BaseCosTilt( ThisBaseSurf );
 				TVect = Surface( ThisSurf ).Vertex( 3 ) - Surface( ThisSurf ).Vertex( 2 );
 				ThisWidth = VecLength( TVect );
 				TVect = Surface( ThisSurf ).Vertex( 2 ) - Surface( ThisSurf ).Vertex( 1 );
@@ -8712,12 +8736,12 @@ namespace SurfaceGeometry {
 				ThisReveal = -Pt2Plane( Surface( ThisSurf ).Vertex( 2 ), BasePlane );
 				if ( std::abs( ThisReveal ) < 0.0002 ) ThisReveal = 0.0;
 				Surface( ThisSurf ).Reveal = ThisReveal;
-				Xp = Surface( ThisSurf ).Vertex( 2 ).x - BaseXLLC;
-				Yp = Surface( ThisSurf ).Vertex( 2 ).y - BaseYLLC;
-				Zp = Surface( ThisSurf ).Vertex( 2 ).z - BaseZLLC;
-				Xpsv( 2 ) = -Xp * BaseCosAzimuth + Yp * BaseSinAzimuth;
-				Ypsv( 2 ) = -Xp * BaseSinAzimuth * BaseCosTilt - Yp * BaseCosAzimuth * BaseCosTilt + Zp * BaseSinTilt;
-				Zpsv( 2 ) = Xp * BaseSinAzimuth * BaseSinTilt + Yp * BaseCosAzimuth * BaseSinTilt + Zp * BaseCosTilt;
+				Xp = Surface( ThisSurf ).Vertex( 2 ).x - BaseXLLC( ThisBaseSurf );
+				Yp = Surface( ThisSurf ).Vertex( 2 ).y - BaseYLLC( ThisBaseSurf );
+				Zp = Surface( ThisSurf ).Vertex( 2 ).z - BaseZLLC( ThisBaseSurf );
+				Xpsv( 2 ) = -Xp * BaseCosAzimuth( ThisBaseSurf ) + Yp * BaseSinAzimuth( ThisBaseSurf );
+				Ypsv( 2 ) = -Xp * BaseSinAzimuth( ThisBaseSurf ) * BaseCosTilt( ThisBaseSurf ) - Yp * BaseCosAzimuth( ThisBaseSurf ) * BaseCosTilt( ThisBaseSurf ) + Zp * BaseSinTilt( ThisBaseSurf );
+				Zpsv( 2 ) = Xp * BaseSinAzimuth( ThisBaseSurf ) * BaseSinTilt( ThisBaseSurf ) + Yp * BaseCosAzimuth( ThisBaseSurf ) * BaseSinTilt( ThisBaseSurf ) + Zp * BaseCosTilt( ThisBaseSurf );
 				TVect = Surface( ThisSurf ).Vertex( 3 ) - Surface( ThisSurf ).Vertex( 2 );
 				ThisWidth = VecLength( TVect );
 				TVect = Surface( ThisSurf ).Vertex( 2 ) - Surface( ThisSurf ).Vertex( 1 );
@@ -8729,28 +8753,28 @@ namespace SurfaceGeometry {
 				Surface( ThisSurf ).Height = 4.0 * Surface( ThisSurf ).Area / ( 3.0 * Surface( ThisSurf ).Width );
 				Surface( ThisSurf ).Width *= 0.75;
 
-				Xp = Surface( ThisSurf ).Vertex( 1 ).x - BaseXLLC;
-				Yp = Surface( ThisSurf ).Vertex( 1 ).y - BaseYLLC;
-				Zp = Surface( ThisSurf ).Vertex( 1 ).z - BaseZLLC;
-				Xpsv( 1 ) = -Xp * BaseCosAzimuth + Yp * BaseSinAzimuth;
-				Ypsv( 1 ) = -Xp * BaseSinAzimuth * BaseCosTilt - Yp * BaseCosAzimuth * BaseCosTilt + Zp * BaseSinTilt;
-				Zpsv( 1 ) = Xp * BaseSinAzimuth * BaseSinTilt + Yp * BaseCosAzimuth * BaseSinTilt + Zp * BaseCosTilt;
+				Xp = Surface( ThisSurf ).Vertex( 1 ).x - BaseXLLC( ThisBaseSurf );
+				Yp = Surface( ThisSurf ).Vertex( 1 ).y - BaseYLLC( ThisBaseSurf );
+				Zp = Surface( ThisSurf ).Vertex( 1 ).z - BaseZLLC( ThisBaseSurf );
+				Xpsv( 1 ) = -Xp * BaseCosAzimuth( ThisBaseSurf ) + Yp * BaseSinAzimuth( ThisBaseSurf );
+				Ypsv( 1 ) = -Xp * BaseSinAzimuth( ThisBaseSurf ) * BaseCosTilt( ThisBaseSurf ) - Yp * BaseCosAzimuth( ThisBaseSurf ) * BaseCosTilt( ThisBaseSurf ) + Zp * BaseSinTilt( ThisBaseSurf );
+				Zpsv( 1 ) = Xp * BaseSinAzimuth( ThisBaseSurf ) * BaseSinTilt( ThisBaseSurf ) + Yp * BaseCosAzimuth( ThisBaseSurf ) * BaseSinTilt( ThisBaseSurf ) + Zp * BaseCosTilt( ThisBaseSurf );
 
-				Xp = Surface( ThisSurf ).Vertex( 3 ).x - BaseXLLC;
-				Yp = Surface( ThisSurf ).Vertex( 3 ).y - BaseYLLC;
-				Zp = Surface( ThisSurf ).Vertex( 3 ).z - BaseZLLC;
-				Xpsv( 3 ) = -Xp * BaseCosAzimuth + Yp * BaseSinAzimuth;
-				Ypsv( 3 ) = -Xp * BaseSinAzimuth * BaseCosTilt - Yp * BaseCosAzimuth * BaseCosTilt + Zp * BaseSinTilt;
-				Zpsv( 3 ) = Xp * BaseSinAzimuth * BaseSinTilt + Yp * BaseCosAzimuth * BaseSinTilt + Zp * BaseCosTilt;
+				Xp = Surface( ThisSurf ).Vertex( 3 ).x - BaseXLLC( ThisBaseSurf );
+				Yp = Surface( ThisSurf ).Vertex( 3 ).y - BaseYLLC( ThisBaseSurf );
+				Zp = Surface( ThisSurf ).Vertex( 3 ).z - BaseZLLC( ThisBaseSurf );
+				Xpsv( 3 ) = -Xp * BaseCosAzimuth( ThisBaseSurf ) + Yp * BaseSinAzimuth( ThisBaseSurf );
+				Ypsv( 3 ) = -Xp * BaseSinAzimuth( ThisBaseSurf ) * BaseCosTilt( ThisBaseSurf ) - Yp * BaseCosAzimuth( ThisBaseSurf ) * BaseCosTilt( ThisBaseSurf ) + Zp * BaseSinTilt( ThisBaseSurf );
+				Zpsv( 3 ) = Xp * BaseSinAzimuth( ThisBaseSurf ) * BaseSinTilt( ThisBaseSurf ) + Yp * BaseCosAzimuth( ThisBaseSurf ) * BaseSinTilt( ThisBaseSurf ) + Zp * BaseCosTilt( ThisBaseSurf );
 
 			} else if ( SELECT_CASE_var == RectangularOverhang ) {
 
-				Xp = Surface( ThisSurf ).Vertex( 2 ).x - BaseXLLC;
-				Yp = Surface( ThisSurf ).Vertex( 2 ).y - BaseYLLC;
-				Zp = Surface( ThisSurf ).Vertex( 2 ).z - BaseZLLC;
-				XLLC = -Xp * BaseCosAzimuth + Yp * BaseSinAzimuth;
-				YLLC = -Xp * BaseSinAzimuth * BaseCosTilt - Yp * BaseCosAzimuth * BaseCosTilt + Zp * BaseSinTilt;
-				ZLLC = Xp * BaseSinAzimuth * BaseSinTilt + Yp * BaseCosAzimuth * BaseSinTilt + Zp * BaseCosTilt;
+				Xp = Surface( ThisSurf ).Vertex( 2 ).x - BaseXLLC( ThisBaseSurf );
+				Yp = Surface( ThisSurf ).Vertex( 2 ).y - BaseYLLC( ThisBaseSurf );
+				Zp = Surface( ThisSurf ).Vertex( 2 ).z - BaseZLLC( ThisBaseSurf );
+				XLLC = -Xp * BaseCosAzimuth( ThisBaseSurf ) + Yp * BaseSinAzimuth( ThisBaseSurf );
+				YLLC = -Xp * BaseSinAzimuth( ThisBaseSurf ) * BaseCosTilt( ThisBaseSurf ) - Yp * BaseCosAzimuth( ThisBaseSurf ) * BaseCosTilt( ThisBaseSurf ) + Zp * BaseSinTilt( ThisBaseSurf );
+				ZLLC = Xp * BaseSinAzimuth( ThisBaseSurf ) * BaseSinTilt( ThisBaseSurf ) + Yp * BaseCosAzimuth( ThisBaseSurf ) * BaseSinTilt( ThisBaseSurf ) + Zp * BaseCosTilt( ThisBaseSurf );
 				TVect = Surface( ThisSurf ).Vertex( 3 ) - Surface( ThisSurf ).Vertex( 2 );
 				ThisWidth = VecLength( TVect );
 				TVect = Surface( ThisSurf ).Vertex( 2 ) - Surface( ThisSurf ).Vertex( 1 );
@@ -8772,12 +8796,12 @@ namespace SurfaceGeometry {
 
 			} else if ( SELECT_CASE_var == RectangularLeftFin ) {
 
-				Xp = Surface( ThisSurf ).Vertex( 2 ).x - BaseXLLC;
-				Yp = Surface( ThisSurf ).Vertex( 2 ).y - BaseYLLC;
-				Zp = Surface( ThisSurf ).Vertex( 2 ).z - BaseZLLC;
-				XLLC = -Xp * BaseCosAzimuth + Yp * BaseSinAzimuth;
-				YLLC = -Xp * BaseSinAzimuth * BaseCosTilt - Yp * BaseCosAzimuth * BaseCosTilt + Zp * BaseSinTilt;
-				ZLLC = Xp * BaseSinAzimuth * BaseSinTilt + Yp * BaseCosAzimuth * BaseSinTilt + Zp * BaseCosTilt;
+				Xp = Surface( ThisSurf ).Vertex( 2 ).x - BaseXLLC( ThisBaseSurf );
+				Yp = Surface( ThisSurf ).Vertex( 2 ).y - BaseYLLC( ThisBaseSurf );
+				Zp = Surface( ThisSurf ).Vertex( 2 ).z - BaseZLLC( ThisBaseSurf );
+				XLLC = -Xp * BaseCosAzimuth( ThisBaseSurf ) + Yp * BaseSinAzimuth( ThisBaseSurf );
+				YLLC = -Xp * BaseSinAzimuth( ThisBaseSurf ) * BaseCosTilt( ThisBaseSurf ) - Yp * BaseCosAzimuth( ThisBaseSurf ) * BaseCosTilt( ThisBaseSurf ) + Zp * BaseSinTilt( ThisBaseSurf );
+				ZLLC = Xp * BaseSinAzimuth( ThisBaseSurf ) * BaseSinTilt( ThisBaseSurf ) + Yp * BaseCosAzimuth( ThisBaseSurf ) * BaseSinTilt( ThisBaseSurf ) + Zp * BaseCosTilt( ThisBaseSurf );
 				TVect = Surface( ThisSurf ).Vertex( 3 ) - Surface( ThisSurf ).Vertex( 2 );
 				ThisWidth = VecLength( TVect );
 				TVect = Surface( ThisSurf ).Vertex( 2 ) - Surface( ThisSurf ).Vertex( 1 );
@@ -8799,12 +8823,12 @@ namespace SurfaceGeometry {
 
 			} else if ( SELECT_CASE_var == RectangularRightFin ) {
 
-				Xp = Surface( ThisSurf ).Vertex( 2 ).x - BaseXLLC;
-				Yp = Surface( ThisSurf ).Vertex( 2 ).y - BaseYLLC;
-				Zp = Surface( ThisSurf ).Vertex( 2 ).z - BaseZLLC;
-				XLLC = -Xp * BaseCosAzimuth + Yp * BaseSinAzimuth;
-				YLLC = -Xp * BaseSinAzimuth * BaseCosTilt - Yp * BaseCosAzimuth * BaseCosTilt + Zp * BaseSinTilt;
-				ZLLC = Xp * BaseSinAzimuth * BaseSinTilt + Yp * BaseCosAzimuth * BaseSinTilt + Zp * BaseCosTilt;
+				Xp = Surface( ThisSurf ).Vertex( 2 ).x - BaseXLLC( ThisBaseSurf );
+				Yp = Surface( ThisSurf ).Vertex( 2 ).y - BaseYLLC( ThisBaseSurf );
+				Zp = Surface( ThisSurf ).Vertex( 2 ).z - BaseZLLC( ThisBaseSurf );
+				XLLC = -Xp * BaseCosAzimuth( ThisBaseSurf ) + Yp * BaseSinAzimuth( ThisBaseSurf );
+				YLLC = -Xp * BaseSinAzimuth( ThisBaseSurf ) * BaseCosTilt( ThisBaseSurf ) - Yp * BaseCosAzimuth( ThisBaseSurf ) * BaseCosTilt( ThisBaseSurf ) + Zp * BaseSinTilt( ThisBaseSurf );
+				ZLLC = Xp * BaseSinAzimuth( ThisBaseSurf ) * BaseSinTilt( ThisBaseSurf ) + Yp * BaseCosAzimuth( ThisBaseSurf ) * BaseSinTilt( ThisBaseSurf ) + Zp * BaseCosTilt( ThisBaseSurf );
 				TVect = Surface( ThisSurf ).Vertex( 3 ) - Surface( ThisSurf ).Vertex( 2 );
 				ThisWidth = VecLength( TVect );
 				TVect = Surface( ThisSurf ).Vertex( 2 ) - Surface( ThisSurf ).Vertex( 1 );
@@ -8875,16 +8899,16 @@ namespace SurfaceGeometry {
 			if ( HeatTransSurf ) { // This is a general surface but not detached shading surface
 
 				// RECORD COORDINATE TRANSFORMATION FOR BASE SURFACES.
-				X0( ThisBaseSurface ) = CoordinateTransVector.x;
-				Y0( ThisBaseSurface ) = CoordinateTransVector.y;
-				Z0( ThisBaseSurface ) = CoordinateTransVector.z;
+				X0( ThisBaseSurf ) = CoordinateTransVector.x;
+				Y0( ThisBaseSurf ) = CoordinateTransVector.y;
+				Z0( ThisBaseSurf ) = CoordinateTransVector.z;
 
 				// COMPUTE INVERSE TRANSFORMATION.
 				X1 = Xpsv( 2 ) - CoordinateTransVector.x;
 				Y1 = Ypsv( 2 ) - CoordinateTransVector.y;
 				Z1 = Zpsv( 2 ) - CoordinateTransVector.z;
-				XSHIFT = Surface( ThisBaseSurface ).lcsx.x * X1 + Surface( ThisBaseSurface ).lcsx.y * Y1 + Surface( ThisBaseSurface ).lcsx.z * Z1;
-				YSHIFT = Surface( ThisBaseSurface ).lcsy.x * X1 + Surface( ThisBaseSurface ).lcsy.y * Y1 + Surface( ThisBaseSurface ).lcsy.z * Z1;
+				BaseXSHIFT( ThisSurf ) = Surface( ThisBaseSurf ).lcsx.x * X1 + Surface( ThisBaseSurf ).lcsx.y * Y1 + Surface( ThisBaseSurf ).lcsx.z * Z1;
+				BaseYSHIFT( ThisSurf ) = Surface( ThisBaseSurf ).lcsy.x * X1 + Surface( ThisBaseSurf ).lcsy.y * Y1 + Surface( ThisBaseSurf ).lcsy.z * Z1;
 
 			}
 
@@ -8896,8 +8920,8 @@ namespace SurfaceGeometry {
 			// BY CTRAN AND SET DIRECTION COSINES SAME AS BASE SURFACE.
 
 			for ( n = 1; n <= Surface( ThisSurf ).Sides; ++n ) {
-				ShadeV( ThisSurf ).XV( n ) += XSHIFT;
-				ShadeV( ThisSurf ).YV( n ) += YSHIFT;
+				ShadeV( ThisSurf ).XV( n ) += BaseXSHIFT( ThisBaseSurf );
+				ShadeV( ThisSurf ).YV( n ) += BaseYSHIFT( ThisBaseSurf );
 			}
 
 		}
