@@ -1108,7 +1108,7 @@ namespace SolarCollectors {
 			if ( MassFlowRate > 0.0 ) { // Calculate efficiency and heat transfer with flow
 
 				if ( ( 1.0 + FRULpTest / mCpATest ) > 0.0 ) {
-					FpULTest = -mCpATest * std::log( 1.0 + FRULpTest / mCpATest );
+					FpULTest = -mCpATest * std::log1p( FRULpTest / mCpATest );
 				} else {
 					FpULTest = FRULpTest; // Avoid LOG( <0 )
 				}

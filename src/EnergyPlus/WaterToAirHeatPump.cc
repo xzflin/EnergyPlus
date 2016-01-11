@@ -2244,7 +2244,7 @@ namespace WaterToAirHeatPump {
 		To1 = aa + HPTimeConstant;
 		Error = 1.0;
 		while ( Error > 0.001 ) {
-			To2 = aa - HPTimeConstant * ( std::exp( -To1 / HPTimeConstant ) - 1.0 );
+			To2 = aa - HPTimeConstant * std::expm1( -To1 / HPTimeConstant );
 			Error = std::abs( ( To2 - To1 ) / To1 );
 			To1 = To2;
 		}

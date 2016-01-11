@@ -7572,7 +7572,7 @@ namespace HVACVariableRefrigerantFlow {
 				Pipe_Coe_k1 = Pipe_Num_Nu * Pipe_viscosity_ref;
 				Pipe_Coe_k3 = RefPipInsH *( VRF( VRFCond ).RefPipDia + 2 * VRF( VRFCond ).RefPipInsThi );
 				if ( VRF( VRFCond ).RefPipInsThi >= 0.0 ) {
-					Pipe_Coe_k2 = 2 * VRF( VRFCond ).RefPipInsCon / std::log(  1.0 + 2 * VRF( VRFCond ).RefPipInsThi / VRF( VRFCond ).RefPipDia  );
+					Pipe_Coe_k2 = 2 * VRF( VRFCond ).RefPipInsCon / std::log1p( 2 * VRF( VRFCond ).RefPipInsThi / VRF( VRFCond ).RefPipDia );
 				} else {
 					Pipe_Coe_k2 = 9999.9; // 1/k2 is close to 0
 				}
@@ -7748,7 +7748,7 @@ namespace HVACVariableRefrigerantFlow {
 								Pipe_Coe_k1 = Pipe_Num_Nu * Pipe_viscosity_ref;
 								Pipe_Coe_k3 = RefPipInsH *( VRF( VRFCond ).RefPipDia + 2*VRF( VRFCond ).RefPipInsThi );
 								if( VRF( VRFCond ).RefPipInsThi >= 0.0 )
-									Pipe_Coe_k2 = 2 * VRF( VRFCond ).RefPipInsCon / std::log( 1.0 + 2 * VRF( VRFCond ).RefPipInsThi / VRF( VRFCond ).RefPipDia );
+									Pipe_Coe_k2 = 2 * VRF( VRFCond ).RefPipInsCon / std::log1p( 2 * VRF( VRFCond ).RefPipInsThi / VRF( VRFCond ).RefPipDia );
 								else
 									Pipe_Coe_k2 = 9999.9; //1/k2 is close to 0
 

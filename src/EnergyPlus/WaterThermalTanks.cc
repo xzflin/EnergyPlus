@@ -6132,7 +6132,7 @@ namespace WaterThermalTanks {
 			b = -( UA / Cp + m1 + m2 ) / m;
 
 			// Integral of T(t) = (a / b + Ti) * EXP(b * t) - a / b, evaluated from 0 to t
-			dTsum = ( a / b + Ti ) * ( std::exp( b * t ) - 1.0 ) / b - a * t / b;
+			dTsum = ( a / b + Ti ) * std::expm1( b * t ) / b - a * t / b;
 		}
 
 		CalcTempIntegral = dTsum;

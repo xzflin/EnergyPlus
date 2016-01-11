@@ -10001,7 +10001,7 @@ namespace ConvectionCoefficients {
 		Rex = WindAtZ * AirDensity * x / v;
 
 		if ( Rex > 0.1 ) { //avoid zero and crazy small denominators
-			eta = ( std::log( 1.0 + GrLn / pow_2( Rex ) ) ) / ( 1.0 + std::log( 1.0 + GrLn / pow_2( Rex ) ) );
+			eta = ( std::log1p( GrLn / pow_2( Rex ) ) ) / ( 1.0 + std::log1p( GrLn / pow_2( Rex ) ) );
 		} else {
 			eta = 1.0; // forced convection gone because no wind
 		}

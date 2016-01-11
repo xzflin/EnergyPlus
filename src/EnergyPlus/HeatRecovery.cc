@@ -3120,7 +3120,7 @@ namespace HeatRecovery {
 				Eps = ( 1.0 - std::exp( -NTU * Temp ) ) / Temp;
 			} else if ( SELECT_CASE_var == Cross_Flow_Both_Unmixed ) { // CROSS FLOW BOTH UNMIXED
 				Temp = Z * std::pow( NTU, -0.22 );
-				Eps = 1.0 - std::exp( ( std::exp( -NTU * Temp ) - 1.0 ) / Temp );
+				Eps = 1.0 - std::exp( std::expm1( -NTU * Temp ) / Temp );
 			} else if ( SELECT_CASE_var == Cross_Flow_Other ) { // CROSS FLOW, Cmax MIXED, Cmin UNMIXED
 				Eps = ( 1.0 - std::exp( -Z * ( 1.0 - std::exp( -NTU ) ) ) ) / Z;
 			} else {
@@ -3227,11 +3227,11 @@ namespace HeatRecovery {
 					NTU = 1.0 / ( Z - 1.0 ) * std::log( ( 1.0 - Eps ) / ( 1.0 - Eps * Z ) );
 				}
 			} else if ( SELECT_CASE_var == Parallel_Flow ) { // PARALLEL FLOW
-				NTU = - std::log( -Eps - Eps * Z + 1.0 ) / ( Z + 1.0 );
+				NTU = - std::log1p( -Eps - Eps * Z ) / ( Z + 1.0 );
 			} else if ( SELECT_CASE_var == Cross_Flow_Both_Unmixed ) { // CROSS FLOW BOTH UNMIXED
 				NTU = GetNTUforCrossFlowBothUnmixed( Eps, Z );
 			} else if ( SELECT_CASE_var == Cross_Flow_Other ) { // CROSS FLOW, Cmax MIXED, Cmin UNMIXED
-				NTU = - std::log( 1.0 + std::log( 1.0 - Eps * Z ) / Z );
+				NTU = - std::log1p( std::log( 1.0 - Eps * Z ) / Z );
 			} else {
 				ShowFatalError( "HeatRecovery: Illegal flow arrangement in CalculateNTUfromEpsAndZ, Value=" + RoundSigDigits( FlowArr ) );
 			}}
@@ -3357,7 +3357,7 @@ namespace HeatRecovery {
 
 		// FUNCTION LOCAL VARIABLE DECLARATIONS:
 
-		Residuum = 1.0 - std::exp( ( std::exp( -std::pow( NTU, 0.78 ) * Par( 2 ) ) - 1.0 ) / Par( 2 ) * std::pow( NTU, 0.22 ) ) - Par( 1 );
+		Residuum = 1.0 - std::exp( std::expm1( -std::pow( NTU, 0.78 ) * Par( 2 ) ) / Par( 2 ) * std::pow( NTU, 0.22 ) ) - Par( 1 );
 
 		return Residuum;
 

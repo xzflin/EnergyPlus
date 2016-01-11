@@ -3465,7 +3465,7 @@ namespace FuelCellElectricGenerator {
 
 			if ( ( NdotCpWater != 0.0 ) && ( NdotCpAuxMix != 0.0 ) ) { // trap divide by zero
 				// now evaluate Eq. 44
-				THXexh = ( ( 1.0 - NdotCpAuxMix / NdotCpWater ) / ( std::exp( UAeff * ( 1.0 / NdotCpAuxMix - 1.0 / NdotCpWater ) ) - NdotCpAuxMix / NdotCpWater ) ) * TauxMix + ( ( std::exp( UAeff * ( 1.0 / NdotCpAuxMix - 1.0 / NdotCpWater ) ) - 1.0 ) / ( std::exp( UAeff * ( 1.0 / NdotCpAuxMix - 1.0 / NdotCpWater ) ) - NdotCpAuxMix / NdotCpWater ) ) * TwaterIn;
+				THXexh = ( ( 1.0 - NdotCpAuxMix / NdotCpWater ) / ( std::exp( UAeff * ( 1.0 / NdotCpAuxMix - 1.0 / NdotCpWater ) ) - NdotCpAuxMix / NdotCpWater ) ) * TauxMix + ( std::expm1( UAeff * ( 1.0 / NdotCpAuxMix - 1.0 / NdotCpWater ) ) / ( std::exp( UAeff * ( 1.0 / NdotCpAuxMix - 1.0 / NdotCpWater ) ) - NdotCpAuxMix / NdotCpWater ) ) * TwaterIn;
 
 				TwaterOut = TwaterIn + ( NdotCpAuxMix / NdotCpWater ) * ( TauxMix - THXexh ); // Eq. 42
 
@@ -3504,7 +3504,7 @@ namespace FuelCellElectricGenerator {
 
 			if ( ( NdotCpWater != 0.0 ) && ( NdotCpAuxMix != 0.0 ) ) { // trap divide by zero
 				// now evaluate Eq. 44
-				THXexh = ( ( 1.0 - NdotCpAuxMix / NdotCpWater ) / ( std::exp( UAeff * ( 1.0 / NdotCpAuxMix - 1.0 / NdotCpWater ) ) - NdotCpAuxMix / NdotCpWater ) ) * TauxMix + ( ( std::exp( UAeff * ( 1.0 / NdotCpAuxMix - 1.0 / NdotCpWater ) ) - 1.0 ) / ( std::exp( UAeff * ( 1.0 / NdotCpAuxMix - 1.0 / NdotCpWater ) ) - NdotCpAuxMix / NdotCpWater ) ) * TwaterIn;
+				THXexh = ( ( 1.0 - NdotCpAuxMix / NdotCpWater ) / ( std::exp( UAeff * ( 1.0 / NdotCpAuxMix - 1.0 / NdotCpWater ) ) - NdotCpAuxMix / NdotCpWater ) ) * TauxMix + ( std::expm1( UAeff * ( 1.0 / NdotCpAuxMix - 1.0 / NdotCpWater ) ) / ( std::exp( UAeff * ( 1.0 / NdotCpAuxMix - 1.0 / NdotCpWater ) ) - NdotCpAuxMix / NdotCpWater ) ) * TwaterIn;
 
 				TwaterOut = TwaterIn + ( NdotCpAuxMix / NdotCpWater ) * ( TauxMix - THXexh ); // Eq. 42
 
@@ -3556,7 +3556,7 @@ namespace FuelCellElectricGenerator {
 				if ( ( NdotCpWater != 0.0 ) && ( NdotCpAuxMix != 0.0 ) ) { // trap divide by zero
 
 					// now evaluate Eq. 44
-					THXexh = ( ( 1.0 - NdotCpAuxMix / NdotCpWater ) / ( std::exp( UAeff * ( 1.0 / NdotCpAuxMix - 1.0 / NdotCpWater ) ) - NdotCpAuxMix / NdotCpWater ) ) * TauxMix + ( ( std::exp( UAeff * ( 1.0 / NdotCpAuxMix - 1.0 / NdotCpWater ) ) - 1.0 ) / ( std::exp( UAeff * ( 1.0 / NdotCpAuxMix - 1.0 / NdotCpWater ) ) - NdotCpAuxMix / NdotCpWater ) ) * TwaterIn;
+					THXexh = ( ( 1.0 - NdotCpAuxMix / NdotCpWater ) / ( std::exp( UAeff * ( 1.0 / NdotCpAuxMix - 1.0 / NdotCpWater ) ) - NdotCpAuxMix / NdotCpWater ) ) * TauxMix + ( std::expm1( UAeff * ( 1.0 / NdotCpAuxMix - 1.0 / NdotCpWater ) ) / ( std::exp( UAeff * ( 1.0 / NdotCpAuxMix - 1.0 / NdotCpWater ) ) - NdotCpAuxMix / NdotCpWater ) ) * TwaterIn;
 
 					TwaterOut = TwaterIn + ( NdotCpAuxMix / NdotCpWater ) * ( TauxMix - THXexh ) + ( NdotWaterCond * hfpwater ) / NdotCpWater;
 

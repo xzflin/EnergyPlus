@@ -1720,7 +1720,7 @@ namespace Photovoltaics {
 		// na
 
 		if ( ( ( VV + II * RSER ) / AA ) < 700.0 ) {
-			FUN = II - IL + IO * ( std::exp( ( VV + II * RSER ) / AA ) - 1.0 ) - ( ( VV + II * RSER ) / ShuntResistance );
+			FUN = II - IL + IO * std::expm1( ( VV + II * RSER ) / AA ) - ( ( VV + II * RSER ) / ShuntResistance );
 		} else {
 			ShowSevereError( "EquivalentOneDiode Photovoltaic model failed to find maximum power point" );
 			ShowContinueError( "Numerical solver failed trying to take exponential of too large a number" );

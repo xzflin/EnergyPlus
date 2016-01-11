@@ -1505,7 +1505,7 @@ namespace PlantHeatExchangerFluidToFluid {
 						Effectiveness = 1.0;
 					}
 				} else {
-					Effectiveness = 1.0 - std::exp( ( std::pow( NTU, 0.22 ) / CapRatio ) * ( std::exp( -CapRatio * std::pow( NTU, 0.78 ) ) - 1.0 ) );
+					Effectiveness = 1.0 - std::exp( ( std::pow( NTU, 0.22 ) / CapRatio ) * std::expm1( -CapRatio * std::pow( NTU, 0.78 ) ) );
 					Effectiveness = min( 1.0, Effectiveness );
 				}
 

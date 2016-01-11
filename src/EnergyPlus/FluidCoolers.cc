@@ -1945,7 +1945,7 @@ namespace FluidCoolers {
 		NumTransferUnits = UAdesign / CapacityRatioMin;
 		ETA = std::pow( NumTransferUnits, 0.22 );
 		A = CapacityRatio * NumTransferUnits / ETA;
-		effectiveness = 1.0 - std::exp( ( std::exp( -A ) - 1.0 ) / ( CapacityRatio / ETA ) );
+		effectiveness = 1.0 - std::exp( std::expm1( -A ) / ( CapacityRatio / ETA ) );
 
 		// calculate water to air heat transfer
 		Qactual = effectiveness * CapacityRatioMin * ( InletWaterTemp - InletAirTemp );
