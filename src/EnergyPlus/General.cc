@@ -1493,8 +1493,8 @@ namespace General {
 		// na
 
 		// Argument array dimensioning
-		// DataIn.dim( NumDataItems );
-		// SmoothedData.dim( NumDataItems );
+		DataIn.dim( NumDataItems );
+		SmoothedData.dim( NumDataItems );
 
 		// Locals
 		// SUBROUTINE ARGUMENT DEFINITIONS:
@@ -1506,17 +1506,18 @@ namespace General {
 		// DERIVED TYPE DEFINITIONS
 
 		// SUBROUTINE LOCAL VARIABLE DECLARATIONS:
-		// Array1D< Real64 > TempData( 3 * NumDataItems ); // a scratch array
-
-		// for ( int i = 1; i <= NumDataItems; ++i ) {
-		// 	TempData( i ) = TempData( NumDataItems + i ) = TempData( 2 * NumDataItems + i ) = DataIn( i );
-		// 	SmoothedData( i ) = 0.0;
-		// }
+		Array1D< Real64 > TempData( 3 * NumDataItems ); // a scratch array
 
 		for ( int i = 1; i <= NumDataItems; ++i ) {
+			TempData( i ) = TempData( NumDataItems + i ) = TempData( 2 * NumDataItems + i ) = DataIn( i );
 			SmoothedData( i ) = 0.0;
+		}
+
+		for ( int i = 1; i <= NumDataItems; ++i ) {
+			// SmoothedData( i ) = 0.0;
 			for ( int j = 1; j <= NumItemsInAvg; ++j ) {
-				SmoothedData( i ) += DataIn( i );
+				SmoothedData( i ) += TempData( NumDataItems + i - NumItemsInAvg + j );
+				// SmoothedData( i ) += DataIn( i );
 			}
 			SmoothedData( i ) /= double( NumItemsInAvg );
 		}
