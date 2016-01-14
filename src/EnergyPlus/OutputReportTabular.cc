@@ -447,7 +447,7 @@ namespace OutputReportTabular {
 
 	Array3D< Real64 > surfDelaySeq;
 
-	int maxUniqueKeyCount( 0 );
+	int maxUniqueKeyCount( 1500 );
 
 	// for the XML report must keep track fo the active sub-table name and report set by other routines
 	std::string activeSubTableName;
@@ -644,7 +644,7 @@ namespace OutputReportTabular {
 		feneSolarRadSeq.deallocate();
 		feneSolarDelaySeq.deallocate();
 		surfDelaySeq.deallocate();
-		maxUniqueKeyCount = 0;
+		maxUniqueKeyCount = 1500;
 		OutputTableBinned.deallocate();
 		BinResults.deallocate();
 		BinResultsBelow.deallocate();
@@ -882,45 +882,11 @@ namespace OutputReportTabular {
 		// METHODOLOGY EMPLOYED:
 		// na
 
-		// REFERENCES:
-		// na
-
-		// USE STATEMENTS:
-
-		// Return value
-
-		// Locals
-		// SUBROUTINE ARGUMENT DEFINITIONS:
-		// na
-
-		// SUBROUTINE PARAMETER DEFINITIONS:
-
-		// INTERFACE BLOCK SPECIFICATIONS:
-		// na
-
-		// DERIVED TYPE DEFINITIONS:
-		// na
-
-		// SUBROUTINE LOCAL VARIABLE DECLARATIONS:
-		// int const SizeAdder( 25 );
-
-		// if ( ! allocated( MonthlyInput ) ) {
-		// 	MonthlyInput.allocate( SizeAdder );
-		// 	sizeMonthlyInput = SizeAdder;
-		// 	MonthlyInputCount = 1;
-		// } else {
-		// 	++MonthlyInputCount;
-		// 	// if larger than current size grow the array
-		// 	if ( MonthlyInputCount > sizeMonthlyInput ) {
-		// 		MonthlyInput.redimension( sizeMonthlyInput += SizeAdder );
-		// 	}
-		// }
-		// initialize new record
 		MonthlyInputType monthly_input;
 		monthly_input.name = inReportName;
 		monthly_input.showDigits = inNumDigitsShown;
 		MonthlyInput.push_back( monthly_input );
-		++MonthlyInputCount;
+		MonthlyInputCount = MonthlyInput.size();
 		return MonthlyInputCount;
 	}
 
@@ -945,44 +911,12 @@ namespace OutputReportTabular {
 		// METHODOLOGY EMPLOYED:
 		//   Simple assignments to public variables.
 
-		// REFERENCES:
-		// na
-
-		// USE STATEMENTS:
-
-		// Locals
-		// SUBROUTINE ARGUMENT DEFINITIONS:
-
-		// SUBROUTINE PARAMETER DEFINITIONS:
-		// int const sizeIncrement( 50 );
-
-		// INTERFACE BLOCK SPECIFICATIONS:
-		// na
-
-		// DERIVED TYPE DEFINITIONS:
-		// na
-
-		// SUBROUTINE LOCAL VARIABLE DECLARATIONS:
-		// na
-
-		// if ( ! allocated( MonthlyFieldSetInput ) ) {
-		// 	MonthlyFieldSetInput.allocate( sizeIncrement );
-		// 	sizeMonthlyFieldSetInput = sizeIncrement;
-		// 	MonthlyFieldSetInputCount = 1;
-		// } else {
-		// 	++MonthlyFieldSetInputCount;
-		// 	// if larger than current size grow the array
-		// 	if ( MonthlyFieldSetInputCount > sizeMonthlyFieldSetInput ) {
-		// 		MonthlyFieldSetInput.redimension( sizeMonthlyFieldSetInput *= 2 ); //Tuned Changed += sizeIncrement to *= 2 for reduced heap allocations (at some space cost)
-		// 	}
-		// }
-		// initialize new record)
 		MonthlyFieldSetInputType monthly_field_set_input;
 		monthly_field_set_input.variMeter = inVariMeter;
 		monthly_field_set_input.colHead = inColHead;
 		monthly_field_set_input.aggregate = inAggregate;
 		MonthlyFieldSetInput.push_back( monthly_field_set_input );
-		++MonthlyFieldSetInputCount;
+		MonthlyFieldSetInputCount = MonthlyFieldSetInput.size();
 		//update the references from the MonthlyInput array
 		if ( ( inMonthReport > 0 ) && ( inMonthReport <= MonthlyInputCount ) ) {
 			if ( MonthlyInput( inMonthReport ).firstFieldSet == 0 ) {
@@ -1071,8 +1005,6 @@ namespace OutputReportTabular {
 
 		// if not a running a weather simulation do not create reports
 		if ( ! DoWeathSim ) return;
-		// maxUniqueKeyCount = 1500;
-		// UniqueKeyNames.allocate( maxUniqueKeyCount );
 		// First pass through the input objects is to put the name of the report
 		// into the array and count the number of unique keys found to allocate
 		// the monthlyTables and monthlyColumns
@@ -1152,12 +1084,8 @@ namespace OutputReportTabular {
 						}
 					}
 					if ( found == 0 ) {
-						++UniqueKeyCount;
-						// if ( UniqueKeyCount > maxUniqueKeyCount ) {
-						// 	UniqueKeyNames.redimension( maxUniqueKeyCount += 500 );
-						// }
 						UniqueKeyNames.push_back( MonthlyFieldSetInput( FirstColumn + colNum - 1 ).NamesOfKeys( iKey ) );
-						// UniqueKeyNames( UniqueKeyCount ) = MonthlyFieldSetInput( FirstColumn + colNum - 1 ).NamesOfKeys( iKey );
+						++UniqueKeyCount;
 					}
 				}
 				//#ifdef ITM_KEYCACHE
@@ -5169,22 +5097,22 @@ namespace OutputReportTabular {
 			}
 		}
 		EchoInputFile = FindUnitNumber( DataStringGlobals::outputAuditFileName );
-		gio::write( EchoInputFile, fmtLD ) << "MonthlyInputCount=" << MonthlyInputCount;
-		gio::write( EchoInputFile, fmtLD ) << "sizeMonthlyInput=" << sizeMonthlyInput;
-		gio::write( EchoInputFile, fmtLD ) << "MonthlyFieldSetInputCount=" << MonthlyFieldSetInputCount;
-		gio::write( EchoInputFile, fmtLD ) << "sizeMonthlyFieldSetInput=" << sizeMonthlyFieldSetInput;
-		gio::write( EchoInputFile, fmtLD ) << "MonthlyTablesCount=" << MonthlyTablesCount;
-		gio::write( EchoInputFile, fmtLD ) << "MonthlyColumnsCount=" << MonthlyColumnsCount;
-		gio::write( EchoInputFile, fmtLD ) << "sizeReportName=" << sizeReportName;
-		gio::write( EchoInputFile, fmtLD ) << "numReportName=" << numReportName;
-		gio::write( EchoInputFile, fmtLD ) << "sizeSubTable=" << sizeSubTable;
-		gio::write( EchoInputFile, fmtLD ) << "numSubTable=" << numSubTable;
-		gio::write( EchoInputFile, fmtLD ) << "sizeColumnTag=" << sizeColumnTag;
-		gio::write( EchoInputFile, fmtLD ) << "numColumnTag=" << numColumnTag;
-		gio::write( EchoInputFile, fmtLD ) << "sizeTableEntry=" << sizeTableEntry;
-		gio::write( EchoInputFile, fmtLD ) << "numTableEntry=" << numTableEntry;
-		gio::write( EchoInputFile, fmtLD ) << "sizeCompSizeTableEntry=" << sizeCompSizeTableEntry;
-		gio::write( EchoInputFile, fmtLD ) << "numCompSizeTableEntry=" << numCompSizeTableEntry;
+		// gio::write( EchoInputFile, fmtLD ) << "MonthlyInputCount=" << MonthlyInputCount;
+		// gio::write( EchoInputFile, fmtLD ) << "sizeMonthlyInput=" << sizeMonthlyInput;
+		// gio::write( EchoInputFile, fmtLD ) << "MonthlyFieldSetInputCount=" << MonthlyFieldSetInputCount;
+		// gio::write( EchoInputFile, fmtLD ) << "sizeMonthlyFieldSetInput=" << sizeMonthlyFieldSetInput;
+		// gio::write( EchoInputFile, fmtLD ) << "MonthlyTablesCount=" << MonthlyTablesCount;
+		// gio::write( EchoInputFile, fmtLD ) << "MonthlyColumnsCount=" << MonthlyColumnsCount;
+		// gio::write( EchoInputFile, fmtLD ) << "sizeReportName=" << sizeReportName;
+		// gio::write( EchoInputFile, fmtLD ) << "numReportName=" << numReportName;
+		// gio::write( EchoInputFile, fmtLD ) << "sizeSubTable=" << sizeSubTable;
+		// gio::write( EchoInputFile, fmtLD ) << "numSubTable=" << numSubTable;
+		// gio::write( EchoInputFile, fmtLD ) << "sizeColumnTag=" << sizeColumnTag;
+		// gio::write( EchoInputFile, fmtLD ) << "numColumnTag=" << numColumnTag;
+		// gio::write( EchoInputFile, fmtLD ) << "sizeTableEntry=" << sizeTableEntry;
+		// gio::write( EchoInputFile, fmtLD ) << "numTableEntry=" << numTableEntry;
+		// gio::write( EchoInputFile, fmtLD ) << "sizeCompSizeTableEntry=" << sizeCompSizeTableEntry;
+		// gio::write( EchoInputFile, fmtLD ) << "numCompSizeTableEntry=" << numCompSizeTableEntry;
 
 	}
 
@@ -14060,43 +13988,13 @@ Label900: ;
 		//   correctly.
 
 		// METHODOLOGY EMPLOYED:
+		//   na
 
-		// REFERENCES:
-		//    na
-
-		// USE STATEMENTS:
-
-		// Locals
-		// SUBROUTINE ARGUMENT DEFINITIONS:
-
-		// SUBROUTINE PARAMETER DEFINITIONS:
-		//    na
-
-		// INTERFACE BLOCK SPECIFICATIONS:
-		//    na
-
-		// DERIVED TYPE DEFINITIONS:
-		//    na
-
-		// SUBROUTINE LOCAL VARIABLE DECLARATIONS:
-		//    na
-
-		// if ( ! allocated( TOCEntries ) ) {
-		// 	TOCEntriesSize = 20;
-		// 	TOCEntries.allocate( TOCEntriesSize );
-		// 	TOCEntriesCount = 1;
-		// } else {
-		// 	++TOCEntriesCount;
-		// 	// if larger than current size grow the array
-		// 	if ( TOCEntriesCount > TOCEntriesSize ) {
-		// 		TOCEntries.redimension( TOCEntriesSize += 20 );
-		// 	}
-		// }
 		TOCEntriesType toc_entries;
 		toc_entries.reportName = nameReport;
 		toc_entries.sectionName = nameSection;
 		TOCEntries.push_back( toc_entries );
-		++TOCEntriesCount;
+		TOCEntriesCount = TOCEntries.size();
 	}
 
 	void

@@ -601,14 +601,14 @@ namespace EnergyPlus {
 
 			auto idd_stream = std::unique_ptr<std::stringstream>( new std::stringstream( idd_objects ) );
 
-			MaxSectionDefs = SectionDefAllocInc;
-			MaxObjectDefs = ObjectDefAllocInc;
+			// MaxSectionDefs = SectionDefAllocInc;
+			// MaxObjectDefs = ObjectDefAllocInc;
+			//
+			// SectionDef.allocate( MaxSectionDefs );
+			// ObjectDef.allocate( MaxObjectDefs );
 
-			SectionDef.allocate( MaxSectionDefs );
-			ObjectDef.allocate( MaxObjectDefs );
-
-			NumObjectDefs = 0;
-			NumSectionDefs = 0;
+			// NumObjectDefs = 0;
+			// NumSectionDefs = 0;
 
 			ProcessingIDD = true;
 
@@ -653,9 +653,9 @@ namespace EnergyPlus {
 
 			auto idd_stream = std::unique_ptr<std::stringstream>( new std::stringstream( idd_objects ) );
 
-			MaxSectionDefs = SectionDefAllocInc;
-			SectionDef.allocate( MaxSectionDefs );
-			NumSectionDefs = 0;
+			// MaxSectionDefs = SectionDefAllocInc;
+			// SectionDef.allocate( MaxSectionDefs );
+			// NumSectionDefs = 0;
 
 			ProcessingIDD = true;
 
@@ -693,8 +693,8 @@ namespace EnergyPlus {
 				"NO, NO, NO, YES, YES;"
 			});
 
-			NumIDFRecords = 2;
-			IDFRecords.allocate( 2 );
+			// NumIDFRecords = 2;
+			// IDFRecords.allocate( 2 );
 
 			auto idf_stream = std::unique_ptr<std::stringstream>( new std::stringstream( idf_objects ) );
 
@@ -702,13 +702,13 @@ namespace EnergyPlus {
 
 			NumLines = 0;
 
-			MaxIDFRecords = ObjectsIDFAllocInc;
-			NumIDFRecords = 0;
-			MaxIDFSections = SectionsIDFAllocInc;
-			NumIDFSections = 0;
+			// MaxIDFRecords = ObjectsIDFAllocInc;
+			// NumIDFRecords = 0;
+			// MaxIDFSections = SectionsIDFAllocInc;
+			// NumIDFSections = 0;
 
-			SectionsOnFile.allocate( MaxIDFSections );
-			IDFRecords.allocate( MaxIDFRecords );
+			// SectionsOnFile.allocate( MaxIDFSections );
+			// IDFRecords.allocate( MaxIDFRecords );
 			LineItem.Numbers.allocate( MaxNumericArgsFound );
 			LineItem.NumBlank.allocate( MaxNumericArgsFound );
 			LineItem.Alphas.allocate( MaxAlphaArgsFound );
@@ -779,22 +779,22 @@ namespace EnergyPlus {
 				"Building;", // object used like section
 			});
 
-			NumIDFRecords = 2;
-			IDFRecords.allocate( 2 );
+			// NumIDFRecords = 2;
+			// IDFRecords.allocate( 2 );
 
 			auto idf_stream = std::unique_ptr<std::stringstream>( new std::stringstream( idf_objects ) );
 
 			EnergyPlusFixture::use_cached_idd();
 
-			NumLines = 0;
+			// NumLines = 0;
 
-			MaxIDFRecords = ObjectsIDFAllocInc;
-			NumIDFRecords = 0;
-			MaxIDFSections = SectionsIDFAllocInc;
-			NumIDFSections = 0;
+			// MaxIDFRecords = ObjectsIDFAllocInc;
+			// NumIDFRecords = 0;
+			// MaxIDFSections = SectionsIDFAllocInc;
+			// NumIDFSections = 0;
 
-			SectionsOnFile.allocate( MaxIDFSections );
-			IDFRecords.allocate( MaxIDFRecords );
+			// SectionsOnFile.allocate( MaxIDFSections );
+			// IDFRecords.allocate( MaxIDFRecords );
 			LineItem.Numbers.allocate( MaxNumericArgsFound );
 			LineItem.NumBlank.allocate( MaxNumericArgsFound );
 			LineItem.Alphas.allocate( MaxAlphaArgsFound );
@@ -916,8 +916,8 @@ namespace EnergyPlus {
 				" End Lead Input;",
 			});
 
-			NumIDFRecords = 1;
-			IDFRecords.allocate( 1 );
+			// NumIDFRecords = 1;
+			// IDFRecords.allocate( 1 );
 
 			auto idf_stream = std::unique_ptr<std::stringstream>( new std::stringstream( idf_objects ) );
 
@@ -925,13 +925,13 @@ namespace EnergyPlus {
 
 			NumLines = 0;
 
-			MaxIDFRecords = ObjectsIDFAllocInc;
-			NumIDFRecords = 0;
-			MaxIDFSections = SectionsIDFAllocInc;
-			NumIDFSections = 0;
+			// MaxIDFRecords = ObjectsIDFAllocInc;
+			// NumIDFRecords = 0;
+			// MaxIDFSections = SectionsIDFAllocInc;
+			// NumIDFSections = 0;
 
-			SectionsOnFile.allocate( MaxIDFSections );
-			IDFRecords.allocate( MaxIDFRecords );
+			// SectionsOnFile.allocate( MaxIDFSections );
+			// IDFRecords.allocate( MaxIDFRecords );
 			LineItem.Numbers.allocate( MaxNumericArgsFound );
 			LineItem.NumBlank.allocate( MaxNumericArgsFound );
 			LineItem.Alphas.allocate( MaxAlphaArgsFound );
@@ -1504,7 +1504,7 @@ namespace EnergyPlus {
 
 			for ( auto const result : results_map ) {
 				int index = 1;
-				DataOutputs::OutputVariablesForSimulation.allocate( 10000 );
+				// DataOutputs::OutputVariablesForSimulation.allocate( 10000 );
 				AddVariablesForMonthlyReport( result.first );
 				for ( auto const result_tuple : result.second ) {
 					EXPECT_EQ( std::get<0>( result_tuple ), DataOutputs::OutputVariablesForSimulation( index ).Key );

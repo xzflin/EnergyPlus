@@ -2797,7 +2797,6 @@ namespace SolarShading {
 		// REFERENCES:
 
 		// Using/Aliasing
-		using General::ReallocateRealArray;
 		using General::SafeDivide;
 
 		// Locals

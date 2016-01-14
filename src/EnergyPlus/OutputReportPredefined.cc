@@ -691,8 +691,6 @@ namespace OutputReportPredefined {
 
 	// Internal data structures to store information provided by calls
 
-	int const sizeIncrement( 100 );
-
 	int sizeReportName;
 	int numReportName;
 
@@ -702,7 +700,7 @@ namespace OutputReportPredefined {
 	int sizeColumnTag;
 	int numColumnTag;
 
-	int sizeTableEntry;
+	// int sizeTableEntry;
 	int numTableEntry;
 
 	int sizeCompSizeTableEntry( 0 ); //Autodesk Was used uninitialized in output to .audit files
@@ -1252,7 +1250,7 @@ namespace OutputReportPredefined {
 		numSubTable = 0;
 		sizeColumnTag = 0;
 		numColumnTag = 0;
-		sizeTableEntry = 0;
+		// sizeTableEntry = 0;
 		numTableEntry = 0;
 		sizeCompSizeTableEntry = 0; //Autodesk Was used uninitialized in output to .audit files
 		numCompSizeTableEntry = 0; //Autodesk Was used uninitialized in WriteComponentSizing
@@ -2077,7 +2075,7 @@ namespace OutputReportPredefined {
 		int const columnIndex,
 		std::string const & objName,
 		Real64 const tableEntryReal,
-		Optional_int_const numSigDigits
+		int numSigDigits
 	)
 	{
 		// SUBROUTINE INFORMATION:
@@ -2093,43 +2091,18 @@ namespace OutputReportPredefined {
 		// METHODOLOGY EMPLOYED:
 		//   Simple assignments to public variables.
 
-		// REFERENCES:
-		// na
-
-		// USE STATEMENTS:
-
-		// Locals
-		// SUBROUTINE ARGUMENT DEFINITIONS:
-
-		// SUBROUTINE PARAMETER DEFINITIONS:
-		static gio::Fmt fmtI1( "(I1)" );
-
-		// INTERFACE BLOCK SPECIFICATIONS:
-		// na
-
-		// DERIVED TYPE DEFINITIONS:
-		// na
-
-		// SUBROUTINE LOCAL VARIABLE DECLARATIONS:
-		int sigDigitCount;
+		int sigDigitCount( 2 );
 		std::string digitString;
 		std::string formatConvert;
 		std::string stringEntry;
 		int IOS;
 
-		// incrementTableEntry();
 		//check for number of significant digits
-		if ( present( numSigDigits ) ) {
-			if ( ( numSigDigits <= 9 ) && ( numSigDigits >= 0 ) ) {
-				sigDigitCount = numSigDigits;
-			} else {
-				sigDigitCount = 2;
-			}
-		} else {
-			sigDigitCount = 2;
+		if ( numSigDigits != 2 && ( numSigDigits <= 9 || numSigDigits >= 0 ) ) {
+			sigDigitCount = numSigDigits;
 		}
 		// convert the integer to a string for the number of digits
-		gio::write( digitString, fmtI1 ) << sigDigitCount;
+		digitString = std::to_string( sigDigitCount );
 		// build up the format string
 		if ( tableEntryReal < 1e10 ) {
 			formatConvert = "(F12." + digitString + ')';
@@ -2146,7 +2119,7 @@ namespace OutputReportPredefined {
 		table_entry.significantDigits = sigDigitCount;
 		table_entry.origEntryIsReal = true;
 		tableEntry.push_back( table_entry );
-		++numTableEntry;
+		numTableEntry = tableEntry.size();
 	}
 
 	void
@@ -2169,32 +2142,12 @@ namespace OutputReportPredefined {
 		// METHODOLOGY EMPLOYED:
 		//   Simple assignments to public variables.
 
-		// REFERENCES:
-		// na
-
-		// USE STATEMENTS:
-
-		// Locals
-		// SUBROUTINE ARGUMENT DEFINITIONS:
-
-		// SUBROUTINE PARAMETER DEFINITIONS:
-		// na
-
-		// INTERFACE BLOCK SPECIFICATIONS:
-		// na
-
-		// DERIVED TYPE DEFINITIONS:
-		// na
-
-		// SUBROUTINE LOCAL VARIABLE DECLARATIONS:
-
-		// incrementTableEntry();
 		TableEntryType table_entry;
 		table_entry.charEntry = tableEntryChar;
 		table_entry.objectName = objName;
 		table_entry.indexColumn = columnIndex;
 		tableEntry.push_back( table_entry );
-		++numTableEntry;
+		numTableEntry = tableEntry.size();
 	}
 
 	void
@@ -2217,83 +2170,13 @@ namespace OutputReportPredefined {
 		// METHODOLOGY EMPLOYED:
 		//   Simple assignments to public variables.
 
-		// REFERENCES:
-		// na
-
-		// USE STATEMENTS:
-
-		// Locals
-		// SUBROUTINE ARGUMENT DEFINITIONS:
-
-		// SUBROUTINE PARAMETER DEFINITIONS:
-		static gio::Fmt fmtLD( "*" );
-
-		// INTERFACE BLOCK SPECIFICATIONS:
-		// na
-
-		// DERIVED TYPE DEFINITIONS:
-		// na
-
-		// SUBROUTINE LOCAL VARIABLE DECLARATIONS:
-		std::string stringEntry;
-
-		// incrementTableEntry();
-		// convert the integer to a string
-		gio::write( stringEntry, fmtLD ) << tableEntryInt;
-
 		TableEntryType table_entry;
-		table_entry.charEntry = stringEntry;
+		table_entry.charEntry = std::to_string( tableEntryInt );
 		table_entry.objectName = objName;
 		table_entry.indexColumn = columnIndex;
 		tableEntry.push_back( table_entry );
-		++numTableEntry;
+		numTableEntry = tableEntry.size();
 	}
-
-	// void
-	// incrementTableEntry()
-	// {
-	// 	// SUBROUTINE INFORMATION:
-	// 	//       AUTHOR         Jason Glazer
-	// 	//       DATE WRITTEN   August 2006
-	// 	//       MODIFIED
-	// 	//       RE-ENGINEERED  na
-
-	// 	// PURPOSE OF THIS SUBROUTINE:
-	// 	//   Manages the resizing of the TableEntry Array
-
-	// 	// METHODOLOGY EMPLOYED:
-	// 	//   Simple assignments to public variables.
-
-	// 	// REFERENCES:
-	// 	// na
-
-	// 	// USE STATEMENTS:
-
-	// 	// SUBROUTINE ARGUMENT DEFINITIONS:
-	// 	// na
-
-	// 	// SUBROUTINE PARAMETER DEFINITIONS:
-	// 	// na
-
-	// 	// INTERFACE BLOCK SPECIFICATIONS:
-	// 	// na
-
-	// 	// DERIVED TYPE DEFINITIONS:
-	// 	// na
-
-	// 	// SUBROUTINE LOCAL VARIABLE DECLARATIONS:
-	// 	if ( ! allocated( tableEntry ) ) {
-	// 		tableEntry.allocate( sizeIncrement );
-	// 		sizeTableEntry = sizeIncrement;
-	// 		numTableEntry = 1;
-	// 	} else {
-	// 		++numTableEntry;
-	// 		// if larger than current size grow the array
-	// 		if ( numTableEntry > sizeTableEntry ) {
-	// 			tableEntry.redimension( sizeTableEntry *= 2 ); //Tuned Changed += sizeIncrement to *= 2 for reduced heap allocations (at some space cost)
-	// 		}
-	// 	}
-	// }
 
 	void
 	AddCompSizeTableEntry(
@@ -2315,43 +2198,13 @@ namespace OutputReportPredefined {
 		// METHODOLOGY EMPLOYED:
 		//   Simple assignments to public variables.
 
-		// REFERENCES:
-		// na
-
-		// USE STATEMENTS:
-
-		// Locals
-		// SUBROUTINE ARGUMENT DEFINITIONS:
-
-		// SUBROUTINE PARAMETER DEFINITIONS:
-		// na
-
-		// INTERFACE BLOCK SPECIFICATIONS:
-		// na
-
-		// DERIVED TYPE DEFINITIONS:
-		// na
-
-		// SUBROUTINE LOCAL VARIABLE DECLARATIONS:
-
-		// if ( ! allocated( CompSizeTableEntry ) ) {
-		// 	CompSizeTableEntry.allocate( sizeIncrement );
-		// 	sizeCompSizeTableEntry = sizeIncrement;
-		// 	numCompSizeTableEntry = 1;
-		// } else {
-		// 	++numCompSizeTableEntry;
-		// 	// if larger than current size grow the array
-		// 	if ( numCompSizeTableEntry > sizeCompSizeTableEntry ) {
-		// 		CompSizeTableEntry.redimension( sizeCompSizeTableEntry *= 2 ); //Tuned Changed += sizeIncrement to *= 2 for reduced heap allocations (at some space cost)
-		// 	}
-		// }
 		CompSizeTableEntryType comp_size_table_entry;
 		comp_size_table_entry.typeField = FieldType;
 		comp_size_table_entry.nameField = FieldName;
 		comp_size_table_entry.description = FieldDescription;
 		comp_size_table_entry.valField = FieldValue;
 		CompSizeTableEntry.push_back( comp_size_table_entry );
-		++numCompSizeTableEntry;
+		numCompSizeTableEntry = CompSizeTableEntry.size();
 	}
 
 	void
@@ -2374,44 +2227,12 @@ namespace OutputReportPredefined {
 		// METHODOLOGY EMPLOYED:
 		//   Simple assignments to public variables.
 
-		// REFERENCES:
-		// na
-
-		// USE STATEMENTS:
-
-		// Locals
-		// SUBROUTINE ARGUMENT DEFINITIONS:
-		//CHARACTER(len=*),INTENT(IN)  :: castingField
-		//CHARACTER(len=*),INTENT(IN)  :: receivingField
-
-		// SUBROUTINE PARAMETER DEFINITIONS:
-		// na
-
-		// INTERFACE BLOCK SPECIFICATIONS:
-		// na
-
-		// DERIVED TYPE DEFINITIONS:
-		// na
-
-		// SUBROUTINE LOCAL VARIABLE DECLARATIONS:
-
-		// if ( ! allocated( ShadowRelate ) ) {
-		// 	ShadowRelate.allocate( sizeIncrement );
-		// 	sizeShadowRelate = sizeIncrement;
-		// 	numShadowRelate = 1;
-		// } else {
-		// 	++numShadowRelate;
-		// 	// if larger than current size grow the array
-		// 	if ( numShadowRelate > sizeShadowRelate ) {
-		// 		ShadowRelate.redimension( sizeShadowRelate *= 2 ); //Tuned Changed += sizeIncrement to *= 2 for reduced heap allocations (at some space cost)
-		// 	}
-		// }
 		ShadowRelateType shadow_relate;
 		shadow_relate.castSurf = castingField;
 		shadow_relate.recSurf = receivingField;
 		shadow_relate.recKind = receivingKind;
 		ShadowRelate.push_back( shadow_relate );
-		++numShadowRelate;
+		numShadowRelate = ShadowRelate.size();
 	}
 
 	int
@@ -2430,48 +2251,13 @@ namespace OutputReportPredefined {
 		// PURPOSE OF THIS SUBROUTINE:
 		//   Creates a new index for the next predefined report
 
-		// METHODOLOGY EMPLOYED:
-		// na
-
-		// REFERENCES:
-		// na
-
-		// USE STATEMENTS:
-
-		// Return value
-
-		// Locals
-		// SUBROUTINE ARGUMENT DEFINITIONS:
-		// na
-
-		// SUBROUTINE PARAMETER DEFINITIONS:
-
-		// INTERFACE BLOCK SPECIFICATIONS:
-		// na
-
-		// DERIVED TYPE DEFINITIONS:
-		// na
-
-		// SUBROUTINE LOCAL VARIABLE DECLARATIONS:
-		// if ( ! allocated( reportName ) ) {
-		// 	reportName.allocate( sizeIncrement );
-		// 	sizeReportName = sizeIncrement;
-		// 	numReportName = 1;
-		// } else {
-		// 	++numReportName;
-		// 	// if larger than current size grow the array
-		// 	if ( numReportName > sizeReportName ) {
-		// 		reportName.redimension( sizeReportName *= 2 ); //Tuned Changed += sizeIncrement to *= 2 for reduced heap allocations (at some space cost)
-		// 	}
-		// }
-		// initialize new record
 		reportNameType report_name;
 		report_name.name = inReportName;
 		report_name.abrev = inReportAbrev;
 		report_name.namewithspaces = inReportNamewithSpaces;
 		report_name.show = false;
 		reportName.push_back( report_name );
-		++numReportName;
+		numReportName = reportName.size();
 		return numReportName;
 	}
 
@@ -2493,43 +2279,11 @@ namespace OutputReportPredefined {
 		// METHODOLOGY EMPLOYED:
 		//   Simple assignments to public variables.
 
-		// REFERENCES:
-		// na
-
-		// USE STATEMENTS:
-
-		// Return value
-
-		// Locals
-		// SUBROUTINE ARGUMENT DEFINITIONS:
-
-		// SUBROUTINE PARAMETER DEFINITIONS:
-		// na
-
-		// INTERFACE BLOCK SPECIFICATIONS:
-		// na
-
-		// DERIVED TYPE DEFINITIONS:
-		// na
-
-		// SUBROUTINE LOCAL VARIABLE DECLARATIONS:
-		// if ( ! allocated( subTable ) ) {
-		// 	subTable.allocate( sizeIncrement );
-		// 	sizeSubTable = sizeIncrement;
-		// 	numSubTable = 1;
-		// } else {
-		// 	++numSubTable;
-		// 	// if larger than current size then grow the array
-		// 	if ( numSubTable > sizeSubTable ) {
-		// 		subTable.redimension( sizeSubTable *= 2 ); //Tuned Changed += sizeIncrement to *= 2 for reduced heap allocations (at some space cost)
-		// 	}
-		// }
-		// initialize new record)
 		SubTableType sub_table;
 		sub_table.name = subTableName;
 		sub_table.indexReportName = reportIndex;
 		subTable.push_back( sub_table );
-		++numSubTable;
+		numSubTable = subTable.size();
 		return numSubTable;
 	}
 
@@ -2592,43 +2346,11 @@ namespace OutputReportPredefined {
 		// METHODOLOGY EMPLOYED:
 		//   Simple assignments to public variables.
 
-		// REFERENCES:
-		// na
-
-		// USE STATEMENTS:
-
-		// Return value
-
-		// Locals
-		// SUBROUTINE ARGUMENT DEFINITIONS:
-
-		// SUBROUTINE PARAMETER DEFINITIONS:
-		// na
-
-		// INTERFACE BLOCK SPECIFICATIONS:
-		// na
-
-		// DERIVED TYPE DEFINITIONS:
-		// na
-
-		// SUBROUTINE LOCAL VARIABLE DECLARATIONS:
-		// if ( ! allocated( columnTag ) ) {
-		// 	columnTag.allocate( sizeIncrement );
-		// 	sizeColumnTag = sizeIncrement;
-		// 	numColumnTag = 1;
-		// } else {
-		// 	++numColumnTag;
-		// 	// if larger than current size grow the array
-		// 	if ( numColumnTag > sizeColumnTag ) {
-		// 		columnTag.redimension( sizeColumnTag *= 2 ); //Tuned Changed += sizeIncrement to *= 2 for reduced heap allocations (at some space cost)
-		// 	}
-		// }
-		// initialize new record)
 		ColumnTagType column_tag;
 		column_tag.heading = columnHeading;
 		column_tag.indexSubTable = subTableIndex;
 		columnTag.push_back( column_tag );
-		++numColumnTag;
+		numColumnTag = columnTag.size();
 		return numColumnTag;
 	}
 

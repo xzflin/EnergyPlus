@@ -8332,9 +8332,6 @@ AddToOutputVariableList(
 		dd_variable_type.UnitsString = UnitsString;
 		DDVariableTypes.push_back( dd_variable_type );
 		++NumVariablesForOutput;
-		// if ( NumVariablesForOutput > MaxVariablesForOutput ) {
-		// 	DDVariableTypes.redimension( MaxVariablesForOutput += LVarAllocInc );
-		// }
 	} else if ( UnitsString != DDVariableTypes( dup ).UnitsString ) { // not the same as first units
 		int dup2 = 0;// for duplicate variable name
 		while ( DDVariableTypes( dup ).Next != 0 ) {
@@ -8354,9 +8351,6 @@ AddToOutputVariableList(
 			dd_variable_type.UnitsString = UnitsString;
 			DDVariableTypes.push_back( dd_variable_type );
 			++NumVariablesForOutput;
-			// if ( NumVariablesForOutput > MaxVariablesForOutput ) {
-			// 	DDVariableTypes.redimension( MaxVariablesForOutput += LVarAllocInc );
-			// }
 			DDVariableTypes( dup ).Next = NumVariablesForOutput;
 		}
 	}

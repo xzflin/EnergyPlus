@@ -682,8 +682,6 @@ namespace OutputReportPredefined {
 
 	// Internal data structures to store information provided by calls
 
-	extern int const sizeIncrement;
-
 	extern int sizeReportName;
 	extern int numReportName;
 
@@ -917,7 +915,7 @@ namespace OutputReportPredefined {
 		int const columnIndex,
 		std::string const & objName,
 		Real64 const tableEntryReal,
-		Optional_int_const numSigDigits = _
+		int numSigDigits = 2
 	);
 
 	void
@@ -933,9 +931,6 @@ namespace OutputReportPredefined {
 		std::string const & objName,
 		int const tableEntryInt
 	);
-
-	// void
-	// incrementTableEntry();
 
 	void
 	AddCompSizeTableEntry(

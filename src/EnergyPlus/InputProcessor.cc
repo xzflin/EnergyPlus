@@ -611,8 +611,8 @@ namespace InputProcessor {
 		bool BlankLine( false );
 		std::string::size_type Pos; // Test of scanning position on the current input line
 
-		// MaxSectionDefs = SectionDefAllocInc;
-		// MaxObjectDefs = ObjectDefAllocInc;
+		MaxSectionDefs = SectionDefAllocInc;
+		MaxObjectDefs = ObjectDefAllocInc;
 
 		// SectionDef.allocate( MaxSectionDefs );
 		// ObjectDef.allocate( MaxObjectDefs );
@@ -725,7 +725,7 @@ namespace InputProcessor {
 			sections_definition.Name = SqueezedSection;
 			sections_definition.NumFound = 0;
 			SectionDef.push_back( sections_definition );
-			++NumSectionDefs;
+			NumSectionDefs = SectionDef.size();
 		}
 
 	}
@@ -850,7 +850,20 @@ namespace InputProcessor {
 			ErrorsFound = true;
 		}
 
-		++NumObjectDefs;
+		// ++NumObjectDefs;
+		// ObjectDef( NumObjectDefs ).Name = SqueezedObject;
+		// ObjectDef( NumObjectDefs ).NumParams = 0;
+		// ObjectDef( NumObjectDefs ).NumAlpha = 0;
+		// ObjectDef( NumObjectDefs ).NumNumeric = 0;
+		// ObjectDef( NumObjectDefs ).NumFound = 0;
+		// ObjectDef( NumObjectDefs ).MinNumFields = 0;
+		// ObjectDef( NumObjectDefs ).NameAlpha1 = false;
+		// ObjectDef( NumObjectDefs ).ObsPtr = 0;
+		// ObjectDef( NumObjectDefs ).UniqueObject = false;
+		// ObjectDef( NumObjectDefs ).RequiredObject = false;
+		// ObjectDef( NumObjectDefs ).ExtensibleObject = false;
+		// ObjectDef( NumObjectDefs ).ExtensibleNum = 0;
+
 		ObjectsDefinition objects_definition;
 		objects_definition.Name = SqueezedObject;
 		objects_definition.NumParams = 0;
@@ -865,6 +878,7 @@ namespace InputProcessor {
 		objects_definition.ExtensibleObject = false;
 		objects_definition.ExtensibleNum = 0;
 		ObjectDef.push_back( objects_definition );
+		NumObjectDefs = ObjectDef.size();
 
 		if ( PrevCount == -1 ) {
 			PrevCount = MaxANArgs;
@@ -1095,8 +1109,10 @@ namespace InputProcessor {
 		ObjectDef( NumObjectDefs ).NumParams = Count; // Also the total of ObjectDef(..)%NumAlpha+ObjectDef(..)%NumNumeric
 		ObjectDef( NumObjectDefs ).MinNumFields = MinimumNumberOfFields;
 		if ( ObsoleteObject ) {
-			ObsoleteObjectsRepNames.redimension( ++NumObsoleteObjects );
-			ObsoleteObjectsRepNames( NumObsoleteObjects ) = ReplacementName;
+			// ObsoleteObjectsRepNames.redimension( ++NumObsoleteObjects );
+			// ObsoleteObjectsRepNames( NumObsoleteObjects ) = ReplacementName;
+			ObsoleteObjectsRepNames.push_back( ReplacementName );
+			NumObsoleteObjects = ObsoleteObjectsRepNames.size();
 			ObjectDef( NumObjectDefs ).ObsPtr = NumObsoleteObjects;
 		}
 		if ( RequiredObject ) {
@@ -1263,9 +1279,9 @@ namespace InputProcessor {
 		bool BlankLine( false );
 		std::string::size_type Pos;
 
-		// MaxIDFRecords = ObjectsIDFAllocInc;
+		MaxIDFRecords = ObjectsIDFAllocInc;
 		NumIDFRecords = 0;
-		// MaxIDFSections = SectionsIDFAllocInc;
+		MaxIDFSections = SectionsIDFAllocInc;
 		NumIDFSections = 0;
 
 		// SectionsOnFile.allocate( MaxIDFSections );
@@ -1385,29 +1401,33 @@ namespace InputProcessor {
 				}
 				if ( OFound != 0 ) {
 					AddRecordFromSection( OFound );
-				} else if ( NumSectionDefs == MaxSectionDefs ) {
-					SectionDef.redimension( MaxSectionDefs += SectionDefAllocInc );
 				}
-				++NumSectionDefs;
-				SectionDef( NumSectionDefs ).Name = SqueezedSection;
-				SectionDef( NumSectionDefs ).NumFound = 1;
+				// else if ( NumSectionDefs == MaxSectionDefs ) {
+				// 	SectionDef.redimension( MaxSectionDefs += SectionDefAllocInc );
+				// }
+				SectionsDefinition sections_definition;
+				sections_definition.Name = SqueezedSection;
+				sections_definition.NumFound = 1;
+				SectionDef.push_back( sections_definition );
+				NumSectionDefs = SectionDef.size();
 				// Add to "Sections on file" if appropriate
 				if ( ! ProcessingIDD ) {
-					++NumIDFSections;
-					SectionsOnFile( NumIDFSections ).Name = SqueezedSection;
-					SectionsOnFile( NumIDFSections ).FirstRecord = NumIDFRecords;
-					SectionsOnFile( NumIDFSections ).FirstLineNo = LineNo;
+					FileSectionsDefinition file_sections_definition;
+					file_sections_definition.Name = SqueezedSection;
+					file_sections_definition.FirstRecord = NumIDFRecords;
+					file_sections_definition.FirstLineNo = LineNo;
+					SectionsOnFile.push_back( file_sections_definition );
+					NumIDFSections = SectionsOnFile.size();
 				}
 			} else {
-				//      IF (NumIDFSections > 0) THEN
-				//        SectionsOnFile(NumIDFSections)%LastRecord=NumIDFRecords
-				//      ENDIF
 				++SectionDef( Found ).NumFound;
 				if ( ! ProcessingIDD ) {
-					++NumIDFSections;
-					SectionsOnFile( NumIDFSections ).Name = SqueezedSection;
-					SectionsOnFile( NumIDFSections ).FirstRecord = NumIDFRecords;
-					SectionsOnFile( NumIDFSections ).FirstLineNo = LineNo;
+					FileSectionsDefinition file_sections_definition;
+					file_sections_definition.Name = SqueezedSection;
+					file_sections_definition.FirstRecord = NumIDFRecords;
+					file_sections_definition.FirstLineNo = LineNo;
+					SectionsOnFile.push_back( file_sections_definition );
+					NumIDFSections = SectionsOnFile.size();
 				}
 			}
 		} else { // End ...
@@ -1916,20 +1936,33 @@ namespace InputProcessor {
 			MaxNumericIDFArgsFound = max( MaxNumericIDFArgsFound, LineItem.NumNumbers );
 			MaxAlphaIDFDefArgsFound = max( MaxAlphaIDFDefArgsFound, ObjectDef( Found ).NumAlpha );
 			MaxNumericIDFDefArgsFound = max( MaxNumericIDFDefArgsFound, ObjectDef( Found ).NumNumeric );
-			LineDefinition idf_record;
-			idf_record.Name = LineItem.Name;
-			idf_record.NumNumbers = LineItem.NumNumbers;
-			idf_record.NumAlphas = LineItem.NumAlphas;
-			idf_record.ObjectDefPtr = LineItem.ObjectDefPtr;
-			idf_record.Alphas.allocate( LineItem.NumAlphas );
-			idf_record.Alphas = LineItem.Alphas( {1,LineItem.NumAlphas} );
-			idf_record.AlphBlank.allocate( LineItem.NumAlphas );
-			idf_record.AlphBlank = LineItem.AlphBlank( {1,LineItem.NumAlphas} );
-			idf_record.Numbers.allocate( LineItem.NumNumbers );
-			idf_record.Numbers = LineItem.Numbers( {1,LineItem.NumNumbers} );
-			idf_record.NumBlank.allocate( LineItem.NumNumbers );
-			idf_record.NumBlank = LineItem.NumBlank( {1,LineItem.NumNumbers} );
-			IDFRecords.push_back( idf_record );
+			// IDFRecords( NumIDFRecords ).Name = LineItem.Name;
+			// IDFRecords( NumIDFRecords ).NumNumbers = LineItem.NumNumbers;
+			// IDFRecords( NumIDFRecords ).NumAlphas = LineItem.NumAlphas;
+			// IDFRecords( NumIDFRecords ).ObjectDefPtr = LineItem.ObjectDefPtr;
+			// IDFRecords( NumIDFRecords ).Alphas.allocate( LineItem.NumAlphas );
+			// IDFRecords( NumIDFRecords ).Alphas = LineItem.Alphas( {1,LineItem.NumAlphas} );
+			// IDFRecords( NumIDFRecords ).AlphBlank.allocate( LineItem.NumAlphas );
+			// IDFRecords( NumIDFRecords ).AlphBlank = LineItem.AlphBlank( {1,LineItem.NumAlphas} );
+			// IDFRecords( NumIDFRecords ).Numbers.allocate( LineItem.NumNumbers );
+			// IDFRecords( NumIDFRecords ).Numbers = LineItem.Numbers( {1,LineItem.NumNumbers} );
+			// IDFRecords( NumIDFRecords ).NumBlank.allocate( LineItem.NumNumbers );
+			// IDFRecords( NumIDFRecords ).NumBlank = LineItem.NumBlank( {1,LineItem.NumNumbers} );
+
+			LineDefinition line_definition;
+			line_definition.Name = LineItem.Name;
+			line_definition.NumNumbers = LineItem.NumNumbers;
+			line_definition.NumAlphas = LineItem.NumAlphas;
+			line_definition.ObjectDefPtr = LineItem.ObjectDefPtr;
+			line_definition.Alphas.allocate( LineItem.NumAlphas );
+			line_definition.Alphas = LineItem.Alphas( {1,LineItem.NumAlphas} );
+			line_definition.AlphBlank.allocate( LineItem.NumAlphas );
+			line_definition.AlphBlank = LineItem.AlphBlank( {1,LineItem.NumAlphas} );
+			line_definition.Numbers.allocate( LineItem.NumNumbers );
+			line_definition.Numbers = LineItem.Numbers( {1,LineItem.NumNumbers} );
+			line_definition.NumBlank.allocate( LineItem.NumNumbers );
+			line_definition.NumBlank = LineItem.NumBlank( {1,LineItem.NumNumbers} );
+			IDFRecords.push_back( line_definition );
 			if ( LineItem.NumNumbers > 0 ) {
 				for ( Count = 1; Count <= LineItem.NumNumbers; ++Count ) {
 					if ( ObjectDef( Found ).NumRangeChks( Count ).MinMaxChk && ! LineItem.NumBlank( Count ) ) {
@@ -5037,18 +5070,33 @@ namespace InputProcessor {
 		MaxNumericIDFArgsFound = max( MaxNumericIDFArgsFound, LineItem.NumNumbers );
 		MaxAlphaIDFDefArgsFound = max( MaxAlphaIDFDefArgsFound, ObjectDef( Which ).NumAlpha );
 		MaxNumericIDFDefArgsFound = max( MaxNumericIDFDefArgsFound, ObjectDef( Which ).NumNumeric );
-		IDFRecords( NumIDFRecords ).Name = LineItem.Name;
-		IDFRecords( NumIDFRecords ).NumNumbers = LineItem.NumNumbers;
-		IDFRecords( NumIDFRecords ).NumAlphas = LineItem.NumAlphas;
-		IDFRecords( NumIDFRecords ).ObjectDefPtr = LineItem.ObjectDefPtr;
-		IDFRecords( NumIDFRecords ).Alphas.allocate( LineItem.NumAlphas );
-		IDFRecords( NumIDFRecords ).Alphas = LineItem.Alphas( {1,LineItem.NumAlphas} );
-		IDFRecords( NumIDFRecords ).AlphBlank.allocate( LineItem.NumAlphas );
-		IDFRecords( NumIDFRecords ).AlphBlank = LineItem.AlphBlank( {1,LineItem.NumAlphas} );
-		IDFRecords( NumIDFRecords ).Numbers.allocate( LineItem.NumNumbers );
-		IDFRecords( NumIDFRecords ).Numbers = LineItem.Numbers( {1,LineItem.NumNumbers} );
-		IDFRecords( NumIDFRecords ).NumBlank.allocate( LineItem.NumNumbers );
-		IDFRecords( NumIDFRecords ).NumBlank = LineItem.NumBlank( {1,LineItem.NumNumbers} );
+		// IDFRecords( NumIDFRecords ).Name = LineItem.Name;
+		// IDFRecords( NumIDFRecords ).NumNumbers = LineItem.NumNumbers;
+		// IDFRecords( NumIDFRecords ).NumAlphas = LineItem.NumAlphas;
+		// IDFRecords( NumIDFRecords ).ObjectDefPtr = LineItem.ObjectDefPtr;
+		// IDFRecords( NumIDFRecords ).Alphas.allocate( LineItem.NumAlphas );
+		// IDFRecords( NumIDFRecords ).Alphas = LineItem.Alphas( {1,LineItem.NumAlphas} );
+		// IDFRecords( NumIDFRecords ).AlphBlank.allocate( LineItem.NumAlphas );
+		// IDFRecords( NumIDFRecords ).AlphBlank = LineItem.AlphBlank( {1,LineItem.NumAlphas} );
+		// IDFRecords( NumIDFRecords ).Numbers.allocate( LineItem.NumNumbers );
+		// IDFRecords( NumIDFRecords ).Numbers = LineItem.Numbers( {1,LineItem.NumNumbers} );
+		// IDFRecords( NumIDFRecords ).NumBlank.allocate( LineItem.NumNumbers );
+		// IDFRecords( NumIDFRecords ).NumBlank = LineItem.NumBlank( {1,LineItem.NumNumbers} );
+
+		LineDefinition line_definition;
+		line_definition.Name = LineItem.Name;
+		line_definition.NumNumbers = LineItem.NumNumbers;
+		line_definition.NumAlphas = LineItem.NumAlphas;
+		line_definition.ObjectDefPtr = LineItem.ObjectDefPtr;
+		line_definition.Alphas.allocate( LineItem.NumAlphas );
+		line_definition.Alphas = LineItem.Alphas( {1,LineItem.NumAlphas} );
+		line_definition.AlphBlank.allocate( LineItem.NumAlphas );
+		line_definition.AlphBlank = LineItem.AlphBlank( {1,LineItem.NumAlphas} );
+		line_definition.Numbers.allocate( LineItem.NumNumbers );
+		line_definition.Numbers = LineItem.Numbers( {1,LineItem.NumNumbers} );
+		line_definition.NumBlank.allocate( LineItem.NumNumbers );
+		line_definition.NumBlank = LineItem.NumBlank( {1,LineItem.NumNumbers} );
+		IDFRecords.push_back( line_definition );
 		if ( LineItem.NumNumbers > 0 ) {
 			for ( Count = 1; Count <= LineItem.NumNumbers; ++Count ) {
 				if ( ObjectDef( Which ).NumRangeChks( Count ).MinMaxChk && ! LineItem.NumBlank( Count ) ) {
@@ -5333,8 +5381,8 @@ namespace InputProcessor {
 		int Loop;
 		int Loop1;
 
-		OutputVariablesForSimulation.allocate( 10000 );
-		MaxConsideredOutputVariables = 10000;
+		// OutputVariablesForSimulation.allocate( 10000 );
+		// MaxConsideredOutputVariables = 10000;
 
 		// Output Variable
 		CurrentRecord = FindFirstRecord( OutputVariable );
@@ -5449,10 +5497,10 @@ namespace InputProcessor {
 			CurrentRecord = FindNextRecord( OutputTableSummaries, CurrentRecord );
 		}
 
-		if ( NumConsideredOutputVariables > 0 ) {
-			OutputVariablesForSimulation.redimension( NumConsideredOutputVariables );
-			MaxConsideredOutputVariables = NumConsideredOutputVariables;
-		}
+		// if ( NumConsideredOutputVariables > 0 ) {
+		// 	// OutputVariablesForSimulation.redimension( NumConsideredOutputVariables );
+		// 	MaxConsideredOutputVariables = NumConsideredOutputVariables;
+		// }
 
 	}
 
@@ -6001,14 +6049,17 @@ namespace InputProcessor {
 		}
 
 		if ( ! FoundOne ) {
-			if ( NumConsideredOutputVariables == MaxConsideredOutputVariables ) {
-				ReAllocateAndPreserveOutputVariablesForSimulation();
-			}
-			++NumConsideredOutputVariables;
-			OutputVariablesForSimulation( NumConsideredOutputVariables ).Key = KeyValue;
-			OutputVariablesForSimulation( NumConsideredOutputVariables ).VarName = VarName;
-			OutputVariablesForSimulation( NumConsideredOutputVariables ).Previous = 0;
-			OutputVariablesForSimulation( NumConsideredOutputVariables ).Next = 0;
+			// if ( NumConsideredOutputVariables == MaxConsideredOutputVariables ) {
+			// 	ReAllocateAndPreserveOutputVariablesForSimulation();
+			// }
+			// ++NumConsideredOutputVariables;
+			OutputReportingVariables output_reporting_variables;
+			output_reporting_variables.Key = KeyValue;
+			output_reporting_variables.VarName = VarName;
+			output_reporting_variables.Previous = 0;
+			output_reporting_variables.Next = 0;
+			OutputVariablesForSimulation.push_back( output_reporting_variables );
+			NumConsideredOutputVariables = OutputVariablesForSimulation.size();
 		} else {
 			if ( KeyValue != OutputVariablesForSimulation( CurNum ).Key ) {
 				NextNum = CurNum;
@@ -6017,71 +6068,85 @@ namespace InputProcessor {
 						CurNum = NextNum;
 						NextNum = OutputVariablesForSimulation( NextNum ).Next;
 					}
-					if ( NumConsideredOutputVariables == MaxConsideredOutputVariables ) {
-						ReAllocateAndPreserveOutputVariablesForSimulation();
-					}
-					++NumConsideredOutputVariables;
-					OutputVariablesForSimulation( NumConsideredOutputVariables ).Key = KeyValue;
-					OutputVariablesForSimulation( NumConsideredOutputVariables ).VarName = VarName;
-					OutputVariablesForSimulation( NumConsideredOutputVariables ).Previous = NextNum;
-					OutputVariablesForSimulation( NextNum ).Next = NumConsideredOutputVariables;
+					// if ( NumConsideredOutputVariables == MaxConsideredOutputVariables ) {
+					// 	ReAllocateAndPreserveOutputVariablesForSimulation();
+					// }
+					// ++NumConsideredOutputVariables;
+					// OutputVariablesForSimulation( NumConsideredOutputVariables ).Key = KeyValue;
+					// OutputVariablesForSimulation( NumConsideredOutputVariables ).VarName = VarName;
+					// OutputVariablesForSimulation( NumConsideredOutputVariables ).Previous = NextNum;
+					// OutputVariablesForSimulation( NextNum ).Next = NumConsideredOutputVariables;
+					OutputReportingVariables output_reporting_variables;
+					output_reporting_variables.Key = KeyValue;
+					output_reporting_variables.VarName = VarName;
+					output_reporting_variables.Previous = NextNum;
+					output_reporting_variables.Next = NumConsideredOutputVariables;
+					OutputVariablesForSimulation.push_back( output_reporting_variables );
+					NumConsideredOutputVariables = OutputVariablesForSimulation.size();
 				} else {
-					if ( NumConsideredOutputVariables == MaxConsideredOutputVariables ) {
-						ReAllocateAndPreserveOutputVariablesForSimulation();
-					}
-					++NumConsideredOutputVariables;
-					OutputVariablesForSimulation( NumConsideredOutputVariables ).Key = KeyValue;
-					OutputVariablesForSimulation( NumConsideredOutputVariables ).VarName = VarName;
-					OutputVariablesForSimulation( NumConsideredOutputVariables ).Previous = CurNum;
-					OutputVariablesForSimulation( CurNum ).Next = NumConsideredOutputVariables;
+					// if ( NumConsideredOutputVariables == MaxConsideredOutputVariables ) {
+					// 	ReAllocateAndPreserveOutputVariablesForSimulation();
+					// }
+					// ++NumConsideredOutputVariables;
+					// OutputVariablesForSimulation( NumConsideredOutputVariables ).Key = KeyValue;
+					// OutputVariablesForSimulation( NumConsideredOutputVariables ).VarName = VarName;
+					// OutputVariablesForSimulation( NumConsideredOutputVariables ).Previous = CurNum;
+					// OutputVariablesForSimulation( CurNum ).Next = NumConsideredOutputVariables;
+					OutputReportingVariables output_reporting_variables;
+					output_reporting_variables.Key = KeyValue;
+					output_reporting_variables.VarName = VarName;
+					output_reporting_variables.Previous = CurNum;
+					output_reporting_variables.Next = NumConsideredOutputVariables;
+					OutputVariablesForSimulation.push_back( output_reporting_variables );
+					NumConsideredOutputVariables = OutputVariablesForSimulation.size();
 				}
 			}
 		}
 
 	}
 
-	void
-	ReAllocateAndPreserveOutputVariablesForSimulation()
-	{
-
-		// SUBROUTINE INFORMATION:
-		//       AUTHOR         Linda Lawrie
-		//       DATE WRITTEN   April 2011
-		//       MODIFIED       na
-		//       RE-ENGINEERED  na
-
-		// PURPOSE OF THIS SUBROUTINE:
-		// This routine does a simple reallocate for the OutputVariablesForSimulation structure, preserving
-		// the data that is already in the structure.
-
-		// METHODOLOGY EMPLOYED:
-		// na
-
-		// REFERENCES:
-		// na
-
-		// Using/Aliasing
-		using namespace DataOutputs;
-
-		// Locals
-		// SUBROUTINE ARGUMENT DEFINITIONS:
-		// na
-
-		// SUBROUTINE PARAMETER DEFINITIONS:
-		int const OutputVarAllocInc( ObjectsIDFAllocInc );
-
-		// INTERFACE BLOCK SPECIFICATIONS:
-		// na
-
-		// DERIVED TYPE DEFINITIONS:
-		// na
-
-		// SUBROUTINE LOCAL VARIABLE DECLARATIONS:
-		// na
-
-		// up allocation by OutputVarAllocInc
-		OutputVariablesForSimulation.redimension( MaxConsideredOutputVariables += OutputVarAllocInc );
-	}
+	// void
+	// ReAllocateAndPreserveOutputVariablesForSimulation()
+	// {
+	//
+	// 	// SUBROUTINE INFORMATION:
+	// 	//       AUTHOR         Linda Lawrie
+	// 	//       DATE WRITTEN   April 2011
+	// 	//       MODIFIED       na
+	// 	//       RE-ENGINEERED  na
+	//
+	// 	// PURPOSE OF THIS SUBROUTINE:
+	// 	// This routine does a simple reallocate for the OutputVariablesForSimulation structure, preserving
+	// 	// the data that is already in the structure.
+	//
+	// 	// METHODOLOGY EMPLOYED:
+	// 	// na
+	//
+	// 	// REFERENCES:
+	// 	// na
+	//
+	// 	// Using/Aliasing
+	// 	using namespace DataOutputs;
+	//
+	// 	// Locals
+	// 	// SUBROUTINE ARGUMENT DEFINITIONS:
+	// 	// na
+	//
+	// 	// SUBROUTINE PARAMETER DEFINITIONS:
+	// 	int const OutputVarAllocInc( ObjectsIDFAllocInc );
+	//
+	// 	// INTERFACE BLOCK SPECIFICATIONS:
+	// 	// na
+	//
+	// 	// DERIVED TYPE DEFINITIONS:
+	// 	// na
+	//
+	// 	// SUBROUTINE LOCAL VARIABLE DECLARATIONS:
+	// 	// na
+	//
+	// 	// up allocation by OutputVarAllocInc
+	// 	OutputVariablesForSimulation.redimension( MaxConsideredOutputVariables += OutputVarAllocInc );
+	// }
 
 	void
 	DumpCurrentLineBuffer(

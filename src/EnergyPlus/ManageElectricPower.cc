@@ -2683,7 +2683,6 @@ namespace ManageElectricPower {
 		// na
 
 		// Using/Aliasing
-		using General::ReallocateRealArray;
 		using CurveManager::CurveValue;
 		using DataHVACGlobals::TimeStepSys;
 		using DataHVACGlobals::SysTimeElapsed;
