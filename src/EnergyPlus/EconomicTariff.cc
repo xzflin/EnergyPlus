@@ -2192,54 +2192,28 @@ namespace EconomicTariff {
 		//   Increment the Increase the size of the
 
 		// METHODOLOGY EMPLOYED:
-
-		// REFERENCES:
 		// na
 
-		// USE STATEMENTS:
-
-		// Locals
-		// SUBROUTINE ARGUMENT DEFINITIONS:
-
-		// SUBROUTINE PARAMETER DEFINITIONS:
-		static int sizeIncrement( 100 );
-
-		// INTERFACE BLOCK SPECIFICATIONS
-		// na
-
-		// DERIVED TYPE DEFINITIONS
-		// na
-
-		// SUBROUTINE LOCAL VARIABLE DECLARATIONS:
-		if ( ! allocated( econVar ) ) {
-			econVar.allocate( sizeIncrement );
-			sizeEconVar = sizeIncrement;
-			numEconVar = 1;
-		} else {
-			++numEconVar;
-			// if larger than current size grow the array
-			if ( numEconVar > sizeEconVar ) {
-				econVar.redimension( sizeEconVar += sizeIncrement );
-			}
-		}
+		EconVarType econ_var_type;
 		// initialize new record) //Autodesk Most of these match default initialization so not needed
-		econVar( numEconVar ).name = "";
-		econVar( numEconVar ).tariffIndx = 0;
-		econVar( numEconVar ).kindOfObj = 0;
-		econVar( numEconVar ).index = 0;
-		econVar( numEconVar ).values = 0.0;
-		econVar( numEconVar ).isArgument = false;
-		econVar( numEconVar ).isAssigned = false;
-		econVar( numEconVar ).specific = varNotYetDefined;
-//		econVar( numEconVar ).values = 0.0; //Autodesk Already initialized above
+		econ_var_type.name = "";
+		econ_var_type.tariffIndx = 0;
+		econ_var_type.kindOfObj = 0;
+		econ_var_type.index = 0;
+		econ_var_type.values = 0.0;
+		econ_var_type.isArgument = false;
+		econ_var_type.isAssigned = false;
+		econ_var_type.specific = varNotYetDefined;
 		//Autodesk Don't initialize cntMeDependOn
-		econVar( numEconVar ).Operator = 0;
-		econVar( numEconVar ).firstOperand = 1; //Autodesk Default initialization sets this to 0
-		econVar( numEconVar ).lastOperand = 0;
-		econVar( numEconVar ).activeNow = false;
-		econVar( numEconVar ).isEvaluated = false;
+		econ_var_type.Operator = 0;
+		econ_var_type.firstOperand = 1; //Autodesk Default initialization sets this to 0
+		econ_var_type.lastOperand = 0;
+		econ_var_type.activeNow = false;
+		econ_var_type.isEvaluated = false;
 		//Autodesk Don't initialize isReported
 		//Autodesk Don't initialize varUnitType
+		econVar.push_back( econ_var_type );
+		numEconVar = econVar.size();
 	}
 
 	void
@@ -2256,38 +2230,10 @@ namespace EconomicTariff {
 		//   necessary increase the size of the array.
 
 		// METHODOLOGY EMPLOYED:
-
-		// REFERENCES:
 		// na
 
-		// USE STATEMENTS:
-
-		// Locals
-		// SUBROUTINE ARGUMENT DEFINITIONS:
-
-		// SUBROUTINE PARAMETER DEFINITIONS:
-		static int sizeIncrement( 100 );
-
-		// INTERFACE BLOCK SPECIFICATIONS
-		// na
-
-		// DERIVED TYPE DEFINITIONS
-		// na
-
-		// SUBROUTINE LOCAL VARIABLE DECLARATIONS:
-		if ( ! allocated( steps ) ) {
-			steps.allocate( sizeIncrement );
-			sizeSteps = sizeIncrement;
-			numSteps = 1;
-		} else {
-			++numSteps;
-			// if larger than current size grow the array
-			if ( numSteps > sizeSteps ) {
-				steps.redimension( sizeSteps += sizeIncrement );
-			}
-		}
-		// initialize new record
-		steps( numSteps ) = 0;
+		steps.push_back( 0 );
+		++numSteps;
 	}
 
 	std::string
@@ -2924,43 +2870,14 @@ namespace EconomicTariff {
 
 		// METHODOLOGY EMPLOYED:
 
-		// REFERENCES:
-		// na
-
-		// USE STATEMENTS:
-
-		// Locals
-		// SUBROUTINE ARGUMENT DEFINITIONS:
-
-		// SUBROUTINE PARAMETER DEFINITIONS:
-		// na
-
-		// INTERFACE BLOCK SPECIFICATIONS
-		// na
-
-		// DERIVED TYPE DEFINITIONS
-		// na
-
 		// SUBROUTINE LOCAL VARIABLE DECLARATIONS:
-		static int sizeIncrement( 100 );
 		static int prevVarMe( 0 );
 
 		if ( varOperand != 0 ) {
-			//increment the numOperand and allocate/reallocate the array
-			//if necessary
-			if ( ! allocated( operand ) ) {
-				operand.allocate( sizeIncrement );
-				sizeOperand = sizeIncrement;
-				numOperand = 1;
-			} else {
-				++numOperand;
-				// if larger than current size grow the array
-				if ( numOperand > sizeOperand ) {
-					operand.redimension( sizeOperand += sizeIncrement );
-				}
-			}
-			//now add the dependancy relationship
-			operand( numOperand ) = varOperand;
+
+			// add the dependancy relationship
+			operand.push_back( varOperand );
+			numOperand = operand.size();
 			econVar( varMe ).lastOperand = numOperand;
 			//if it is the first time addOperand was called with the varMe value
 			//then set the first pointer as well

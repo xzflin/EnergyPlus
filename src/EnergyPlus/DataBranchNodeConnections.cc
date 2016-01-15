@@ -97,11 +97,9 @@ namespace DataBranchNodeConnections {
 	int NumNodeConnectionErrors( 0 ); // Count of node connection errors
 
 	int NumOfNodeConnections( 0 );
-	int MaxNumOfNodeConnections( 0 );
 	int NodeConnectionAlloc( 1000 );
 	int NumOfActualParents( 0 );
 	int NumOfAirTerminalNodes( 0 );
-	int MaxNumOfAirTerminalNodes( 0 );
 	int EqNodeConnectionAlloc( 100 );
 
 	// Object Data
@@ -118,11 +116,9 @@ namespace DataBranchNodeConnections {
 		NumCompSets = 0;
 		NumNodeConnectionErrors = 0;
 		NumOfNodeConnections = 0;
-		MaxNumOfNodeConnections = 0;
 		NodeConnectionAlloc = 1000;
 		NumOfActualParents = 0;
 		NumOfAirTerminalNodes = 0;
-		MaxNumOfAirTerminalNodes = 0;
 		EqNodeConnectionAlloc = 100;
 		CompSets.deallocate();
 		ParentNodeList.deallocate();

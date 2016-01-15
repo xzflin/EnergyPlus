@@ -203,10 +203,8 @@ namespace DataRuntimeLanguage {
 	int NumSensors( 0 ); // count of EMS sensors used in model (data from output variables)
 	int numActuatorsUsed( 0 ); // count of EMS actuators used in model
 	int numEMSActuatorsAvailable( 0 ); // count of EMS actuators available for use in such a model
-	int maxEMSActuatorsAvailable( 0 ); // count of EMS current maximum actuators available for use in such a model
 	int NumInternalVariablesUsed( 0 ); // count of EMS internal variables used in model
 	int numEMSInternalVarsAvailable( 0 ); // count of EMS internal variables available for use in such a model
-	int maxEMSInternalVarsAvailable( 0 ); // count of EMS current maximum internal variables available for use in such a model
 	int varsAvailableAllocInc( 1000 ); // allocation increment for variable arrays
 
 	int NumErlPrograms( 0 ); // count of Erl programs in model
@@ -270,14 +268,12 @@ namespace DataRuntimeLanguage {
 	clear_state()
 	{
 		EMSProgram.deallocate();
-		NumProgramCallManagers = 0 ; 
-		NumSensors =  0 ; 
-		numActuatorsUsed = 0 ; 
-		numEMSActuatorsAvailable = 0 ; 
-		maxEMSActuatorsAvailable = 0 ; 
-		NumInternalVariablesUsed = 0 ; 
-		numEMSInternalVarsAvailable = 0 ; 
-		maxEMSInternalVarsAvailable = 0 ; 
+		NumProgramCallManagers = 0 ;
+		NumSensors =  0 ;
+		numActuatorsUsed = 0 ;
+		numEMSActuatorsAvailable = 0 ;
+		NumInternalVariablesUsed = 0 ;
+		numEMSInternalVarsAvailable = 0 ;
 		varsAvailableAllocInc = 1000 ;
 		NumErlPrograms = 0 ;
 		NumErlSubroutines = 0 ;
@@ -286,24 +282,24 @@ namespace DataRuntimeLanguage {
 		NumErlStacks = 0 ;
 		NumExpressions = 0 ;
 		NumEMSOutputVariables = 0 ;
-		NumEMSMeteredOutputVariables = 0 ; 
+		NumEMSMeteredOutputVariables = 0 ;
 		NumErlTrendVariables = 0 ;
-		NumEMSCurveIndices = 0 ; 
-		NumEMSConstructionIndices = 0 ; 
-		NumExternalInterfaceGlobalVariables = 0 ; 
-		NumExternalInterfaceFunctionalMockupUnitImportGlobalVariables =  0 ; 
-		NumExternalInterfaceFunctionalMockupUnitExportGlobalVariables = 0 ; 
-		NumExternalInterfaceActuatorsUsed = 0 ; 
-		NumExternalInterfaceFunctionalMockupUnitImportActuatorsUsed = 0 ; 
-		NumExternalInterfaceFunctionalMockupUnitExportActuatorsUsed = 0 ; 
-		OutputEMSFileUnitNum = 0 ; 
-		OutputEDDFile = false ; 
-		OutputFullEMSTrace = false ; 
-		OutputEMSErrors = false ; 
-		OutputEMSActuatorAvailFull = false ; 
-		OutputEMSActuatorAvailSmall = false ; 
-		OutputEMSInternalVarsFull = false ; 
-		OutputEMSInternalVarsSmall = false ; 
+		NumEMSCurveIndices = 0 ;
+		NumEMSConstructionIndices = 0 ;
+		NumExternalInterfaceGlobalVariables = 0 ;
+		NumExternalInterfaceFunctionalMockupUnitImportGlobalVariables =  0 ;
+		NumExternalInterfaceFunctionalMockupUnitExportGlobalVariables = 0 ;
+		NumExternalInterfaceActuatorsUsed = 0 ;
+		NumExternalInterfaceFunctionalMockupUnitImportActuatorsUsed = 0 ;
+		NumExternalInterfaceFunctionalMockupUnitExportActuatorsUsed = 0 ;
+		OutputEMSFileUnitNum = 0 ;
+		OutputEDDFile = false ;
+		OutputFullEMSTrace = false ;
+		OutputEMSErrors = false ;
+		OutputEMSActuatorAvailFull = false ;
+		OutputEMSActuatorAvailSmall = false ;
+		OutputEMSInternalVarsFull = false ;
+		OutputEMSInternalVarsSmall = false ;
 		EMSConstructActuatorChecked.deallocate();
 		EMSConstructActuatorIsOkay.deallocate();
 		ErlVariable.deallocate(); // holds Erl variables in a structure array
@@ -318,7 +314,7 @@ namespace DataRuntimeLanguage {
 		EMSInternalVarsUsed.deallocate(); // internal data that are used
 		EMSProgramCallManager.deallocate(); // program calling managers
 		EMSActuator_lookup.clear(); // Fast duplicate lookup structure
-	
+
 	}
 
 	void

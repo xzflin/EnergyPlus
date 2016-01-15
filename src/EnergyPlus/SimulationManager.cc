@@ -1408,13 +1408,11 @@ namespace SimulationManager {
 		using OutputProcessor::NumTotalIVariable;
 		using OutputProcessor::NumReportList;
 		using OutputProcessor::InstMeterCacheSize;
-		using OutputReportTabular::maxUniqueKeyCount;
 		using OutputReportTabular::MonthlyFieldSetInputCount;
 		using SolarShading::maxNumberOfFigures;
 		using SolarShading::MAXHCArrayBounds;
 		using namespace DataRuntimeLanguage;
 		using DataBranchNodeConnections::NumOfNodeConnections;
-		using DataBranchNodeConnections::MaxNumOfNodeConnections;
 		using DataHeatBalance::CondFDRelaxFactor;
 		using DataHeatBalance::HeatTransferAlgosUsed;
 		using DataHeatBalance::UseCondFD;
@@ -1459,7 +1457,6 @@ namespace SimulationManager {
 		gio::write( EchoInputFile, fmtLD ) << "MaxIVariable=" << MaxIVariable;
 		gio::write( EchoInputFile, fmtLD ) << "NumEnergyMeters=" << NumEnergyMeters;
 		gio::write( EchoInputFile, fmtLD ) << "NumVarMeterArrays=" << NumVarMeterArrays;
-		gio::write( EchoInputFile, fmtLD ) << "maxUniqueKeyCount=" << maxUniqueKeyCount;
 		gio::write( EchoInputFile, fmtLD ) << "maxNumberOfFigures=" << maxNumberOfFigures;
 		gio::write( EchoInputFile, fmtLD ) << "MAXHCArrayBounds=" << MAXHCArrayBounds;
 		gio::write( EchoInputFile, fmtLD ) << "MaxVerticesPerSurface=" << MaxVerticesPerSurface;
@@ -1472,17 +1469,13 @@ namespace SimulationManager {
 		}
 		gio::write( EchoInputFile, fmtLD ) << "MonthlyFieldSetInputCount=" << MonthlyFieldSetInputCount;
 		gio::write( EchoInputFile, fmtLD ) << "NumConsideredOutputVariables=" << NumConsideredOutputVariables;
-		gio::write( EchoInputFile, fmtLD ) << "MaxConsideredOutputVariables=" << MaxConsideredOutputVariables;
 
 		gio::write( EchoInputFile, fmtLD ) << "numActuatorsUsed=" << numActuatorsUsed;
 		gio::write( EchoInputFile, fmtLD ) << "numEMSActuatorsAvailable=" << numEMSActuatorsAvailable;
-		gio::write( EchoInputFile, fmtLD ) << "maxEMSActuatorsAvailable=" << maxEMSActuatorsAvailable;
 		gio::write( EchoInputFile, fmtLD ) << "numInternalVariablesUsed=" << NumInternalVariablesUsed;
 		gio::write( EchoInputFile, fmtLD ) << "numEMSInternalVarsAvailable=" << numEMSInternalVarsAvailable;
-		gio::write( EchoInputFile, fmtLD ) << "maxEMSInternalVarsAvailable=" << maxEMSInternalVarsAvailable;
 
 		gio::write( EchoInputFile, fmtLD ) << "NumOfNodeConnections=" << NumOfNodeConnections;
-		gio::write( EchoInputFile, fmtLD ) << "MaxNumOfNodeConnections=" << MaxNumOfNodeConnections;
 #ifdef EP_Count_Calls
 		gio::write( EchoInputFile, fmtLD ) << "NumShadow_Calls=" << NumShadow_Calls;
 		gio::write( EchoInputFile, fmtLD ) << "NumShadowAtTS_Calls=" << NumShadowAtTS_Calls;

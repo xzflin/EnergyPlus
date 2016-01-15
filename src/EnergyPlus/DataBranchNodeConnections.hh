@@ -83,11 +83,9 @@ namespace DataBranchNodeConnections {
 	extern int NumNodeConnectionErrors; // Count of node connection errors
 
 	extern int NumOfNodeConnections;
-	extern int MaxNumOfNodeConnections;
 	extern int NodeConnectionAlloc;
 	extern int NumOfActualParents;
 	extern int NumOfAirTerminalNodes;
-	extern int MaxNumOfAirTerminalNodes;
 	extern int EqNodeConnectionAlloc;
 
 	// Types

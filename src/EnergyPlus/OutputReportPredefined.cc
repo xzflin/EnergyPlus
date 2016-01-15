@@ -691,19 +691,10 @@ namespace OutputReportPredefined {
 
 	// Internal data structures to store information provided by calls
 
-	int sizeReportName;
 	int numReportName;
-
-	int sizeSubTable;
 	int numSubTable;
-
-	int sizeColumnTag;
 	int numColumnTag;
-
-	// int sizeTableEntry;
 	int numTableEntry;
-
-	int sizeCompSizeTableEntry( 0 ); //Autodesk Was used uninitialized in output to .audit files
 	int numCompSizeTableEntry( 0 ); //Autodesk Was used uninitialized in WriteComponentSizing
 
 	int sizeShadowRelate;
@@ -1244,15 +1235,10 @@ namespace OutputReportPredefined {
 		pdchLeedEuiOthr = 0;
 		pdstLeedEneUsePerc = 0;
 		pdchLeedEupPerc = 0;
-		sizeReportName = 0;
 		numReportName = 0;
-		sizeSubTable = 0;
 		numSubTable = 0;
-		sizeColumnTag = 0;
 		numColumnTag = 0;
-		// sizeTableEntry = 0;
 		numTableEntry = 0;
-		sizeCompSizeTableEntry = 0; //Autodesk Was used uninitialized in output to .audit files
 		numCompSizeTableEntry = 0; //Autodesk Was used uninitialized in WriteComponentSizing
 		sizeShadowRelate = 0;
 		numShadowRelate = 0;

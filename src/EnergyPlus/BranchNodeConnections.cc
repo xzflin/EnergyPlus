@@ -190,36 +190,22 @@ namespace BranchNodeConnections {
 			MakeNew = false;
 		}
 		if ( MakeNew ) {
-			++NumOfNodeConnections;
-			if ( NumOfNodeConnections > 1 && NumOfNodeConnections > MaxNumOfNodeConnections ) {
-				NodeConnections.redimension( MaxNumOfNodeConnections += NodeConnectionAlloc );
-			} else if ( NumOfNodeConnections == 1 ) {
-				NodeConnections.allocate( NodeConnectionAlloc );
-				MaxNumOfNodeConnections = NodeConnectionAlloc;
-			}
-
-			NodeConnections( NumOfNodeConnections ).NodeNumber = NodeNumber;
-			NodeConnections( NumOfNodeConnections ).NodeName = NodeName;
-			NodeConnections( NumOfNodeConnections ).ObjectType = MakeUPPERCase( ObjectType );
-			NodeConnections( NumOfNodeConnections ).ObjectName = ObjectName;
-			NodeConnections( NumOfNodeConnections ).ConnectionType = ConnectionType;
-			NodeConnections( NumOfNodeConnections ).FluidStream = FluidStream;
-			NodeConnections( NumOfNodeConnections ).ObjectIsParent = IsParent;
-
+			NodeConnectionDef node_connection_def;
+			node_connection_def.NodeNumber = NodeNumber;
+			node_connection_def.NodeName = NodeName;
+			node_connection_def.ObjectType = MakeUPPERCase( ObjectType );
+			node_connection_def.ObjectName = ObjectName;
+			node_connection_def.ConnectionType = ConnectionType;
+			node_connection_def.FluidStream = FluidStream;
+			node_connection_def.ObjectIsParent = IsParent;
+			NodeConnections.push_back( node_connection_def );
+			NumOfNodeConnections = NodeConnections.size();
 		}
 
 		if ( has_prefixi( ObjectType, "AirTerminal:" ) ) {
 			if ( present( InputFieldName ) ) {
-				++NumOfAirTerminalNodes;
-				if ( NumOfAirTerminalNodes > 1 && NumOfAirTerminalNodes > MaxNumOfAirTerminalNodes ) {
-					AirTerminalNodeConnections.redimension( MaxNumOfAirTerminalNodes += EqNodeConnectionAlloc );
-				} else if ( NumOfAirTerminalNodes == 1 ) {
-					AirTerminalNodeConnections.allocate( EqNodeConnectionAlloc );
-					MaxNumOfAirTerminalNodes = EqNodeConnectionAlloc;
-				}
-
 				// Check out AirTerminal inlet/outlet nodes
-				Found = FindItemInList( NodeName, AirTerminalNodeConnections, &EqNodeConnectionDef::NodeName, NumOfAirTerminalNodes - 1 );
+				Found = FindItemInList( NodeName, AirTerminalNodeConnections, &EqNodeConnectionDef::NodeName, NumOfAirTerminalNodes );
 				if ( Found != 0 ) { // Nodename already used
 					ShowSevereError( RoutineName + ObjectType + "=\"" + ObjectName + "\" node name duplicated." );
 					ShowContinueError( "NodeName=\"" + NodeName + "\", entered as type=" + ConnectionType );
@@ -228,11 +214,14 @@ namespace BranchNodeConnections {
 					ShowContinueError( " as type=" + AirTerminalNodeConnections( Found ).ConnectionType + ", In Field=" + AirTerminalNodeConnections( Found ).InputFieldName );
 					ErrorsFoundHere = true;
 				} else {
-					AirTerminalNodeConnections( NumOfAirTerminalNodes ).NodeName = NodeName;
-					AirTerminalNodeConnections( NumOfAirTerminalNodes ).ObjectType = ObjectType;
-					AirTerminalNodeConnections( NumOfAirTerminalNodes ).ObjectName = ObjectName;
-					AirTerminalNodeConnections( NumOfAirTerminalNodes ).ConnectionType = ConnectionType;
-					AirTerminalNodeConnections( NumOfAirTerminalNodes ).InputFieldName = InputFieldName;
+					EqNodeConnectionDef eq_node_connection_def;
+					eq_node_connection_def.NodeName = NodeName;
+					eq_node_connection_def.ObjectType = ObjectType;
+					eq_node_connection_def.ObjectName = ObjectName;
+					eq_node_connection_def.ConnectionType = ConnectionType;
+					eq_node_connection_def.InputFieldName = InputFieldName;
+					AirTerminalNodeConnections.push_back( eq_node_connection_def );
+					NumOfAirTerminalNodes = AirTerminalNodeConnections.size();
 				}
 			} else {
 				ShowSevereError( RoutineName + ObjectType + ", Developer Error: Input Field Name not included." );
@@ -1627,18 +1616,20 @@ namespace BranchNodeConnections {
 			}
 		}
 		if ( Found == 0 ) {
-			CompSets.redimension( ++NumCompSets );
-			CompSets( NumCompSets ).ParentCType = ParentTypeUC;
-			CompSets( NumCompSets ).ParentCName = ParentName;
-			CompSets( NumCompSets ).CType = CompTypeUC;
-			CompSets( NumCompSets ).CName = CompName;
-			CompSets( NumCompSets ).InletNodeName = InletNode;
-			CompSets( NumCompSets ).OutletNodeName = OutletNode;
+			ComponentListData component_list_data;
+			component_list_data.ParentCType = ParentTypeUC;
+			component_list_data.ParentCName = ParentName;
+			component_list_data.CType = CompTypeUC;
+			component_list_data.CName = CompName;
+			component_list_data.InletNodeName = InletNode;
+			component_list_data.OutletNodeName = OutletNode;
 			if ( present( Description ) ) {
-				CompSets( NumCompSets ).Description = Description;
+				component_list_data.Description = Description;
 			} else {
-				CompSets( NumCompSets ).Description = "UNDEFINED";
+				component_list_data.Description = "UNDEFINED";
 			}
+			CompSets.push_back( component_list_data );
+			NumCompSets = CompSets.size();
 		}
 
 	}

@@ -1521,19 +1521,16 @@ namespace DataHeatBalance {
 
 		// if need new one, bunch o stuff
 		if ( NewConstrNum == 0 ) {
-			++TotConstructs;
-			Construct.redimension( TotConstructs );
-			NominalRforNominalUCalculation.redimension( TotConstructs );
-			NominalRforNominalUCalculation( TotConstructs ) = 0.0;
-			NominalU.redimension( TotConstructs );
-			NominalU( TotConstructs ) = 0.0;
-			//  Put in new attributes
+			ConstructionData construction_data( Construct( ConstrNum ) );
+			construction_data.IsUsed = true;
+			construction_data.Name = "iz-" + construction_data.Name;
+			Construct.push_back( construction_data );
+			NominalRforNominalUCalculation.push_back( 0.0 );
+			NominalU.push_back( 0.0 );
+
+			TotConstructs = Construct.size();
 			NewConstrNum = TotConstructs;
-			Construct( NewConstrNum ).IsUsed = true;
-			Construct( TotConstructs ) = Construct( ConstrNum ); // preserve some of the attributes.
-			// replace others...
-			Construct( TotConstructs ).Name = "iz-" + Construct( ConstrNum ).Name;
-			Construct( TotConstructs ).TotLayers = Construct( ConstrNum ).TotLayers;
+
 			for ( nLayer = 1; nLayer <= MaxLayersInConstruct; ++nLayer ) {
 				Construct( TotConstructs ).LayerPoint( nLayer ) = LayerPoint( nLayer );
 				if ( LayerPoint( nLayer ) != 0 ) {
@@ -1608,12 +1605,12 @@ namespace DataHeatBalance {
 		errFlag = false;
 		Found = FindItemInList( "~" + Blind( inBlindNumber ).Name, Blind );
 		if ( Found == 0 ) {
-			// Add a new blind
-			Blind.redimension( ++TotBlinds );
-			Blind( TotBlinds ) = Blind( inBlindNumber );
-			Blind( TotBlinds ).Name = "~" + Blind( inBlindNumber ).Name;
+			auto window_blind_properties( Blind( inBlindNumber ) );
+			window_blind_properties.Name = "~" + Blind( inBlindNumber ).Name;
+			window_blind_properties.SlatAngleType = VariableSlats;
+			Blind.push_back( window_blind_properties );
+			TotBlinds = Blind.size();
 			outBlindNumber = TotBlinds;
-			Blind( TotBlinds ).SlatAngleType = VariableSlats;
 
 			// Minimum and maximum slat angles allowed by slat geometry
 			if ( Blind( TotBlinds ).SlatWidth > Blind( TotBlinds ).SlatSeparation ) {

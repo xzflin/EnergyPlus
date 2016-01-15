@@ -80,7 +80,6 @@ namespace DataOutputs {
 	// DERIVED TYPE DEFINITIONS:
 
 	// MODULE VARIABLE DECLARATIONS:
-	extern int MaxConsideredOutputVariables; // Max Array size for OutputVariable pre-scanned
 	extern int NumConsideredOutputVariables; // Number of variables - pre-scanned, allowed for output
 	extern int iNumberOfRecords; // Number of records in input
 	extern int iNumberOfDefaultedFields; // number of defaulted fields

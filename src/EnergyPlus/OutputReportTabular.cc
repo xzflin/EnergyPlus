@@ -238,9 +238,7 @@ namespace OutputReportTabular {
 	// These reports are detailed/named in routine InitializePredefinedMonthlyTitles
 
 	int MonthlyInputCount( 0 );
-	int sizeMonthlyInput( 0 );
 	int MonthlyFieldSetInputCount( 0 );
-	int sizeMonthlyFieldSetInput( 0 );
 	int MonthlyTablesCount( 0 );
 	int MonthlyColumnsCount( 0 );
 	Array1D_bool IsMonthGathered( 12, false ); // shown as true for any month used
@@ -447,8 +445,6 @@ namespace OutputReportTabular {
 
 	Array3D< Real64 > surfDelaySeq;
 
-	int maxUniqueKeyCount( 1500 );
-
 	// for the XML report must keep track fo the active sub-table name and report set by other routines
 	std::string activeSubTableName;
 	std::string activeReportNameNoSpace;
@@ -495,9 +491,7 @@ namespace OutputReportTabular {
 		BinResultsTableCount = 0;
 		BinResultsIntervalCount = 0;
 		MonthlyInputCount = 0;
-		sizeMonthlyInput = 0;
 		MonthlyFieldSetInputCount = 0;
-		sizeMonthlyFieldSetInput = 0;
 		MonthlyTablesCount = 0;
 		MonthlyColumnsCount = 0;
 		IsMonthGathered = Array1D_bool ( 12, false );
@@ -644,7 +638,6 @@ namespace OutputReportTabular {
 		feneSolarRadSeq.deallocate();
 		feneSolarDelaySeq.deallocate();
 		surfDelaySeq.deallocate();
-		maxUniqueKeyCount = 1500;
 		OutputTableBinned.deallocate();
 		BinResults.deallocate();
 		BinResultsBelow.deallocate();
@@ -5097,22 +5090,15 @@ namespace OutputReportTabular {
 			}
 		}
 		EchoInputFile = FindUnitNumber( DataStringGlobals::outputAuditFileName );
-		// gio::write( EchoInputFile, fmtLD ) << "MonthlyInputCount=" << MonthlyInputCount;
-		// gio::write( EchoInputFile, fmtLD ) << "sizeMonthlyInput=" << sizeMonthlyInput;
-		// gio::write( EchoInputFile, fmtLD ) << "MonthlyFieldSetInputCount=" << MonthlyFieldSetInputCount;
-		// gio::write( EchoInputFile, fmtLD ) << "sizeMonthlyFieldSetInput=" << sizeMonthlyFieldSetInput;
-		// gio::write( EchoInputFile, fmtLD ) << "MonthlyTablesCount=" << MonthlyTablesCount;
-		// gio::write( EchoInputFile, fmtLD ) << "MonthlyColumnsCount=" << MonthlyColumnsCount;
-		// gio::write( EchoInputFile, fmtLD ) << "sizeReportName=" << sizeReportName;
-		// gio::write( EchoInputFile, fmtLD ) << "numReportName=" << numReportName;
-		// gio::write( EchoInputFile, fmtLD ) << "sizeSubTable=" << sizeSubTable;
-		// gio::write( EchoInputFile, fmtLD ) << "numSubTable=" << numSubTable;
-		// gio::write( EchoInputFile, fmtLD ) << "sizeColumnTag=" << sizeColumnTag;
-		// gio::write( EchoInputFile, fmtLD ) << "numColumnTag=" << numColumnTag;
-		// gio::write( EchoInputFile, fmtLD ) << "sizeTableEntry=" << sizeTableEntry;
-		// gio::write( EchoInputFile, fmtLD ) << "numTableEntry=" << numTableEntry;
-		// gio::write( EchoInputFile, fmtLD ) << "sizeCompSizeTableEntry=" << sizeCompSizeTableEntry;
-		// gio::write( EchoInputFile, fmtLD ) << "numCompSizeTableEntry=" << numCompSizeTableEntry;
+		gio::write( EchoInputFile, fmtLD ) << "MonthlyInputCount=" << MonthlyInputCount;
+		gio::write( EchoInputFile, fmtLD ) << "MonthlyFieldSetInputCount=" << MonthlyFieldSetInputCount;
+		gio::write( EchoInputFile, fmtLD ) << "MonthlyTablesCount=" << MonthlyTablesCount;
+		gio::write( EchoInputFile, fmtLD ) << "MonthlyColumnsCount=" << MonthlyColumnsCount;
+		gio::write( EchoInputFile, fmtLD ) << "numReportName=" << numReportName;
+		gio::write( EchoInputFile, fmtLD ) << "numSubTable=" << numSubTable;
+		gio::write( EchoInputFile, fmtLD ) << "numColumnTag=" << numColumnTag;
+		gio::write( EchoInputFile, fmtLD ) << "numTableEntry=" << numTableEntry;
+		gio::write( EchoInputFile, fmtLD ) << "numCompSizeTableEntry=" << numCompSizeTableEntry;
 
 	}
 

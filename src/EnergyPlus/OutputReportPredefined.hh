@@ -682,19 +682,10 @@ namespace OutputReportPredefined {
 
 	// Internal data structures to store information provided by calls
 
-	extern int sizeReportName;
 	extern int numReportName;
-
-	extern int sizeSubTable;
 	extern int numSubTable;
-
-	extern int sizeColumnTag;
 	extern int numColumnTag;
-
-	extern int sizeTableEntry;
 	extern int numTableEntry;
-
-	extern int sizeCompSizeTableEntry;
 	extern int numCompSizeTableEntry;
 
 	extern int sizeShadowRelate;

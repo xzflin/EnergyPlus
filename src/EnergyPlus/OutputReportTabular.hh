@@ -140,9 +140,7 @@ namespace OutputReportTabular {
 	// These reports are detailed/named in routine InitializePredefinedMonthlyTitles
 
 	extern int MonthlyInputCount;
-	extern int sizeMonthlyInput;
 	extern int MonthlyFieldSetInputCount;
-	extern int sizeMonthlyFieldSetInput;
 	extern int MonthlyTablesCount;
 	extern int MonthlyColumnsCount;
 	extern Array1D_bool IsMonthGathered; // shown as true for any month used
@@ -348,8 +346,6 @@ namespace OutputReportTabular {
 	extern Array3D< Real64 > feneSolarDelaySeq;
 
 	extern Array3D< Real64 > surfDelaySeq;
-
-	extern int maxUniqueKeyCount;
 
 	// for the XML report must keep track fo the active sub-table name and report set by other routines
 	extern std::string activeSubTableName;

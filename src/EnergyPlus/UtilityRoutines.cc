@@ -1513,36 +1513,40 @@ StoreRecurringErrorMessage(
 
 	// If Index is zero, then assign next available index and reallocate array
 	if ( ErrorMsgIndex == 0 ) {
-		RecurringErrors.redimension( ++NumRecurringErrors );
-		ErrorMsgIndex = NumRecurringErrors;
+		RecurringErrorData recurring_error_data;
+
 		// The message string only needs to be stored once when a new recurring message is created
-		RecurringErrors( ErrorMsgIndex ).Message = ErrorMessage;
-		RecurringErrors( ErrorMsgIndex ).Count = 1;
-		if ( WarmupFlag ) RecurringErrors( ErrorMsgIndex ).WarmupCount = 1;
-		if ( DoingSizing ) RecurringErrors( ErrorMsgIndex ).SizingCount = 1;
+		recurring_error_data.Message = ErrorMessage;
+		recurring_error_data.Count = 1;
+		if ( WarmupFlag ) recurring_error_data.WarmupCount = 1;
+		if ( DoingSizing ) recurring_error_data.SizingCount = 1;
 
 		// For max, min, and sum values, store the current value when a new recurring message is created
 		if ( present( ErrorReportMaxOf ) ) {
-			RecurringErrors( ErrorMsgIndex ).MaxValue = ErrorReportMaxOf;
-			RecurringErrors( ErrorMsgIndex ).ReportMax = true;
+			recurring_error_data.MaxValue = ErrorReportMaxOf;
+			recurring_error_data.ReportMax = true;
 			if ( ! ErrorReportMaxUnits.empty() ) {
-				RecurringErrors( ErrorMsgIndex ).MaxUnits = ErrorReportMaxUnits;
+				recurring_error_data.MaxUnits = ErrorReportMaxUnits;
 			}
 		}
 		if ( present( ErrorReportMinOf ) ) {
-			RecurringErrors( ErrorMsgIndex ).MinValue = ErrorReportMinOf;
-			RecurringErrors( ErrorMsgIndex ).ReportMin = true;
+			recurring_error_data.MinValue = ErrorReportMinOf;
+			recurring_error_data.ReportMin = true;
 			if ( ! ErrorReportMinUnits.empty() ) {
-				RecurringErrors( ErrorMsgIndex ).MinUnits = ErrorReportMinUnits;
+				recurring_error_data.MinUnits = ErrorReportMinUnits;
 			}
 		}
 		if ( present( ErrorReportSumOf ) ) {
-			RecurringErrors( ErrorMsgIndex ).SumValue = ErrorReportSumOf;
-			RecurringErrors( ErrorMsgIndex ).ReportSum = true;
+			recurring_error_data.SumValue = ErrorReportSumOf;
+			recurring_error_data.ReportSum = true;
 			if ( ! ErrorReportSumUnits.empty() ) {
-				RecurringErrors( ErrorMsgIndex ).SumUnits = ErrorReportSumUnits;
+				recurring_error_data.SumUnits = ErrorReportSumUnits;
 			}
 		}
+
+		RecurringErrors.push_back( recurring_error_data );
+		NumRecurringErrors = RecurringErrors.size();
+		ErrorMsgIndex = NumRecurringErrors;
 
 	} else if ( ErrorMsgIndex > 0 ) {
 		// Do stats and store

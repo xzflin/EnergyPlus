@@ -99,7 +99,6 @@ namespace DataOutputs {
 	// DERIVED TYPE DEFINITIONS:
 
 	// MODULE VARIABLE DECLARATIONS:
-	int MaxConsideredOutputVariables( 0 ); // Max Array size for OutputVariable pre-scanned
 	int NumConsideredOutputVariables( 0 ); // Number of variables - pre-scanned, allowed for output
 	int iNumberOfRecords; // Number of records in input
 	int iNumberOfDefaultedFields; // number of defaulted fields
@@ -119,7 +118,6 @@ namespace DataOutputs {
 	void
 	clear_state()
 	{
-		MaxConsideredOutputVariables = 0;
 		NumConsideredOutputVariables = 0;
 		iNumberOfRecords = int();
 		iNumberOfDefaultedFields = int();

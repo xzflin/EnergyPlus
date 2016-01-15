@@ -108,27 +108,27 @@ public:
 		TimeStepZone = 0.25;
 
 		// setup weather manager state needed
-		NumOfEnvrn = 2;
-		Environment.allocate( NumOfEnvrn );
-		Environment(1).KindOfEnvrn = ksDesignDay;
-		Environment(1).DesignDayNum = 1;
-
-		Environment(2).KindOfEnvrn = ksDesignDay;
-		Environment(2).DesignDayNum = 2;
+		for ( auto i = 1; i <= 2; ++i ) {
+			EnvironmentData environment_data;
+			environment_data.KindOfEnvrn = ksDesignDay;
+			environment_data.DesignDayNum = i;
+			Environment.push_back( environment_data )
+		}
+		NumOfEnvrn = Environment.size();
+		assert( NumOfEnvrn == 2 );
 
 		averagingWindow = 1;
 		logIndex = sizingLoggerFrameObj.SetupVariableSizingLog(LogVal, averagingWindow );
 
-		NumOfEnvrn = 4;
-		Environment.redimension( NumOfEnvrn );
-
-		Environment(3).KindOfEnvrn = ksHVACSizeDesignDay;
-		Environment(3).DesignDayNum = 1;
-		Environment(3).SeedEnvrnNum = 1;
-
-		Environment(4).KindOfEnvrn = ksHVACSizeDesignDay;
-		Environment(4).DesignDayNum = 2;
-		Environment(4).SeedEnvrnNum = 2;
+		for ( auto i = 1; i <= 2; ++i ) {
+			EnvironmentData environment_data;
+			environment_data.KindOfEnvrn = ksHVACSizeDesignDay;
+			environment_data.DesignDayNum = i;
+			environment_data.SeedEnvrnNum = i;
+			Environment.push_back( environment_data )
+		}
+		NumOfEnvrn = Environment.size();
+		assert( NumOfEnvrn == 4 );
 
 		TimeValue.allocate( 2 );
 		TimeValue( 1 ).TimeStep >>= TimeStepZone;

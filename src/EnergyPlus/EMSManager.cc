@@ -138,9 +138,9 @@ namespace EMSManager {
 	void
 	clear_state()
 	{
-		GetEMSUserInput = true ; 
+		GetEMSUserInput = true ;
 		ZoneThermostatActuatorsHaveBeenSetup = false ;
-		FinishProcessingUserInput = true ; 
+		FinishProcessingUserInput = true ;
 	}
 
 	void
@@ -1678,7 +1678,7 @@ namespace EMSManager {
 	}
 
 	bool
-	CheckIfNodeMoreInfoSensedByEMS( 
+	CheckIfNodeMoreInfoSensedByEMS(
 		int const nodeNum, // index of node being checked.
 		std::string const & varName
 	) {
@@ -2126,25 +2126,16 @@ SetupEMSActuator(
 	EMSActuatorKey const key( UpperCaseObjectType, UpperCaseObjectName, UpperCaseActuatorName );
 
 	if ( EMSActuator_lookup.find( key ) == EMSActuator_lookup.end() ) {
-		if ( numEMSActuatorsAvailable == 0 ) {
-			EMSActuatorAvailable.allocate( varsAvailableAllocInc );
-			numEMSActuatorsAvailable = 1;
-			maxEMSActuatorsAvailable = varsAvailableAllocInc;
-		} else {
-			if ( numEMSActuatorsAvailable + 1 > maxEMSActuatorsAvailable ) {
-				EMSActuatorAvailable.redimension( maxEMSActuatorsAvailable *= 2 );
-			}
-			++numEMSActuatorsAvailable;
-		}
-
-		auto & actuator( EMSActuatorAvailable( numEMSActuatorsAvailable ) );
-		actuator.ComponentTypeName = cComponentTypeName;
-		actuator.UniqueIDName = cUniqueIDName;
-		actuator.ControlTypeName = cControlTypeName;
-		actuator.Units = cUnits;
-		actuator.Actuated >>= lEMSActuated; // Pointer assigment
-		actuator.RealValue >>= rValue; // Pointer assigment
-		actuator.PntrVarTypeUsed = PntrReal;
+		EMSActuatorAvailableType ems_actuator_available_type;
+		ems_actuator_available_type.ComponentTypeName = cComponentTypeName;
+		ems_actuator_available_type.UniqueIDName = cUniqueIDName;
+		ems_actuator_available_type.ControlTypeName = cControlTypeName;
+		ems_actuator_available_type.Units = cUnits;
+		ems_actuator_available_type.Actuated >>= lEMSActuated; // Pointer assigment
+		ems_actuator_available_type.RealValue >>= rValue; // Pointer assigment
+		ems_actuator_available_type.PntrVarTypeUsed = PntrReal;
+		EMSActuatorAvailable.push_back( ems_actuator_available_type );
+		numEMSActuatorsAvailable = EMSActuatorAvailable.size();
 		EMSActuator_lookup.insert( key );
 	}
 
@@ -2201,25 +2192,16 @@ SetupEMSActuator(
 	EMSActuatorKey const key( UpperCaseObjectType, UpperCaseObjectName, UpperCaseActuatorName );
 
 	if ( EMSActuator_lookup.find( key ) == EMSActuator_lookup.end() ) {
-		if ( numEMSActuatorsAvailable == 0 ) {
-			EMSActuatorAvailable.allocate( varsAvailableAllocInc );
-			numEMSActuatorsAvailable = 1;
-			maxEMSActuatorsAvailable = varsAvailableAllocInc;
-		} else {
-			if ( numEMSActuatorsAvailable + 1 > maxEMSActuatorsAvailable ) {
-				EMSActuatorAvailable.redimension( maxEMSActuatorsAvailable *= 2 );
-			}
-			++numEMSActuatorsAvailable;
-		}
-
-		auto & actuator( EMSActuatorAvailable( numEMSActuatorsAvailable ) );
-		actuator.ComponentTypeName = cComponentTypeName;
-		actuator.UniqueIDName = cUniqueIDName;
-		actuator.ControlTypeName = cControlTypeName;
-		actuator.Units = cUnits;
-		actuator.Actuated >>= lEMSActuated; // Pointer assigment
-		actuator.IntValue >>= iValue; // Pointer assigment
-		actuator.PntrVarTypeUsed = PntrInteger;
+		EMSActuatorAvailableType ems_actuator_available_type;
+		ems_actuator_available_type.ComponentTypeName = cComponentTypeName;
+		ems_actuator_available_type.UniqueIDName = cUniqueIDName;
+		ems_actuator_available_type.ControlTypeName = cControlTypeName;
+		ems_actuator_available_type.Units = cUnits;
+		ems_actuator_available_type.Actuated >>= lEMSActuated; // Pointer assigment
+		ems_actuator_available_type.IntValue >>= iValue; // Pointer assigment
+		ems_actuator_available_type.PntrVarTypeUsed = PntrInteger;
+		EMSActuatorAvailable.push_back( ems_actuator_available_type );
+		numEMSActuatorsAvailable = EMSActuatorAvailable.size();
 		EMSActuator_lookup.insert( key );
 	}
 
@@ -2271,25 +2253,16 @@ SetupEMSActuator(
 	EMSActuatorKey const key( UpperCaseObjectType, UpperCaseObjectName, UpperCaseActuatorName );
 
 	if ( EMSActuator_lookup.find( key ) == EMSActuator_lookup.end() ) {
-		if ( numEMSActuatorsAvailable == 0 ) {
-			EMSActuatorAvailable.allocate( varsAvailableAllocInc );
-			numEMSActuatorsAvailable = 1;
-			maxEMSActuatorsAvailable = varsAvailableAllocInc;
-		} else {
-			if ( numEMSActuatorsAvailable + 1 > maxEMSActuatorsAvailable ) {
-				EMSActuatorAvailable.redimension( maxEMSActuatorsAvailable *= 2 );
-			}
-			++numEMSActuatorsAvailable;
-		}
-
-		auto & actuator( EMSActuatorAvailable( numEMSActuatorsAvailable ) );
-		actuator.ComponentTypeName = cComponentTypeName;
-		actuator.UniqueIDName = cUniqueIDName;
-		actuator.ControlTypeName = cControlTypeName;
-		actuator.Units = cUnits;
-		actuator.Actuated >>= lEMSActuated; // Pointer assigment
-		actuator.LogValue >>= lValue; // Pointer assigment
-		actuator.PntrVarTypeUsed = PntrLogical;
+		EMSActuatorAvailableType ems_actuator_available_type;
+		ems_actuator_available_type.ComponentTypeName = cComponentTypeName;
+		ems_actuator_available_type.UniqueIDName = cUniqueIDName;
+		ems_actuator_available_type.ControlTypeName = cControlTypeName;
+		ems_actuator_available_type.Units = cUnits;
+		ems_actuator_available_type.Actuated >>= lEMSActuated; // Pointer assigment
+		ems_actuator_available_type.LogValue >>= lValue; // Pointer assigment
+		ems_actuator_available_type.PntrVarTypeUsed = PntrLogical;
+		EMSActuatorAvailable.push_back( ems_actuator_available_type );
+		numEMSActuatorsAvailable = EMSActuatorAvailable.size();
 		EMSActuator_lookup.insert( key );
 	}
 
@@ -2359,23 +2332,15 @@ SetupEMSInternalVariable(
 		ShowContinueError( "Called from SetupEMSInternalVariable." );
 	} else {
 		// add new internal data variable
-		if ( numEMSInternalVarsAvailable == 0 ) {
-			EMSInternalVarsAvailable.allocate( varsAvailableAllocInc );
-			numEMSInternalVarsAvailable = 1;
-			maxEMSInternalVarsAvailable = varsAvailableAllocInc;
-		} else {
-			if ( numEMSInternalVarsAvailable + 1 > maxEMSInternalVarsAvailable ) {
-				EMSInternalVarsAvailable.redimension( maxEMSInternalVarsAvailable += varsAvailableAllocInc );
-			}
-			++numEMSInternalVarsAvailable;
-		}
-
+		InternalVarsAvailableType internal_vars_available_type;
+		internal_vars_available_type.DataTypeName = cDataTypeName;
+		internal_vars_available_type.UniqueIDName = cUniqueIDName;
+		internal_vars_available_type.Units = cUnits;
+		internal_vars_available_type.RealValue >>= rValue;
+		internal_vars_available_type.PntrVarTypeUsed = PntrReal;
+		EMSInternalVarsAvailable.push_back( internal_vars_available_type );
+		numEMSInternalVarsAvailable = EMSInternalVarsAvailable.size();
 		InternalVarAvailNum = numEMSInternalVarsAvailable;
-		EMSInternalVarsAvailable( InternalVarAvailNum ).DataTypeName = cDataTypeName;
-		EMSInternalVarsAvailable( InternalVarAvailNum ).UniqueIDName = cUniqueIDName;
-		EMSInternalVarsAvailable( InternalVarAvailNum ).Units = cUnits;
-		EMSInternalVarsAvailable( InternalVarAvailNum ).RealValue >>= rValue;
-		EMSInternalVarsAvailable( InternalVarAvailNum ).PntrVarTypeUsed = PntrReal;
 	}
 
 }
@@ -2444,23 +2409,15 @@ SetupEMSInternalVariable(
 		ShowContinueError( "called from SetupEMSInternalVariable" );
 	} else {
 		// add new internal data variable
-		if ( numEMSInternalVarsAvailable == 0 ) {
-			EMSInternalVarsAvailable.allocate( varsAvailableAllocInc );
-			numEMSInternalVarsAvailable = 1;
-			maxEMSInternalVarsAvailable = varsAvailableAllocInc;
-		} else {
-			if ( numEMSInternalVarsAvailable + 1 > maxEMSInternalVarsAvailable ) {
-				EMSInternalVarsAvailable.redimension( maxEMSInternalVarsAvailable += varsAvailableAllocInc );
-			}
-			++numEMSInternalVarsAvailable;
-		}
-
+		InternalVarsAvailableType internal_vars_available_type;
+		internal_vars_available_type.DataTypeName = cDataTypeName;
+		internal_vars_available_type.UniqueIDName = cUniqueIDName;
+		internal_vars_available_type.Units = cUnits;
+		internal_vars_available_type.IntValue >>= iValue;
+		internal_vars_available_type.PntrVarTypeUsed = PntrInteger;
+		EMSInternalVarsAvailable.push_back( internal_vars_available_type );
+		numEMSInternalVarsAvailable = EMSInternalVarsAvailable.size();
 		InternalVarAvailNum = numEMSInternalVarsAvailable;
-		EMSInternalVarsAvailable( InternalVarAvailNum ).DataTypeName = cDataTypeName;
-		EMSInternalVarsAvailable( InternalVarAvailNum ).UniqueIDName = cUniqueIDName;
-		EMSInternalVarsAvailable( InternalVarAvailNum ).Units = cUnits;
-		EMSInternalVarsAvailable( InternalVarAvailNum ).IntValue >>= iValue;
-		EMSInternalVarsAvailable( InternalVarAvailNum ).PntrVarTypeUsed = PntrInteger;
 	}
 
 }

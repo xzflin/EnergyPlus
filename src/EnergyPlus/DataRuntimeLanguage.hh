@@ -201,10 +201,8 @@ namespace DataRuntimeLanguage {
 	extern int NumSensors; // count of EMS sensors used in model (data from output variables)
 	extern int numActuatorsUsed; // count of EMS actuators used in model
 	extern int numEMSActuatorsAvailable; // count of EMS actuators available for use in such a model
-	extern int maxEMSActuatorsAvailable; // count of EMS current maximum actuators available for use in such a model
 	extern int NumInternalVariablesUsed; // count of EMS internal variables used in model
 	extern int numEMSInternalVarsAvailable; // count of EMS internal variables available for use in such a model
-	extern int maxEMSInternalVarsAvailable; // count of EMS current maximum internal variables available for use in such a model
 	extern int varsAvailableAllocInc; // allocation increment for variable arrays
 
 	extern int NumErlPrograms; // count of Erl programs in model

@@ -1261,21 +1261,17 @@ namespace WeatherManager {
 
 		OrigNumOfEnvrn = NumOfEnvrn;
 		for ( int i = 1; i <= OrigNumOfEnvrn; ++i ) {
-			if ( Environment(i).KindOfEnvrn == ksDesignDay) {
-				Environment.redimension(++NumOfEnvrn);
-				Environment(NumOfEnvrn) = Environment(i); // copy over seed data from current array element
-				Environment(NumOfEnvrn).SeedEnvrnNum = i;
-				Environment(NumOfEnvrn).KindOfEnvrn = ksHVACSizeDesignDay;
-				Environment(NumOfEnvrn).Title = Environment(i).Title + " HVAC Sizing Pass " + RoundSigDigits( HVACSizingIterCount );
-				Environment(NumOfEnvrn).HVACSizingIterationNum = HVACSizingIterCount;
-			} else if (Environment(i).KindOfEnvrn == ksRunPeriodDesign) {
-				Environment.redimension(++NumOfEnvrn);
-				Environment(NumOfEnvrn) = Environment(i); // copy over seed data
-				Environment(NumOfEnvrn).SeedEnvrnNum = i;
-				Environment(NumOfEnvrn).KindOfEnvrn = ksHVACSizeRunPeriodDesign;
-				Environment(NumOfEnvrn).Title = Environment(i).Title + " HVAC Sizing Pass " + RoundSigDigits( HVACSizingIterCount );
-				Environment(NumOfEnvrn).HVACSizingIterationNum = HVACSizingIterCount;
+			EnvironmentData environment_data( Environment(i) ); // copy over seed data from current array element
+			environment_data.SeedEnvrnNum = i;
+			if ( environment_data.KindOfEnvrn == ksDesignDay ) {
+				environment_data.KindOfEnvrn = ksHVACSizeDesignDay;
+			} else if ( environment_data.KindOfEnvrn == ksRunPeriodDesign ) {
+				environment_data.KindOfEnvrn = ksHVACSizeRunPeriodDesign;
 			}
+			environment_data.Title = environment_data.Title + " HVAC Sizing Pass " + RoundSigDigits( HVACSizingIterCount );
+			environment_data.HVACSizingIterationNum = HVACSizingIterCount;
+			Environment.push_back( environment_data );
+			NumOfEnvrn = Environment.size();
 		}  // for each loop over Environment data strucure
 
 	}
@@ -5857,8 +5853,10 @@ Label9999: ;
 
 		if ( TotRunPers == 0 && FullAnnualRun ) {
 			ShowWarningError( "No Run Periods input but Full Annual Simulation selected.  Adding Run Period to 1/1 through 12/31." );
-			Environment.redimension( ++NumOfEnvrn );
-			Environment( NumOfEnvrn ).KindOfEnvrn = ksRunPeriodWeather;
+			EnvironmentData environment_data;
+			environment_data.KindOfEnvrn = ksRunPeriodWeather;
+			Environment.push_back( environment_data );
+			NumOfEnvrn = Environment.size();
 			TotRunPers = 1;
 			WeathSimReq = true;
 			RunPeriodInput.allocate( TotRunPers );
