@@ -1410,7 +1410,6 @@ namespace SimulationManager {
 		using OutputProcessor::InstMeterCacheSize;
 		using OutputReportTabular::MonthlyFieldSetInputCount;
 		using SolarShading::maxNumberOfFigures;
-		using SolarShading::MAXHCArrayBounds;
 		using namespace DataRuntimeLanguage;
 		using DataBranchNodeConnections::NumOfNodeConnections;
 		using DataHeatBalance::CondFDRelaxFactor;
@@ -1458,7 +1457,6 @@ namespace SimulationManager {
 		gio::write( EchoInputFile, fmtLD ) << "NumEnergyMeters=" << NumEnergyMeters;
 		gio::write( EchoInputFile, fmtLD ) << "NumVarMeterArrays=" << NumVarMeterArrays;
 		gio::write( EchoInputFile, fmtLD ) << "maxNumberOfFigures=" << maxNumberOfFigures;
-		gio::write( EchoInputFile, fmtLD ) << "MAXHCArrayBounds=" << MAXHCArrayBounds;
 		gio::write( EchoInputFile, fmtLD ) << "MaxVerticesPerSurface=" << MaxVerticesPerSurface;
 		gio::write( EchoInputFile, fmtLD ) << "NumReportList=" << NumReportList;
 		gio::write( EchoInputFile, fmtLD ) << "InstMeterCacheSize=" << InstMeterCacheSize;

@@ -2232,7 +2232,7 @@ namespace EconomicTariff {
 		// METHODOLOGY EMPLOYED:
 		// na
 
-		steps.push_back( 0 );
+		steps.emplace_back( 0 );
 		++numSteps;
 	}
 

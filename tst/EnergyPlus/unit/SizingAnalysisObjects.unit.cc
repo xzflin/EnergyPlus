@@ -112,7 +112,7 @@ public:
 			EnvironmentData environment_data;
 			environment_data.KindOfEnvrn = ksDesignDay;
 			environment_data.DesignDayNum = i;
-			Environment.push_back( environment_data )
+			Environment.push_back( environment_data );
 		}
 		NumOfEnvrn = Environment.size();
 		assert( NumOfEnvrn == 2 );
@@ -125,7 +125,7 @@ public:
 			environment_data.KindOfEnvrn = ksHVACSizeDesignDay;
 			environment_data.DesignDayNum = i;
 			environment_data.SeedEnvrnNum = i;
-			Environment.push_back( environment_data )
+			Environment.push_back( environment_data );
 		}
 		NumOfEnvrn = Environment.size();
 		assert( NumOfEnvrn == 4 );

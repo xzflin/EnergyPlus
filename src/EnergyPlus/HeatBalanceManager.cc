@@ -5455,7 +5455,6 @@ namespace HeatBalanceManager {
 		int IGlSys; // Glazing system counter
 		int MaterNum; // Material number
 		int MatNum;
-		int FrDivNum; // FrameDivider number
 		bool exists; // True if Window5 data file exists
 		Array1D< Real64 > WinHeight( 2 ); // Height, width for glazing system (m)
 		Array1D< Real64 > WinWidth( 2 );
@@ -5741,73 +5740,14 @@ Label20: ;
 			TotMaterialsPrev = TotMaterials;
 			for ( IGlSys = 1; IGlSys <= NGlSys; ++IGlSys ) {
 				NGaps( IGlSys ) = NGlass( IGlSys ) - 1;
-				TotMaterials += NGlass( IGlSys ) + NGaps( IGlSys );
-			}
+				auto const materialsToAdd = NGlass( IGlSys ) + NGaps( IGlSys );
+				TotMaterials += materialsToAdd;
 
-			// Create Material objects
-
-			// reallocate Material type
-
-			Material.redimension( TotMaterials );
-			NominalR.redimension( TotMaterials, 0.0 );
-
-			// Initialize new materials
-			for ( loop = TotMaterialsPrev + 1; loop <= TotMaterials; ++loop ) {
-				Material( loop ).Name = "";
-				Material( loop ).Group = -1;
-				Material( loop ).Roughness = 0;
-				Material( loop ).Conductivity = 0.0;
-				Material( loop ).Density = 0.0;
-				Material( loop ).IsoMoistCap = 0.0;
-				Material( loop ).Porosity = 0.0;
-				Material( loop ).Resistance = 0.0;
-				Material( loop ).SpecHeat = 0.0;
-				Material( loop ).ThermGradCoef = 0.0;
-				Material( loop ).Thickness = 0.0;
-				Material( loop ).VaporDiffus = 0.0;
-				Material( loop ).AbsorpSolar = 0.0;
-				Material( loop ).AbsorpThermal = 0.0;
-				Material( loop ).AbsorpVisible = 0.0;
-				Material( loop ).ReflectShade = 0.0;
-				Material( loop ).Trans = 0.0;
-				Material( loop ).ReflectShadeVis = 0.0;
-				Material( loop ).TransVis = 0.0;
-				Material( loop ).GlassTransDirtFactor = 1.0;
-				Material( loop ).SolarDiffusing = false;
-				Material( loop ).AbsorpThermalBack = 0.0;
-				Material( loop ).AbsorpThermalFront = 0.0;
-				Material( loop ).ReflectSolBeamBack = 0.0;
-				Material( loop ).ReflectSolBeamFront = 0.0;
-				Material( loop ).ReflectSolDiffBack = 0.0;
-				Material( loop ).ReflectSolDiffFront = 0.0;
-				Material( loop ).ReflectVisBeamBack = 0.0;
-				Material( loop ).ReflectVisBeamFront = 0.0;
-				Material( loop ).ReflectVisDiffBack = 0.0;
-				Material( loop ).ReflectVisDiffFront = 0.0;
-				Material( loop ).TransSolBeam = 0.0;
-				Material( loop ).TransThermal = 0.0;
-				Material( loop ).TransVisBeam = 0.0;
-				Material( loop ).GlassSpectralDataPtr = 0;
-				Material( loop ).NumberOfGasesInMixture = 0;
-				Material( loop ).GasCon = 0.0;
-				Material( loop ).GasVis = 0.0;
-				Material( loop ).GasCp = 0.0;
-				Material( loop ).GasType = 0;
-				Material( loop ).GasWght = 0.0;
-				Material( loop ).GasSpecHeatRatio = 0.0;
-				Material( loop ).GasFract = 0.0;
-				Material( loop ).WinShadeToGlassDist = 0.0;
-				Material( loop ).WinShadeTopOpeningMult = 0.0;
-				Material( loop ).WinShadeBottomOpeningMult = 0.0;
-				Material( loop ).WinShadeLeftOpeningMult = 0.0;
-				Material( loop ).WinShadeRightOpeningMult = 0.0;
-				Material( loop ).WinShadeAirFlowPermeability = 0.0;
-				Material( loop ).BlindDataPtr = 0;
-				Material( loop ).EMPDVALUE = 0.0;
-				Material( loop ).MoistACoeff = 0.0;
-				Material( loop ).MoistBCoeff = 0.0;
-				Material( loop ).MoistCCoeff = 0.0;
-				Material( loop ).MoistDCoeff = 0.0;
+				//  add new default MaterialProperties and NominalR
+				for ( int i = 0; i < materialsToAdd; ++i ) {
+					Material.emplace_back();
+					NominalR.emplace_back( 0.0 );
+				}
 			}
 
 			// Glass objects
@@ -5884,94 +5824,43 @@ Label20: ;
 
 			// Construction objects
 
-			// reallocate Construct types
-			TotConstructs += NGlSys;
-			Construct.redimension( TotConstructs );
-			NominalRforNominalUCalculation.redimension( TotConstructs );
-			NominalU.redimension( TotConstructs );
-
 			{ IOFlags flags; gio::read( W5DataFileNum, fmtA, flags ) >> NextLine; ReadStat = flags.ios(); }
 			if ( ReadStat < GoodIOStatValue ) goto Label1000;
 			++FileLineCount;
 
 			for ( IGlSys = 1; IGlSys <= NGlSys; ++IGlSys ) {
-				ConstrNum = TotConstructs - NGlSys + IGlSys;
+				ConstructionData construction_data;
 				if ( IGlSys == 1 ) {
-					Construct( ConstrNum ).Name = DesiredConstructionName;
+					construction_data.Name = DesiredConstructionName;
 				} else {
-					Construct( ConstrNum ).Name = DesiredConstructionName + ":2";
+					construction_data.Name = DesiredConstructionName + ":2";
 				}
-				for ( loop = 1; loop <= MaxLayersInConstruct; ++loop ) {
-					Construct( ConstrNum ).LayerPoint( loop ) = 0;
-				}
-				Construct( ConstrNum ).InsideAbsorpSolar = 0.0;
-				Construct( ConstrNum ).OutsideAbsorpSolar = 0.0;
-				Construct( ConstrNum ).DayltPropPtr = 0;
-				Construct( ConstrNum ).CTFCross = 0.0;
-				Construct( ConstrNum ).CTFFlux = 0.0;
-				Construct( ConstrNum ).CTFInside = 0.0;
-				Construct( ConstrNum ).CTFOutside = 0.0;
-				Construct( ConstrNum ).CTFSourceIn = 0.0;
-				Construct( ConstrNum ).CTFSourceOut = 0.0;
-				Construct( ConstrNum ).CTFTimeStep = 0.0;
-				Construct( ConstrNum ).CTFTSourceOut = 0.0;
-				Construct( ConstrNum ).CTFTSourceIn = 0.0;
-				Construct( ConstrNum ).CTFTSourceQ = 0.0;
-				Construct( ConstrNum ).CTFTUserOut = 0.0;
-				Construct( ConstrNum ).CTFTUserIn = 0.0;
-				Construct( ConstrNum ).CTFTUserSource = 0.0;
-				Construct( ConstrNum ).NumHistories = 0;
-				Construct( ConstrNum ).NumCTFTerms = 0;
-				Construct( ConstrNum ).UValue = 0.0;
-				Construct( ConstrNum ).SourceSinkPresent = false;
-				Construct( ConstrNum ).SolutionDimensions = 0;
-				Construct( ConstrNum ).SourceAfterLayer = 0;
-				Construct( ConstrNum ).TempAfterLayer = 0;
-				Construct( ConstrNum ).ThicknessPerpend = 0.0;
-				Construct( ConstrNum ).AbsDiff = 0.0;
-				Construct( ConstrNum ).AbsDiffBack = 0.0;
-				Construct( ConstrNum ).AbsDiffShade = 0.0;
-				Construct( ConstrNum ).AbsDiffBackShade = 0.0;
-				Construct( ConstrNum ).ShadeAbsorpThermal = 0.0;
-				Construct( ConstrNum ).AbsBeamCoef = 0.0;
-				Construct( ConstrNum ).AbsBeamBackCoef = 0.0;
-				Construct( ConstrNum ).AbsBeamShadeCoef = 0.0;
-				Construct( ConstrNum ).AbsDiffIn = 0.0;
-				Construct( ConstrNum ).AbsDiffOut = 0.0;
-				Construct( ConstrNum ).TransDiff = 0.0;
-				Construct( ConstrNum ).TransDiffVis = 0.0;
-				Construct( ConstrNum ).ReflectSolDiffBack = 0.0;
-				Construct( ConstrNum ).ReflectSolDiffFront = 0.0;
-				Construct( ConstrNum ).ReflectVisDiffBack = 0.0;
-				Construct( ConstrNum ).ReflectVisDiffFront = 0.0;
-				Construct( ConstrNum ).TransSolBeamCoef = 0.0;
-				Construct( ConstrNum ).TransVisBeamCoef = 0.0;
-				Construct( ConstrNum ).ReflSolBeamFrontCoef = 0.0;
-				Construct( ConstrNum ).ReflSolBeamBackCoef = 0.0;
-				Construct( ConstrNum ).W5FrameDivider = 0;
-				Construct( ConstrNum ).TotLayers = NGlass( IGlSys ) + NGaps( IGlSys );
-				Construct( ConstrNum ).TotGlassLayers = NGlass( IGlSys );
-				Construct( ConstrNum ).TotSolidLayers = NGlass( IGlSys );
-
+				construction_data.TotLayers = NGlass( IGlSys ) + NGaps( IGlSys );
+				construction_data.TotGlassLayers = NGlass( IGlSys );
+				construction_data.TotSolidLayers = NGlass( IGlSys );
 				for ( IGlass = 1; IGlass <= NGlass( IGlSys ); ++IGlass ) {
-					Construct( ConstrNum ).LayerPoint( 2 * IGlass - 1 ) = MaterNumSysGlass( IGlass, IGlSys );
-					if ( IGlass < NGlass( IGlSys ) ) Construct( ConstrNum ).LayerPoint( 2 * IGlass ) = MaterNumSysGap( IGlass, IGlSys );
+					construction_data.LayerPoint( 2 * IGlass - 1 ) = MaterNumSysGlass( IGlass, IGlSys );
+					if ( IGlass < NGlass( IGlSys ) ) construction_data.LayerPoint( 2 * IGlass ) = MaterNumSysGap( IGlass, IGlSys );
 				}
 
-				Construct( ConstrNum ).OutsideRoughness = VerySmooth;
-				Construct( ConstrNum ).InsideAbsorpThermal = Material( TotMaterialsPrev + NGlass( IGlSys ) ).AbsorpThermalBack;
-				Construct( ConstrNum ).OutsideAbsorpThermal = Material( TotMaterialsPrev + 1 ).AbsorpThermalFront;
-				Construct( ConstrNum ).TypeIsWindow = true;
-				Construct( ConstrNum ).FromWindow5DataFile = true;
-				Construct( ConstrNum ).W5FileGlazingSysHeight = WinHeight( IGlSys );
-				Construct( ConstrNum ).W5FileGlazingSysWidth = WinWidth( IGlSys );
+				construction_data.OutsideRoughness = VerySmooth;
+				construction_data.InsideAbsorpThermal = Material( TotMaterialsPrev + NGlass( IGlSys ) ).AbsorpThermalBack;
+				construction_data.OutsideAbsorpThermal = Material( TotMaterialsPrev + 1 ).AbsorpThermalFront;
+				construction_data.TypeIsWindow = true;
+				construction_data.FromWindow5DataFile = true;
+				construction_data.W5FileGlazingSysHeight = WinHeight( IGlSys );
+				construction_data.W5FileGlazingSysWidth = WinWidth( IGlSys );
 				if ( SameString( MullionOrientation, "Vertical" ) ) {
-					Construct( ConstrNum ).W5FileMullionOrientation = Vertical;
+					construction_data.W5FileMullionOrientation = Vertical;
 				} else if ( SameString( MullionOrientation, "Horizontal" ) ) {
-					Construct( ConstrNum ).W5FileMullionOrientation = Horizontal;
-				} else {
+					construction_data.W5FileMullionOrientation = Horizontal;
 				}
-				Construct( ConstrNum ).W5FileMullionWidth = MullionWidth;
+				construction_data.W5FileMullionWidth = MullionWidth;
+				Construct.push_back( construction_data );
+				NominalRforNominalUCalculation.emplace_back( 0.0 );
+				NominalU.emplace_back( 0.0 );
+				TotConstructs = Construct.size();
+				ConstrNum = TotConstructs;
 
 				// Fill Construct with system transmission, reflection and absorption properties
 
@@ -6102,7 +5991,6 @@ Label20: ;
 
 				// NominalRforNominalUCalculation of this construction (actually the total resistance of all of its layers; gas layer
 				// conductivity here ignores convective efffects in gap.)
-				NominalRforNominalUCalculation( ConstrNum ) = 0.0;
 				for ( loop = 1; loop <= NGlass( IGlSys ) + NGaps( IGlSys ); ++loop ) {
 					MatNum = Construct( ConstrNum ).LayerPoint( loop );
 					if ( Material( MatNum ).Group == WindowGlass ) {
@@ -6120,53 +6008,45 @@ Label20: ;
 			TotFrameDividerPrev = TotFrameDivider;
 			for ( IGlSys = 1; IGlSys <= NGlSys; ++IGlSys ) {
 				if ( FrameWidth > 0.0 || DividerWidth( IGlSys ) > 0.0 ) {
-					++TotFrameDivider;
-					Construct( TotConstructs - NGlSys + IGlSys ).W5FrameDivider = TotFrameDivider;
-				}
-			}
-
-			if ( TotFrameDivider > TotFrameDividerPrev ) {
-				FrameDivider.redimension( TotFrameDivider );
-			}
-
-			for ( IGlSys = 1; IGlSys <= NGlSys; ++IGlSys ) {
-				if ( FrameWidth > 0.0 || DividerWidth( IGlSys ) > 0.0 ) {
-					FrDivNum = Construct( TotConstructs - NGlSys + IGlSys ).W5FrameDivider;
-					FrameDivider( FrDivNum ).FrameWidth = FrameWidth;
-					FrameDivider( FrDivNum ).FrameProjectionOut = FrameProjectionOut;
-					FrameDivider( FrDivNum ).FrameProjectionIn = FrameProjectionIn;
-					FrameDivider( FrDivNum ).FrameConductance = FrameConductance;
-					FrameDivider( FrDivNum ).FrEdgeToCenterGlCondRatio = FrEdgeToCenterGlCondRatio;
-					FrameDivider( FrDivNum ).FrameSolAbsorp = FrameSolAbsorp;
-					FrameDivider( FrDivNum ).FrameVisAbsorp = FrameVisAbsorp;
-					FrameDivider( FrDivNum ).FrameEmis = FrameEmis;
-					FrameDivider( FrDivNum ).FrameEdgeWidth = 0.06355; // 2.5 in
+					FrameDividerProperties frame_divider_properties;
+					frame_divider_properties.FrameWidth = FrameWidth;
+					frame_divider_properties.FrameProjectionOut = FrameProjectionOut;
+					frame_divider_properties.FrameProjectionIn = FrameProjectionIn;
+					frame_divider_properties.FrameConductance = FrameConductance;
+					frame_divider_properties.FrEdgeToCenterGlCondRatio = FrEdgeToCenterGlCondRatio;
+					frame_divider_properties.FrameSolAbsorp = FrameSolAbsorp;
+					frame_divider_properties.FrameVisAbsorp = FrameVisAbsorp;
+					frame_divider_properties.FrameEmis = FrameEmis;
+					frame_divider_properties.FrameEdgeWidth = 0.06355; // 2.5 in
 					if ( SameString( MullionOrientation, "Vertical" ) ) {
-						FrameDivider( FrDivNum ).MullionOrientation = Vertical;
+						frame_divider_properties.MullionOrientation = Vertical;
 					} else if ( SameString( MullionOrientation, "Horizontal" ) ) {
-						FrameDivider( FrDivNum ).MullionOrientation = Horizontal;
+						frame_divider_properties.MullionOrientation = Horizontal;
 					}
 					if ( SameString( DividerType( IGlSys ), "DividedLite" ) ) {
-						FrameDivider( FrDivNum ).DividerType = DividedLite;
+						frame_divider_properties.DividerType = DividedLite;
 					} else if ( SameString( DividerType( IGlSys ), "Suspended" ) ) {
-						FrameDivider( FrDivNum ).DividerType = Suspended;
+						frame_divider_properties.DividerType = Suspended;
 					}
-					FrameDivider( FrDivNum ).DividerWidth = DividerWidth( IGlSys );
-					FrameDivider( FrDivNum ).HorDividers = HorDividers( IGlSys );
-					FrameDivider( FrDivNum ).VertDividers = VertDividers( IGlSys );
-					FrameDivider( FrDivNum ).DividerProjectionOut = DividerProjectionOut( IGlSys );
-					FrameDivider( FrDivNum ).DividerProjectionIn = DividerProjectionIn( IGlSys );
-					FrameDivider( FrDivNum ).DividerConductance = DividerConductance( IGlSys );
-					FrameDivider( FrDivNum ).DivEdgeToCenterGlCondRatio = DivEdgeToCenterGlCondRatio( IGlSys );
-					FrameDivider( FrDivNum ).DividerSolAbsorp = DividerSolAbsorp( IGlSys );
-					FrameDivider( FrDivNum ).DividerVisAbsorp = DividerVisAbsorp( IGlSys );
-					FrameDivider( FrDivNum ).DividerEmis = DividerEmis( IGlSys );
-					FrameDivider( FrDivNum ).DividerEdgeWidth = 0.06355; // 2.5 in
+					frame_divider_properties.DividerWidth = DividerWidth( IGlSys );
+					frame_divider_properties.HorDividers = HorDividers( IGlSys );
+					frame_divider_properties.VertDividers = VertDividers( IGlSys );
+					frame_divider_properties.DividerProjectionOut = DividerProjectionOut( IGlSys );
+					frame_divider_properties.DividerProjectionIn = DividerProjectionIn( IGlSys );
+					frame_divider_properties.DividerConductance = DividerConductance( IGlSys );
+					frame_divider_properties.DivEdgeToCenterGlCondRatio = DivEdgeToCenterGlCondRatio( IGlSys );
+					frame_divider_properties.DividerSolAbsorp = DividerSolAbsorp( IGlSys );
+					frame_divider_properties.DividerVisAbsorp = DividerVisAbsorp( IGlSys );
+					frame_divider_properties.DividerEmis = DividerEmis( IGlSys );
+					frame_divider_properties.DividerEdgeWidth = 0.06355; // 2.5 in
 					if ( NGlSys == 1 ) {
-						FrameDivider( FrDivNum ).Name = "W5:" + DesiredConstructionName;
+						frame_divider_properties.Name = "W5:" + DesiredConstructionName;
 					} else {
-						FrameDivider( FrDivNum ).Name = "W5:" + DesiredConstructionName + ':' + NumName( IGlSys );
+						frame_divider_properties.Name = "W5:" + DesiredConstructionName + ':' + NumName( IGlSys );
 					}
+					FrameDivider.push_back( frame_divider_properties );
+					TotFrameDivider = FrameDivider.size();
+					Construct( TotConstructs - NGlSys + IGlSys ).W5FrameDivider = TotFrameDivider;
 				}
 			}
 
@@ -6849,52 +6729,31 @@ Label1000: ;
 		// SUBROUTINE LOCAL VARIABLE DECLARATIONS:
 
 		int Loop;
-		static int iTC( 0 );
-		static int iMat( 0 );
-		static int NumNewConst( 0 );
-		static int iTCG( 0 );
+		int iTC( 0 );
+		int iMat( 0 );
+		int iTCG( 0 );
 
-		NumNewConst = 0;
 		for ( Loop = 1; Loop <= TotConstructs; ++Loop ) {
 			if ( Construct( Loop ).TCFlag == 1 ) {
 				iTCG = Material( Construct( Loop ).TCLayer ).TCParent;
 				if ( iTCG == 0 ) continue; // hope this was caught already
 				iMat = TCGlazings( iTCG ).NumGlzMat;
 				for ( iTC = 1; iTC <= iMat; ++iTC ) {
-					++NumNewConst;
+					ConstructionData construction_data;
+					construction_data = Construct( Loop ); // copy data
+					construction_data.Name = construction_data.Name + "_TC_" + RoundSigDigits( TCGlazings( iTCG ).SpecTemp( iTC ), 0 );
+					construction_data.TCLayer = TCGlazings( iTCG ).LayerPoint( iTC );
+					construction_data.LayerPoint( construction_data.TCLayerID ) = construction_data.TCLayer;
+					construction_data.TCFlag = 1;
+					construction_data.TCMasterConst = Loop;
+					construction_data.TypeIsWindow = true;
+					Construct.push_back( construction_data );
+					NominalRforNominalUCalculation.emplace_back( 0.0 );
+					NominalU.emplace_back( 0.0 );
+					TotConstructs = Construct.size();
 				}
 			}
 		}
-
-		if ( NumNewConst == 0 ) return; // no need to go further
-
-		// Increase Construct() and copy the extra constructions
-		Construct.redimension( TotConstructs + NumNewConst );
-		NominalRforNominalUCalculation.redimension( TotConstructs + NumNewConst );
-		NominalU.redimension( TotConstructs + NumNewConst );
-
-		NumNewConst = TotConstructs;
-		for ( Loop = 1; Loop <= TotConstructs; ++Loop ) {
-			if ( Construct( Loop ).TCFlag == 1 ) {
-				iTCG = Material( Construct( Loop ).TCLayer ).TCParent;
-				if ( iTCG == 0 ) continue; // hope this was caught already
-				iMat = TCGlazings( iTCG ).NumGlzMat;
-				for ( iTC = 1; iTC <= iMat; ++iTC ) {
-					++NumNewConst;
-					Construct( NumNewConst ) = Construct( Loop ); // copy data
-					Construct( NumNewConst ).Name = Construct( Loop ).Name + "_TC_" + RoundSigDigits( TCGlazings( iTCG ).SpecTemp( iTC ), 0 );
-					Construct( NumNewConst ).TCLayer = TCGlazings( iTCG ).LayerPoint( iTC );
-					Construct( NumNewConst ).LayerPoint( Construct( Loop ).TCLayerID ) = Construct( NumNewConst ).TCLayer;
-					Construct( NumNewConst ).TCFlag = 1;
-					Construct( NumNewConst ).TCMasterConst = Loop;
-					Construct( NumNewConst ).TCLayerID = Construct( Loop ).TCLayerID;
-					Construct( NumNewConst ).TCGlassID = Construct( Loop ).TCGlassID;
-					Construct( NumNewConst ).TypeIsWindow = true;
-				}
-			}
-		}
-		TotConstructs = NumNewConst;
-
 	}
 
 	void

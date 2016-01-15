@@ -1190,8 +1190,6 @@ namespace SystemReports {
 		int DemandSideCompNum;
 		int SupplySideCompNum;
 		int DemandSideLoopType;
-		static bool OneTimeFlag( true ); // Flag set to make sure you initialize reports one time
-		bool found;
 //		int countloop;
 
 		struct IdentifyLoop
@@ -1208,10 +1206,10 @@ namespace SystemReports {
 
 		};
 
-		// Object Data
-		static Array1D< IdentifyLoop > LoopStack;
-
 		return; //Autodesk:? Is this routine now an intentional NOOP?
+
+		static bool OneTimeFlag( true ); // Flag set to make sure you initialize reports one time
+		static Array1D< IdentifyLoop > LoopStack;
 
 		if ( OneTimeFlag ) {
 			LoopStack.allocate( MaxLoopArraySize );
@@ -1245,33 +1243,24 @@ namespace SystemReports {
 						//If the connection is valid load the connection array
 						if ( DemandSideLoopType == 1 || DemandSideLoopType == 2 ) {
 							ConnectionFlag = true;
-							++ArrayCount;
-							if ( ArrayCount > MaxCompArraySize ) {
-								DemandSideConnect.redimension( MaxCompArraySize += 100 );
-							}
-							DemandSideConnect( ArrayCount ).LoopType = DemandSideLoopType;
-							DemandSideConnect( ArrayCount ).LoopNum = DemandSideLoopNum;
-							DemandSideConnect( ArrayCount ).BranchNum = DemandSideBranchNum;
-							DemandSideConnect( ArrayCount ).CompNum = DemandSideCompNum;
+							ConnectionPoint connection_point;
+							connection_point.LoopType = DemandSideLoopType;
+							connection_point.LoopNum = DemandSideLoopNum;
+							connection_point.BranchNum = DemandSideBranchNum;
+							connection_point.CompNum = DemandSideCompNum;
+							DemandSideConnect.push_back( connection_point );
+							ArrayCount = DemandSideConnect.size();
 
-							found = false;
-							gio::write( OutputFileDebug, fmtLD ) << "1271=lstacksize" << size( LoopStack );
-							for ( Idx = 1; Idx <= isize( LoopStack ); ++Idx ) {
-								if ( DemandSideLoopNum == LoopStack( Idx ).LoopNum && DemandSideLoopType == LoopStack( Idx ).LoopType ) {
-									found = true;
-									break;
-								}
-							}
-							if ( ! found ) {
+							auto const found = std::find_if( LoopStack.begin(), LoopStack.end(), [ DemandSideLoopNum, DemandSideLoopType ] ( IdentifyLoop const & loopStack ) {
+								return DemandSideLoopNum == loopStack.LoopNum && DemandSideLoopType == loopStack.LoopType;
+							} );
+
+							if ( found == LoopStack.end() ) {
+								IdentifyLoop identify_loop;
+								identify_loop.LoopNum = DemandSideLoopNum;
+								identify_loop.LoopType = DemandSideLoopType;
+								LoopStack.push_back( identify_loop );
 								++LoopCount;
-								//       write(outputfiledebug,*) '1280=lc,mxsize',loopcount,maxlooparraysize
-								//       write(outputfiledebug,*) '1281=dsloopnum,dslooptype',DemandSideLoopNum,DemandSideLoopType
-								if ( LoopCount > MaxLoopArraySize ) {
-									LoopStack.redimension( MaxLoopArraySize += 100 );
-								}
-								//               write(outputfiledebug,*) '1294=lcnt,dsloopnum,dslooptype',loopcount,DemandSideLoopNum,DemandSideLoopType
-								LoopStack( LoopCount ).LoopNum = DemandSideLoopNum;
-								LoopStack( LoopCount ).LoopType = DemandSideLoopType;
 							}
 						}
 					}
@@ -1287,31 +1276,24 @@ namespace SystemReports {
 						//If the connection is valid load the connection array
 						if ( DemandSideLoopType == 1 || DemandSideLoopType == 2 ) {
 							ConnectionFlag = true;
-							++ArrayCount;
-							if ( ArrayCount > MaxCompArraySize ) {
-								DemandSideConnect.redimension( MaxCompArraySize += 100 );
-							}
-							DemandSideConnect( ArrayCount ).LoopType = DemandSideLoopType;
-							DemandSideConnect( ArrayCount ).LoopNum = DemandSideLoopNum;
-							DemandSideConnect( ArrayCount ).BranchNum = DemandSideBranchNum;
-							DemandSideConnect( ArrayCount ).CompNum = DemandSideCompNum;
+							ConnectionPoint connection_point;
+							connection_point.LoopType = DemandSideLoopType;
+							connection_point.LoopNum = DemandSideLoopNum;
+							connection_point.BranchNum = DemandSideBranchNum;
+							connection_point.CompNum = DemandSideCompNum;
+							DemandSideConnect.push_back( connection_point );
+							ArrayCount = DemandSideConnect.size();
 
-							found = false;
-							for ( Idx = 1; Idx <= isize( LoopStack ); ++Idx ) {
-								if ( DemandSideLoopNum == LoopStack( Idx ).LoopNum && DemandSideLoopType == LoopStack( Idx ).LoopType ) {
-									found = true;
-									break;
-								}
-							}
-							if ( ! found ) {
+							auto const found = std::find_if( LoopStack.begin(), LoopStack.end(), [ DemandSideLoopNum, DemandSideLoopType ] ( IdentifyLoop const & loopStack ) {
+								return DemandSideLoopNum == loopStack.LoopNum && DemandSideLoopType == loopStack.LoopType;
+							} );
+
+							if ( found == LoopStack.end() ) {
+								IdentifyLoop identify_loop;
+								identify_loop.LoopNum = DemandSideLoopNum;
+								identify_loop.LoopType = DemandSideLoopType;
+								LoopStack.push_back( identify_loop );
 								++LoopCount;
-								//       write(outputfiledebug,*) '1341=lcnt,arrsize',loopcount,maxlooparraysize
-								//       write(outputfiledebug,*) '1342=lsloopnum,dslooptype',DemandSideLoopNum,DemandSideLoopType
-								if ( LoopCount > MaxLoopArraySize ) {
-									LoopStack.redimension( MaxLoopArraySize += 100 );
-								}
-								LoopStack( LoopCount ).LoopNum = DemandSideLoopNum;
-								LoopStack( LoopCount ).LoopType = DemandSideLoopType;
 							}
 						}
 					}
@@ -1354,65 +1336,17 @@ namespace SystemReports {
 		// METHODOLOGY EMPLOYED:
 		// na
 
-		// REFERENCES:
-		// na
+		// This should match the old Idx assignment
+		Idx = ZoneCompToPlant.size();
 
-		// USE STATEMENTS:
-		// na
-
-		// Locals
-		// SUBROUTINE ARGUMENT DEFINITIONS:
-		// SUBROUTINE PARAMETER DEFINITIONS:
-		// na
-
-		// INTERFACE BLOCK SPECIFICATIONS:
-		// na
-
-		static bool OneTimeFlag( true );
-		static int ArrayLimit( 100 );
-		static int ArrayCounter( 1 );
-
-		if ( OneTimeFlag ) {
-			ZoneCompToPlant.allocate( ArrayLimit );
-			for ( auto & e : ZoneCompToPlant ) {
-				e.ZoneEqListNum = 0;
-				e.ZoneEqCompNum = 0;
-				e.PlantLoopType = 0;
-				e.PlantLoopNum = 0;
-				e.PlantLoopBranch = 0;
-				e.PlantLoopComp = 0;
-				e.FirstDemandSidePtr = 0;
-				e.LastDemandSidePtr = 0;
-			}
-
-			OneTimeFlag = false;
-		}
-
-		if ( ArrayCounter >= ArrayLimit ) { // Redimension larger
-			int const OldArrayLimit( ArrayLimit );
-			ZoneCompToPlant.redimension( ArrayLimit *= 2 );
-			for ( int i = OldArrayLimit + 1; i <= ArrayLimit; ++i ) {
-				auto & zctp( ZoneCompToPlant( i ) );
-				zctp.ZoneEqListNum = 0;
-				zctp.ZoneEqCompNum = 0;
-				zctp.PlantLoopType = 0;
-				zctp.PlantLoopNum = 0;
-				zctp.PlantLoopBranch = 0;
-				zctp.PlantLoopComp = 0;
-				zctp.FirstDemandSidePtr = 0;
-				zctp.LastDemandSidePtr = 0;
-			}
-		}
-
-		Idx = ArrayCounter;
-		auto & zctp( ZoneCompToPlant( Idx ) );
-		zctp.ZoneEqListNum = ListNum;
-		zctp.ZoneEqCompNum = AirDistUnitNum;
-		zctp.PlantLoopType = PlantLoopType;
-		zctp.PlantLoopNum = PlantLoop;
-		zctp.PlantLoopBranch = PlantBranch;
-		zctp.PlantLoopComp = PlantComp;
-		++ArrayCounter;
+		ConnectZoneComp connect_zone_comp;
+		connect_zone_comp.ZoneEqListNum = ListNum;
+		connect_zone_comp.ZoneEqCompNum = AirDistUnitNum;
+		connect_zone_comp.PlantLoopType = PlantLoopType;
+		connect_zone_comp.PlantLoopNum = PlantLoop;
+		connect_zone_comp.PlantLoopBranch = PlantBranch;
+		connect_zone_comp.PlantLoopComp = PlantComp;
+		ZoneCompToPlant.push_back( connect_zone_comp );
 	}
 
 	void
@@ -1439,68 +1373,18 @@ namespace SystemReports {
 		// METHODOLOGY EMPLOYED:
 		// na
 
-		// REFERENCES:
-		// na
+		// This should match the old Idx assignment
+		Idx = ZoneSubCompToPlant.size();
 
-		// USE STATEMENTS:
-		// na
-
-		// Locals
-		// SUBROUTINE ARGUMENT DEFINITIONS:
-		// SUBROUTINE PARAMETER DEFINITIONS:
-		// na
-
-		// INTERFACE BLOCK SPECIFICATIONS:
-		// na
-
-		static bool OneTimeFlag( true );
-		static int ArrayLimit( 100 );
-		static int ArrayCounter( 1 );
-
-		if ( OneTimeFlag ) {
-			ZoneSubCompToPlant.allocate( ArrayLimit );
-			for ( auto & e : ZoneSubCompToPlant ) {
-				e.ZoneEqListNum = 0;
-				e.ZoneEqCompNum = 0;
-				e.ZoneEqSubCompNum = 0;
-				e.PlantLoopType = 0;
-				e.PlantLoopNum = 0;
-				e.PlantLoopBranch = 0;
-				e.PlantLoopComp = 0;
-				e.FirstDemandSidePtr = 0;
-				e.LastDemandSidePtr = 0;
-			}
-
-			OneTimeFlag = false;
-		}
-
-		if ( ArrayCounter >= ArrayLimit ) { // Redimension larger
-			int const OldArrayLimit( ArrayLimit );
-			ZoneSubCompToPlant.redimension( ArrayLimit *= 2 );
-			for ( int i = OldArrayLimit + 1; i <= ArrayLimit; ++i ) {
-				auto & zctp( ZoneSubCompToPlant( i ) );
-				zctp.ZoneEqListNum = 0;
-				zctp.ZoneEqCompNum = 0;
-				zctp.ZoneEqSubCompNum = 0;
-				zctp.PlantLoopType = 0;
-				zctp.PlantLoopNum = 0;
-				zctp.PlantLoopBranch = 0;
-				zctp.PlantLoopComp = 0;
-				zctp.FirstDemandSidePtr = 0;
-				zctp.LastDemandSidePtr = 0;
-			}
-		}
-
-		Idx = ArrayCounter;
-		auto & zctp( ZoneSubCompToPlant( Idx ) );
-		zctp.ZoneEqListNum = ListNum;
-		zctp.ZoneEqCompNum = AirDistUnitNum;
-		zctp.ZoneEqSubCompNum = SubCompNum;
-		zctp.PlantLoopType = PlantLoopType;
-		zctp.PlantLoopNum = PlantLoop;
-		zctp.PlantLoopBranch = PlantBranch;
-		zctp.PlantLoopComp = PlantComp;
-		++ArrayCounter;
+		ConnectZoneSubComp connect_zone_sub_comp;
+		connect_zone_sub_comp.ZoneEqListNum = ListNum;
+		connect_zone_sub_comp.ZoneEqCompNum = AirDistUnitNum;
+		connect_zone_sub_comp.ZoneEqSubCompNum = SubCompNum;
+		connect_zone_sub_comp.PlantLoopType = PlantLoopType;
+		connect_zone_sub_comp.PlantLoopNum = PlantLoop;
+		connect_zone_sub_comp.PlantLoopBranch = PlantBranch;
+		connect_zone_sub_comp.PlantLoopComp = PlantComp;
+		ZoneSubCompToPlant.push_back( connect_zone_sub_comp );
 	}
 
 	void
@@ -1528,71 +1412,19 @@ namespace SystemReports {
 		// METHODOLOGY EMPLOYED:
 		// na
 
-		// REFERENCES:
-		// na
+		// This should match the old Idx assignment
+		Idx = ZoneSubSubCompToPlant.size();
 
-		// USE STATEMENTS:
-		// na
-
-		// Locals
-		// SUBROUTINE ARGUMENT DEFINITIONS:
-		// SUBROUTINE PARAMETER DEFINITIONS:
-		// na
-
-		// INTERFACE BLOCK SPECIFICATIONS:
-		// na
-
-		static bool OneTimeFlag( true );
-		static int ArrayLimit( 100 );
-		static int ArrayCounter( 1 );
-
-		if ( OneTimeFlag ) {
-			ZoneSubSubCompToPlant.allocate( ArrayLimit );
-			for ( auto & e : ZoneSubSubCompToPlant ) {
-				e.ZoneEqListNum = 0;
-				e.ZoneEqCompNum = 0;
-				e.ZoneEqSubCompNum = 0;
-				e.ZoneEqSubSubCompNum = 0;
-				e.PlantLoopType = 0;
-				e.PlantLoopNum = 0;
-				e.PlantLoopBranch = 0;
-				e.PlantLoopComp = 0;
-				e.FirstDemandSidePtr = 0;
-				e.LastDemandSidePtr = 0;
-			}
-
-			OneTimeFlag = false;
-		}
-
-		if ( ArrayCounter >= ArrayLimit ) { // Redimension larger
-			int const OldArrayLimit( ArrayLimit );
-			ZoneSubSubCompToPlant.redimension( ArrayLimit *= 2 );
-			for ( int i = OldArrayLimit + 1; i <= ArrayLimit; ++i ) {
-				auto & zctp( ZoneSubSubCompToPlant( i ) );
-				zctp.ZoneEqListNum = 0;
-				zctp.ZoneEqCompNum = 0;
-				zctp.ZoneEqSubCompNum = 0;
-				zctp.ZoneEqSubSubCompNum = 0;
-				zctp.PlantLoopType = 0;
-				zctp.PlantLoopNum = 0;
-				zctp.PlantLoopBranch = 0;
-				zctp.PlantLoopComp = 0;
-				zctp.FirstDemandSidePtr = 0;
-				zctp.LastDemandSidePtr = 0;
-			}
-		}
-
-		Idx = ArrayCounter;
-		auto & zctp( ZoneSubSubCompToPlant( Idx ) );
-		zctp.ZoneEqListNum = ListNum;
-		zctp.ZoneEqCompNum = AirDistUnitNum;
-		zctp.ZoneEqSubCompNum = SubCompNum;
-		zctp.ZoneEqSubSubCompNum = SubSubCompNum;
-		zctp.PlantLoopType = PlantLoopType;
-		zctp.PlantLoopNum = PlantLoop;
-		zctp.PlantLoopBranch = PlantBranch;
-		zctp.PlantLoopComp = PlantComp;
-		++ArrayCounter;
+		ConnectZoneSubSubComp connect_zone_sub_sub_comp;
+		connect_zone_sub_sub_comp.ZoneEqListNum = ListNum;
+		connect_zone_sub_sub_comp.ZoneEqCompNum = AirDistUnitNum;
+		connect_zone_sub_sub_comp.ZoneEqSubCompNum = SubCompNum;
+		connect_zone_sub_sub_comp.ZoneEqSubSubCompNum = SubSubCompNum;
+		connect_zone_sub_sub_comp.PlantLoopType = PlantLoopType;
+		connect_zone_sub_sub_comp.PlantLoopNum = PlantLoop;
+		connect_zone_sub_sub_comp.PlantLoopBranch = PlantBranch;
+		connect_zone_sub_sub_comp.PlantLoopComp = PlantComp;
+		ZoneSubSubCompToPlant.push_back( connect_zone_sub_sub_comp );
 	}
 
 	void
@@ -1619,68 +1451,18 @@ namespace SystemReports {
 		// METHODOLOGY EMPLOYED:
 		// na
 
-		// REFERENCES:
-		// na
+		// This should match the old Idx assignment
+		Idx = AirSysCompToPlant.size();
 
-		// USE STATEMENTS:
-		// na
-
-		// Locals
-		// SUBROUTINE ARGUMENT DEFINITIONS:
-		// SUBROUTINE PARAMETER DEFINITIONS:
-		// na
-
-		// INTERFACE BLOCK SPECIFICATIONS:
-		// na
-
-		static bool OneTimeFlag( true );
-		static int ArrayLimit( 100 );
-		static int ArrayCounter( 1 );
-
-		if ( OneTimeFlag ) {
-			AirSysCompToPlant.allocate( ArrayLimit );
-			for ( auto & e : AirSysCompToPlant ) {
-				e.AirLoopNum = 0;
-				e.AirLoopBranch = 0;
-				e.AirLoopComp = 0;
-				e.PlantLoopType = 0;
-				e.PlantLoopNum = 0;
-				e.PlantLoopBranch = 0;
-				e.PlantLoopComp = 0;
-				e.FirstDemandSidePtr = 0;
-				e.LastDemandSidePtr = 0;
-			}
-
-			OneTimeFlag = false;
-		}
-
-		if ( ArrayCounter >= ArrayLimit ) { // Redimension larger
-			int const OldArrayLimit( ArrayLimit );
-			AirSysCompToPlant.redimension( ArrayLimit *= 2 );
-			for ( int i = OldArrayLimit + 1; i <= ArrayLimit; ++i ) {
-				auto & actp( AirSysCompToPlant( i ) );
-				actp.AirLoopNum = 0;
-				actp.AirLoopBranch = 0;
-				actp.AirLoopComp = 0;
-				actp.PlantLoopType = 0;
-				actp.PlantLoopNum = 0;
-				actp.PlantLoopBranch = 0;
-				actp.PlantLoopComp = 0;
-				actp.FirstDemandSidePtr = 0;
-				actp.LastDemandSidePtr = 0;
-			}
-		}
-
-		Idx = ArrayCounter;
-		auto & actp( AirSysCompToPlant( Idx ) );
-		actp.AirLoopNum = AirLoopNum;
-		actp.AirLoopBranch = BranchNum;
-		actp.AirLoopComp = CompNum;
-		actp.PlantLoopType = PlantLoopType;
-		actp.PlantLoopNum = PlantLoop;
-		actp.PlantLoopBranch = PlantBranch;
-		actp.PlantLoopComp = PlantComp;
-		++ArrayCounter;
+		ConnectAirSysComp connect_air_sys_comp;
+		connect_air_sys_comp.AirLoopNum = AirLoopNum;
+		connect_air_sys_comp.AirLoopBranch = BranchNum;
+		connect_air_sys_comp.AirLoopComp = CompNum;
+		connect_air_sys_comp.PlantLoopType = PlantLoopType;
+		connect_air_sys_comp.PlantLoopNum = PlantLoop;
+		connect_air_sys_comp.PlantLoopBranch = PlantBranch;
+		connect_air_sys_comp.PlantLoopComp = PlantComp;
+		AirSysCompToPlant.push_back( connect_air_sys_comp );
 	}
 
 	void
@@ -1708,71 +1490,19 @@ namespace SystemReports {
 		// METHODOLOGY EMPLOYED:
 		// na
 
-		// REFERENCES:
-		// na
+		// This should match the old Idx assignment
+		Idx = AirSysSubCompToPlant.size();
 
-		// USE STATEMENTS:
-		// na
-
-		// Locals
-		// SUBROUTINE ARGUMENT DEFINITIONS:
-		// SUBROUTINE PARAMETER DEFINITIONS:
-		// na
-
-		// INTERFACE BLOCK SPECIFICATIONS:
-		// na
-
-		static bool OneTimeFlag( true );
-		static int ArrayLimit( 100 );
-		static int ArrayCounter( 1 );
-
-		if ( OneTimeFlag ) {
-			AirSysSubCompToPlant.allocate( ArrayLimit );
-			for ( auto & e : AirSysSubCompToPlant ) {
-				e.AirLoopNum = 0;
-				e.AirLoopBranch = 0;
-				e.AirLoopComp = 0;
-				e.AirLoopSubComp = 0;
-				e.PlantLoopType = 0;
-				e.PlantLoopNum = 0;
-				e.PlantLoopBranch = 0;
-				e.PlantLoopComp = 0;
-				e.FirstDemandSidePtr = 0;
-				e.LastDemandSidePtr = 0;
-			}
-
-			OneTimeFlag = false;
-		}
-
-		if ( ArrayCounter >= ArrayLimit ) { // Redimension larger
-			int const OldArrayLimit( ArrayLimit );
-			AirSysSubCompToPlant.redimension( ArrayLimit *= 2 );
-			for ( int i = OldArrayLimit + 1; i <= ArrayLimit; ++i ) {
-				auto & actp( AirSysSubCompToPlant( i ) );
-				actp.AirLoopNum = 0;
-				actp.AirLoopBranch = 0;
-				actp.AirLoopComp = 0;
-				actp.AirLoopSubComp = 0;
-				actp.PlantLoopType = 0;
-				actp.PlantLoopNum = 0;
-				actp.PlantLoopBranch = 0;
-				actp.PlantLoopComp = 0;
-				actp.FirstDemandSidePtr = 0;
-				actp.LastDemandSidePtr = 0;
-			}
-		}
-
-		Idx = ArrayCounter;
-		auto & actp( AirSysSubCompToPlant( Idx ) );
-		actp.AirLoopNum = AirLoopNum;
-		actp.AirLoopBranch = BranchNum;
-		actp.AirLoopComp = CompNum;
-		actp.AirLoopSubComp = SubCompNum;
-		actp.PlantLoopType = PlantLoopType;
-		actp.PlantLoopNum = PlantLoop;
-		actp.PlantLoopBranch = PlantBranch;
-		actp.PlantLoopComp = PlantComp;
-		++ArrayCounter;
+		ConnectAirSysSubComp connect_air_sys_sub_comp;
+		connect_air_sys_sub_comp.AirLoopNum = AirLoopNum;
+		connect_air_sys_sub_comp.AirLoopBranch = BranchNum;
+		connect_air_sys_sub_comp.AirLoopComp = CompNum;
+		connect_air_sys_sub_comp.AirLoopSubComp = SubCompNum;
+		connect_air_sys_sub_comp.PlantLoopType = PlantLoopType;
+		connect_air_sys_sub_comp.PlantLoopNum = PlantLoop;
+		connect_air_sys_sub_comp.PlantLoopBranch = PlantBranch;
+		connect_air_sys_sub_comp.PlantLoopComp = PlantComp;
+		AirSysSubCompToPlant.push_back( connect_air_sys_sub_comp );
 	}
 
 	void
@@ -1801,74 +1531,20 @@ namespace SystemReports {
 		// METHODOLOGY EMPLOYED:
 		// na
 
-		// REFERENCES:
-		// na
+		// This should match the old Idx assignment
+		Idx = AirSysSubSubCompToPlant.size();
 
-		// USE STATEMENTS:
-		// na
-
-		// Locals
-		// SUBROUTINE ARGUMENT DEFINITIONS:
-		// SUBROUTINE PARAMETER DEFINITIONS:
-		// na
-
-		// INTERFACE BLOCK SPECIFICATIONS:
-		// na
-
-		static bool OneTimeFlag( true );
-		static int ArrayLimit( 100 );
-		static int ArrayCounter( 1 );
-
-		if ( OneTimeFlag ) {
-			AirSysSubSubCompToPlant.allocate( ArrayLimit );
-			for ( auto & e : AirSysSubSubCompToPlant ) {
-				e.AirLoopNum = 0;
-				e.AirLoopBranch = 0;
-				e.AirLoopComp = 0;
-				e.AirLoopSubComp = 0;
-				e.AirLoopSubSubComp = 0;
-				e.PlantLoopType = 0;
-				e.PlantLoopNum = 0;
-				e.PlantLoopBranch = 0;
-				e.PlantLoopComp = 0;
-				e.FirstDemandSidePtr = 0;
-				e.LastDemandSidePtr = 0;
-			}
-
-			OneTimeFlag = false;
-		}
-
-		if ( ArrayCounter >= ArrayLimit ) { // Redimension larger
-			int const OldArrayLimit( ArrayLimit );
-			AirSysSubSubCompToPlant.redimension( ArrayLimit *= 2 );
-			for ( int i = OldArrayLimit + 1; i <= ArrayLimit; ++i ) {
-				auto & actp( AirSysSubSubCompToPlant( i ) );
-				actp.AirLoopNum = 0;
-				actp.AirLoopBranch = 0;
-				actp.AirLoopComp = 0;
-				actp.AirLoopSubComp = 0;
-				actp.AirLoopSubSubComp = 0;
-				actp.PlantLoopType = 0;
-				actp.PlantLoopNum = 0;
-				actp.PlantLoopBranch = 0;
-				actp.PlantLoopComp = 0;
-				actp.FirstDemandSidePtr = 0;
-				actp.LastDemandSidePtr = 0;
-			}
-		}
-
-		Idx = ArrayCounter;
-		auto & actp( AirSysSubSubCompToPlant( Idx ) );
-		actp.AirLoopNum = AirLoopNum;
-		actp.AirLoopBranch = BranchNum;
-		actp.AirLoopComp = CompNum;
-		actp.AirLoopSubComp = SubCompNum;
-		actp.AirLoopSubSubComp = SubSubCompNum;
-		actp.PlantLoopType = PlantLoopType;
-		actp.PlantLoopNum = PlantLoop;
-		actp.PlantLoopBranch = PlantBranch;
-		actp.PlantLoopComp = PlantComp;
-		++ArrayCounter;
+		ConnectAirSysSubSubComp connect_air_sys_sub_sub_comp;
+		connect_air_sys_sub_sub_comp.AirLoopNum = AirLoopNum;
+		connect_air_sys_sub_sub_comp.AirLoopBranch = BranchNum;
+		connect_air_sys_sub_sub_comp.AirLoopComp = CompNum;
+		connect_air_sys_sub_sub_comp.AirLoopSubComp = SubCompNum;
+		connect_air_sys_sub_sub_comp.AirLoopSubSubComp = SubSubCompNum;
+		connect_air_sys_sub_sub_comp.PlantLoopType = PlantLoopType;
+		connect_air_sys_sub_sub_comp.PlantLoopNum = PlantLoop;
+		connect_air_sys_sub_sub_comp.PlantLoopBranch = PlantBranch;
+		connect_air_sys_sub_sub_comp.PlantLoopComp = PlantComp;
+		AirSysSubSubCompToPlant.push_back( connect_air_sys_sub_sub_comp );
 	}
 
 	void

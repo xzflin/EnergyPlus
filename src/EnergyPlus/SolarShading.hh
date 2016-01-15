@@ -110,7 +110,6 @@ namespace SolarShading {
 	// (needs to be based on maxnumvertices)
 	extern int MaxHCS; // 200      ! Maximum number of HC surfaces (was 56)
 	// Following are initially set in AllocateModuleArrays
-	extern int MAXHCArrayBounds; // Bounds based on Max Number of Vertices in surfaces
 	extern int MAXHCArrayIncrement; // Increment based on Max Number of Vertices in surfaces
 	// The following variable should be re-engineered to lower in module hierarchy but need more analysis
 	extern int NVS; // Number of vertices of the shadow/clipped surface

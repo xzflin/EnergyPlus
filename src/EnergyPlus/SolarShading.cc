@@ -185,7 +185,6 @@ namespace SolarShading {
 	// (needs to be based on maxnumvertices)
 	int MaxHCS( 15000 ); // 200      ! Maximum number of HC surfaces (was 56)
 	// Following are initially set in AllocateModuleArrays
-	int MAXHCArrayBounds( 0 ); // Bounds based on Max Number of Vertices in surfaces
 	int MAXHCArrayIncrement( 0 ); // Increment based on Max Number of Vertices in surfaces
 	// The following variable should be re-engineered to lower in module hierarchy but need more analysis
 	int NVS; // Number of vertices of the shadow/clipped surface
@@ -280,7 +279,6 @@ namespace SolarShading {
 	{
 		MaxHCV= 15;
 		MaxHCS= 1500;
-		MAXHCArrayBounds = 0;
 		MAXHCArrayIncrement = 0;
 		NVS = 0;
 		NumVertInShadowOrClippedSurface = 0;
@@ -852,7 +850,6 @@ namespace SolarShading {
 		WindowRevealStatus.dimension( NumOfTimeStepInHour, 24, TotSurfaces, 0 );
 
 		// Weiler-Atherton
-		MAXHCArrayBounds = 2 * ( MaxVerticesPerSurface + 1 );
 		MAXHCArrayIncrement = MaxVerticesPerSurface + 1;
 		XTEMP.dimension( 2 * ( MaxVerticesPerSurface + 1 ), 0.0 );
 		YTEMP.dimension( 2 * ( MaxVerticesPerSurface + 1 ), 0.0 );
@@ -1829,16 +1826,12 @@ namespace SolarShading {
 			//      FirstSurroundError=.FALSE.
 			//    ENDIF
 			if ( Out ) {
-				TrackBaseSubSurround.redimension( ++NumBaseSubSurround );
-				TrackBaseSubSurround( NumBaseSubSurround ).SurfIndex1 = GRSNR;
-				TrackBaseSubSurround( NumBaseSubSurround ).SurfIndex2 = SBSNR;
-				TrackBaseSubSurround( NumBaseSubSurround ).MiscIndex = OverlapStatus;
-				//    CALL ShowRecurringWarningErrorAtEnd('Base surface does not surround subsurface (CHKSBS), Overlap Status='//  &
-				//                       TRIM(cOverLapStatus(OverlapStatus)), &
-				//                       TrackBaseSubSurround(GRSNR)%ErrIndex1)
-				//    CALL ShowRecurringContinueErrorAtEnd('Surface "'//TRIM(Surface(GRSNR)%Name)//'" '//TRIM(MSG(OverlapStatus))//  &
-				//                       ' SubSurface "'//TRIM(Surface(SBSNR)%Name)//'"',  &
-				//                      TrackBaseSubSurround(SBSNR)%ErrIndex2)
+				SurfaceErrorTracking surface_error_tracking;
+				surface_error_tracking.SurfIndex1 = GRSNR;
+				surface_error_tracking.SurfIndex2 = SBSNR;
+				surface_error_tracking.MiscIndex = OverlapStatus;
+				TrackBaseSubSurround.push_back( surface_error_tracking );
+				NumBaseSubSurround = TrackBaseSubSurround.size();
 
 				shd_stream << "==== Base does not Surround subsurface details ====\n";
 				shd_stream << "Surface=" << Surface( GRSNR ).Name << ' ' << cOverLapStatus( OverlapStatus ) << '\n';
@@ -2737,17 +2730,13 @@ namespace SolarShading {
 				// Determine the point of intersection and record in the temporary array.
 
 				KK = NV3;
-				++NV3;
 				W = HCB( NS2, M ) * HCA( NS1, N ) - HCA( NS2, M ) * HCB( NS1, N );
 				XUntrunc = ( HCC( NS2, M ) * HCB( NS1, N ) - HCB( NS2, M ) * HCC( NS1, N ) ) / W;
 				YUntrunc = ( HCA( NS2, M ) * HCC( NS1, N ) - HCC( NS2, M ) * HCA( NS1, N ) ) / W;
-				if ( NV3 > isize( XTEMP ) ) {
-					//        write(outputfiledebug,*) 'nv3=',nv3,' SIZE(xtemp)=',SIZE(xtemp)
-					XTEMP.redimension( isize( XTEMP ) + 10, 0.0 );
-					YTEMP.redimension( isize( YTEMP ) + 10, 0.0 );
-				}
-				XTEMP( NV3 ) = nint64( XUntrunc );
-				YTEMP( NV3 ) = nint64( YUntrunc );
+
+				XTEMP.push_back( nint64( XUntrunc ) );
+				YTEMP.push_back( nint64( YUntrunc ) );
+				++NV3;
 
 				// Eliminate near-duplicate points.
 
@@ -2900,21 +2889,14 @@ namespace SolarShading {
 					}
 
 					KK = NVTEMP;
+					XTEMP.push_back( XTEMP1_P );
+					YTEMP.push_back( YTEMP1_P );
+					XTEMP1.emplace_back( 0.0 );
+					YTEMP1.emplace_back( 0.0 );
+					ATEMP.emplace_back( 0.0 );
+					BTEMP.emplace_back( 0.0 );
+					CTEMP.emplace_back( 0.0 );
 					++NVTEMP;
-					if ( NVTEMP > MAXHCArrayBounds ) {
-						int const NewArrayBounds( MAXHCArrayBounds + MAXHCArrayIncrement );
-						XTEMP.redimension( NewArrayBounds, 0.0 );
-						YTEMP.redimension( NewArrayBounds, 0.0 );
-						XTEMP1.redimension( NewArrayBounds, 0.0 );
-						YTEMP1.redimension( NewArrayBounds, 0.0 );
-						ATEMP.redimension( NewArrayBounds, 0.0 );
-						BTEMP.redimension( NewArrayBounds, 0.0 );
-						CTEMP.redimension( NewArrayBounds, 0.0 );
-						MAXHCArrayBounds = NewArrayBounds;
-					}
-
-					XTEMP( NVTEMP ) = XTEMP1_P;
-					YTEMP( NVTEMP ) = YTEMP1_P;
 
 					if ( E == NV2 ) { // Remove near-duplicates on last edge
 						if ( KK != 0 ) {
@@ -3296,9 +3278,11 @@ namespace SolarShading {
 			}
 
 			if ( DisplayExtraWarnings ) {
-				TrackTooManyFigures.redimension( ++NumTooManyFigures );
-				TrackTooManyFigures( NumTooManyFigures ).SurfIndex1 = CurrentShadowingSurface;
-				TrackTooManyFigures( NumTooManyFigures ).SurfIndex2 = CurrentSurfaceBeingShadowed;
+				SurfaceErrorTracking surface_error_tracking;
+				surface_error_tracking.SurfIndex1 = CurrentShadowingSurface;
+				surface_error_tracking.SurfIndex2 = CurrentSurfaceBeingShadowed;
+				TrackTooManyFigures.push_back( surface_error_tracking );
+				NumTooManyFigures = TrackTooManyFigures.size();
 			}
 
 			return;
@@ -3384,9 +3368,11 @@ namespace SolarShading {
 			}
 
 			if ( DisplayExtraWarnings ) {
-				TrackTooManyVertices.redimension( ++NumTooManyVertices );
-				TrackTooManyVertices( NumTooManyVertices ).SurfIndex1 = CurrentShadowingSurface;
-				TrackTooManyVertices( NumTooManyVertices ).SurfIndex2 = CurrentSurfaceBeingShadowed;
+				SurfaceErrorTracking surface_error_tracking;
+				surface_error_tracking.SurfIndex1 = CurrentShadowingSurface;
+				surface_error_tracking.SurfIndex2 = CurrentSurfaceBeingShadowed;
+				TrackTooManyFigures.push_back( surface_error_tracking );
+				NumTooManyFigures = TrackTooManyFigures.size();
 			}
 
 		} else if ( NS3 > MaxHCS ) {
@@ -3399,9 +3385,11 @@ namespace SolarShading {
 			}
 
 			if ( DisplayExtraWarnings ) {
-				TrackTooManyFigures.redimension( ++NumTooManyFigures );
-				TrackTooManyFigures( NumTooManyFigures ).SurfIndex1 = CurrentShadowingSurface;
-				TrackTooManyFigures( NumTooManyFigures ).SurfIndex2 = CurrentSurfaceBeingShadowed;
+				SurfaceErrorTracking surface_error_tracking;
+				surface_error_tracking.SurfIndex1 = CurrentShadowingSurface;
+				surface_error_tracking.SurfIndex2 = CurrentSurfaceBeingShadowed;
+				TrackTooManyFigures.push_back( surface_error_tracking );
+				NumTooManyFigures = TrackTooManyFigures.size();
 			}
 
 		}
@@ -3861,22 +3849,15 @@ namespace SolarShading {
 					}
 
 					if ( Surface( GSSNR ).BaseSurf == GRSNR ) { // Shadowing subsurface of receiving surface
-
-						++NGSS;
-						if ( NGSS > MaxGSS ) {
-							GSS.redimension( MaxGSS *= 2, 0 );
-						}
-						GSS( NGSS ) = GSSNR;
+						GSS.push_back( GSSNR );
+						NGSS = GSS.size();
 
 					} else if ( ( Surface( GSSNR ).BaseSurf == 0 ) || ( ( Surface( GSSNR ).BaseSurf == GSSNR ) && ( ( Surface( GSSNR ).ExtBoundCond == ExternalEnvironment ) || Surface( GSSNR ).ExtBoundCond == OtherSideCondModeledExt ) ) ) { // Detached shadowing surface or | any other base surface exposed to outside environment
 
 						CHKGSS( GRSNR, GSSNR, ZMIN, CannotShade ); // Check to see if this can shade the receiving surface
 						if ( ! CannotShade ) { // Update the shadowing surface data if shading is possible
-							++NGSS;
-							if ( NGSS > MaxGSS ) {
-								GSS.redimension( MaxGSS *= 2, 0 );
-							}
-							GSS( NGSS ) = GSSNR;
+							GSS.push_back( GSSNR );
+							NGSS = GSS.size();
 						}
 
 					}
@@ -3889,11 +3870,8 @@ namespace SolarShading {
 					if ( GSSNR == GRSNR ) continue; // Receiving surface cannot shade itself
 					if ( ( Surface( GSSNR ).HeatTransSurf ) && ( Surface( GSSNR ).BaseSurf == GRSNR ) ) continue; // Skip heat transfer subsurfaces of receiving surface
 					if ( Surface( GSSNR ).BaseSurf == GRSNR ) { // Shadowing subsurface of receiving surface
-						++NGSS;
-						if ( NGSS > MaxGSS ) {
-							GSS.redimension( MaxGSS *= 2, 0 );
-						}
-						GSS( NGSS ) = GSSNR;
+						GSS.push_back( GSSNR );
+						NGSS = GSS.size();
 					}
 				}
 
@@ -3912,11 +3890,8 @@ namespace SolarShading {
 				if ( Construct( Surface( SBSNR ).Construction ).TransDiff > 0.0 ) HasWindow = true; // Check for window
 				CHKSBS( HTS, GRSNR, SBSNR ); // Check that the receiving surface completely encloses the subsurface;
 				// severe error if not
-				++NSBS;
-				if ( NSBS > MaxSBS ) {
-					SBS.redimension( MaxSBS *= 2, 0 );
-				}
-				SBS( NSBS ) = SBSNR;
+				SBS.push_back( SBSNR );
+				NSBS = SBS.size();
 
 			} // ...end of surfaces DO loop (SBSNR)
 
@@ -3940,11 +3915,8 @@ namespace SolarShading {
 					//IF (Surface(BackSurfaceNumber)%BaseSurf /= BackSurfaceNumber) CYCLE ! Not for subsurfaces of Back Surface
 
 					CHKBKS( BackSurfaceNumber, GRSNR ); // CHECK FOR CONVEX ZONE; severe error if not
-					++NBKS;
-					if ( NBKS > MaxBKS ) {
-						BKS.redimension( MaxBKS *= 2, 0 );
-					}
-					BKS( NBKS ) = BackSurfaceNumber;
+					BKS.push_back( BackSurfaceNumber );
+					NBKS = BKS.size();
 
 				} // ...end of surfaces DO loop (BackSurfaceNumber)
 

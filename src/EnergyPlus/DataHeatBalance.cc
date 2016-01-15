@@ -1525,8 +1525,8 @@ namespace DataHeatBalance {
 			construction_data.IsUsed = true;
 			construction_data.Name = "iz-" + construction_data.Name;
 			Construct.push_back( construction_data );
-			NominalRforNominalUCalculation.push_back( 0.0 );
-			NominalU.push_back( 0.0 );
+			NominalRforNominalUCalculation.emplace_back( 0.0 );
+			NominalU.emplace_back( 0.0 );
 
 			TotConstructs = Construct.size();
 			NewConstrNum = TotConstructs;

@@ -5928,8 +5928,8 @@ namespace SurfaceGeometry {
 				Surface( Found ).HeatTransferAlgorithm = tmpAlgoInput;
 
 				if ( ! any_eq( HeatTransferAlgosUsed, tmpAlgoInput ) ) { // add new algo
-					HeatTransferAlgosUsed.redimension( ++NumberOfHeatTransferAlgosUsed );
-					HeatTransferAlgosUsed( NumberOfHeatTransferAlgosUsed ) = tmpAlgoInput;
+					HeatTransferAlgosUsed.push_back( tmpAlgoInput );
+					NumberOfHeatTransferAlgosUsed = HeatTransferAlgosUsed.size();
 				}
 
 			} else {
@@ -6064,8 +6064,8 @@ namespace SurfaceGeometry {
 				ShowWarningError( "In " + cCurrentModuleObject + "=\"" + cAlphaArgs( 1 ) + "\", for Multiple Surface Assignment=\"" + cAlphaArgs( 2 ) + "\", there were no surfaces of that type found for assignment." );
 			} else {
 				if ( ! any_eq( HeatTransferAlgosUsed, tmpAlgoInput ) ) { // add new algo
-					HeatTransferAlgosUsed.redimension( ++NumberOfHeatTransferAlgosUsed );
-					HeatTransferAlgosUsed( NumberOfHeatTransferAlgosUsed ) = tmpAlgoInput;
+					HeatTransferAlgosUsed.push_back( tmpAlgoInput );
+					NumberOfHeatTransferAlgosUsed = HeatTransferAlgosUsed.size();
 				}
 			}
 			if ( ErrorsFoundMultiSurf ) ErrorsFound = true;
@@ -6106,8 +6106,8 @@ namespace SurfaceGeometry {
 				if ( ! ErrorsFoundSurfList ) {
 					Surface( Found ).HeatTransferAlgorithm = tmpAlgoInput;
 					if ( ! any_eq( HeatTransferAlgosUsed, tmpAlgoInput ) ) { // add new algo
-						HeatTransferAlgosUsed.redimension( ++NumberOfHeatTransferAlgosUsed );
-						HeatTransferAlgosUsed( NumberOfHeatTransferAlgosUsed ) = tmpAlgoInput;
+						HeatTransferAlgosUsed.push_back( tmpAlgoInput );
+						NumberOfHeatTransferAlgosUsed = HeatTransferAlgosUsed.size();
 					}
 				} else {
 					ErrorsFound = true;
@@ -6148,8 +6148,8 @@ namespace SurfaceGeometry {
 					if ( Surface( Item1 ).Construction == Found ) {
 						Surface( Item1 ).HeatTransferAlgorithm = tmpAlgoInput;
 						if ( ! any_eq( HeatTransferAlgosUsed, tmpAlgoInput ) ) { // add new algo
-							HeatTransferAlgosUsed.redimension( ++NumberOfHeatTransferAlgosUsed );
-							HeatTransferAlgosUsed( NumberOfHeatTransferAlgosUsed ) = tmpAlgoInput;
+							HeatTransferAlgosUsed.push_back( tmpAlgoInput );
+							NumberOfHeatTransferAlgosUsed = HeatTransferAlgosUsed.size();
 						}
 					}
 				}
@@ -8879,89 +8879,44 @@ namespace SurfaceGeometry {
 		} else {
 
 			// Create new construction
-
-			ConstrNewSh = TotConstructs + 1;
-			SurfaceTmp( SurfNum ).ShadedConstruction = ConstrNewSh;
-			TotConstructs = ConstrNewSh;
-			Construct.redimension( TotConstructs );
-			NominalRforNominalUCalculation.redimension( TotConstructs );
-			NominalRforNominalUCalculation( TotConstructs ) = 0.0;
-			NominalU.redimension( TotConstructs );
-			NominalU( TotConstructs ) = 0.0;
-
 			TotLayersOld = Construct( ConstrNum ).TotLayers;
 			TotLayersNew = TotLayersOld + 1;
 
-			Construct( ConstrNewSh ).LayerPoint = 0;
+			ConstructionData construction_data;
+			construction_data.LayerPoint = 0;
 
 			if ( WindowShadingControl( WSCPtr ).ShadingType == WSC_ST_InteriorShade || WindowShadingControl( WSCPtr ).ShadingType == WSC_ST_InteriorBlind ) {
 				// Interior shading device
-				Construct( ConstrNewSh ).LayerPoint( {1,TotLayersOld} ) = Construct( ConstrNum ).LayerPoint( {1,TotLayersOld} );
-				Construct( ConstrNewSh ).LayerPoint( TotLayersNew ) = ShDevNum;
-				Construct( ConstrNewSh ).InsideAbsorpSolar = Material( ShDevNum ).AbsorpSolar;
-				Construct( ConstrNewSh ).OutsideAbsorpSolar = Material( Construct( ConstrNewSh ).LayerPoint( 1 ) ).AbsorpSolar;
-				Construct( ConstrNewSh ).OutsideAbsorpThermal = Material( Construct( ConstrNewSh ).LayerPoint( 1 ) ).AbsorpThermalFront;
+				construction_data.LayerPoint( {1,TotLayersOld} ) = Construct( ConstrNum ).LayerPoint( {1,TotLayersOld} );
+				construction_data.LayerPoint( TotLayersNew ) = ShDevNum;
+				construction_data.InsideAbsorpSolar = Material( ShDevNum ).AbsorpSolar;
+				construction_data.OutsideAbsorpSolar = Material( construction_data.LayerPoint( 1 ) ).AbsorpSolar;
+				construction_data.OutsideAbsorpThermal = Material( construction_data.LayerPoint( 1 ) ).AbsorpThermalFront;
 			} else {
 				// Exterior shading device
-				Construct( ConstrNewSh ).LayerPoint( 1 ) = ShDevNum;
-				Construct( ConstrNewSh ).LayerPoint( {2,TotLayersNew} ) = Construct( ConstrNum ).LayerPoint( {1,TotLayersOld} );
-				Construct( ConstrNewSh ).InsideAbsorpSolar = Material( Construct( ConstrNewSh ).LayerPoint( TotLayersNew ) ).AbsorpSolar;
-				Construct( ConstrNewSh ).OutsideAbsorpSolar = Material( ShDevNum ).AbsorpSolar;
-				Construct( ConstrNewSh ).OutsideAbsorpThermal = Material( ShDevNum ).AbsorpThermalFront;
+				construction_data.LayerPoint( 1 ) = ShDevNum;
+				construction_data.LayerPoint( {2,TotLayersNew} ) = Construct( ConstrNum ).LayerPoint( {1,TotLayersOld} );
+				construction_data.InsideAbsorpSolar = Material( construction_data.LayerPoint( TotLayersNew ) ).AbsorpSolar;
+				construction_data.OutsideAbsorpSolar = Material( ShDevNum ).AbsorpSolar;
+				construction_data.OutsideAbsorpThermal = Material( ShDevNum ).AbsorpThermalFront;
 			}
 			// The following InsideAbsorpThermal applies only to inside glass; it is corrected
 			//  later in InitGlassOpticalCalculations if construction has inside shade or blind.
-			Construct( ConstrNewSh ).InsideAbsorpThermal = Material( Construct( ConstrNum ).LayerPoint( TotLayersOld ) ).AbsorpThermalBack;
-			Construct( ConstrNewSh ).OutsideRoughness = VerySmooth;
-			Construct( ConstrNewSh ).DayltPropPtr = 0;
-			Construct( ConstrNewSh ).CTFCross = 0.0;
-			Construct( ConstrNewSh ).CTFFlux = 0.0;
-			Construct( ConstrNewSh ).CTFInside = 0.0;
-			Construct( ConstrNewSh ).CTFOutside = 0.0;
-			Construct( ConstrNewSh ).CTFSourceIn = 0.0;
-			Construct( ConstrNewSh ).CTFSourceOut = 0.0;
-			Construct( ConstrNewSh ).CTFTimeStep = 0.0;
-			Construct( ConstrNewSh ).CTFTSourceOut = 0.0;
-			Construct( ConstrNewSh ).CTFTSourceIn = 0.0;
-			Construct( ConstrNewSh ).CTFTSourceQ = 0.0;
-			Construct( ConstrNewSh ).CTFTUserOut = 0.0;
-			Construct( ConstrNewSh ).CTFTUserIn = 0.0;
-			Construct( ConstrNewSh ).CTFTUserSource = 0.0;
-			Construct( ConstrNewSh ).NumHistories = 0;
-			Construct( ConstrNewSh ).NumCTFTerms = 0;
-			Construct( ConstrNewSh ).UValue = 0.0;
-			Construct( ConstrNewSh ).SourceSinkPresent = false;
-			Construct( ConstrNewSh ).SolutionDimensions = 0;
-			Construct( ConstrNewSh ).SourceAfterLayer = 0;
-			Construct( ConstrNewSh ).TempAfterLayer = 0;
-			Construct( ConstrNewSh ).ThicknessPerpend = 0.0;
-			Construct( ConstrNewSh ).AbsDiff = 0.0;
-			Construct( ConstrNewSh ).AbsDiffBack = 0.0;
-			Construct( ConstrNewSh ).AbsDiffShade = 0.0;
-			Construct( ConstrNewSh ).AbsDiffBackShade = 0.0;
-			Construct( ConstrNewSh ).ShadeAbsorpThermal = 0.0;
-			Construct( ConstrNewSh ).AbsBeamCoef = 0.0;
-			Construct( ConstrNewSh ).AbsBeamBackCoef = 0.0;
-			Construct( ConstrNewSh ).AbsBeamShadeCoef = 0.0;
-			Construct( ConstrNewSh ).TransDiff = 0.0;
-			Construct( ConstrNewSh ).TransDiffVis = 0.0;
-			Construct( ConstrNewSh ).ReflectSolDiffBack = 0.0;
-			Construct( ConstrNewSh ).ReflectSolDiffFront = 0.0;
-			Construct( ConstrNewSh ).ReflectVisDiffBack = 0.0;
-			Construct( ConstrNewSh ).ReflectVisDiffFront = 0.0;
-			Construct( ConstrNewSh ).TransSolBeamCoef = 0.0;
-			Construct( ConstrNewSh ).TransVisBeamCoef = 0.0;
-			Construct( ConstrNewSh ).ReflSolBeamFrontCoef = 0.0;
-			Construct( ConstrNewSh ).ReflSolBeamBackCoef = 0.0;
-			Construct( ConstrNewSh ).W5FrameDivider = 0;
-			Construct( ConstrNewSh ).FromWindow5DataFile = false;
+			construction_data.InsideAbsorpThermal = Material( Construct( ConstrNum ).LayerPoint( TotLayersOld ) ).AbsorpThermalBack;
+			construction_data.OutsideRoughness = VerySmooth;
+			construction_data.Name = ConstrNameSh;
+			construction_data.TotLayers = TotLayersNew;
+			construction_data.TotSolidLayers = Construct( ConstrNum ).TotSolidLayers + 1;
+			construction_data.TotGlassLayers = Construct( ConstrNum ).TotGlassLayers;
+			construction_data.TypeIsWindow = true;
+			construction_data.IsUsed = true;
 
-			Construct( ConstrNewSh ).Name = ConstrNameSh;
-			Construct( ConstrNewSh ).TotLayers = TotLayersNew;
-			Construct( ConstrNewSh ).TotSolidLayers = Construct( ConstrNum ).TotSolidLayers + 1;
-			Construct( ConstrNewSh ).TotGlassLayers = Construct( ConstrNum ).TotGlassLayers;
-			Construct( ConstrNewSh ).TypeIsWindow = true;
-			Construct( ConstrNewSh ).IsUsed = true;
+			Construct.push_back( construction_data );
+			NominalRforNominalUCalculation.emplace_back( 0.0 );
+			NominalU.emplace_back( 0.0 );
+
+			TotConstructs = Construct.size();
+			SurfaceTmp( SurfNum ).ShadedConstruction = TotConstructs;
 
 		}
 
@@ -9087,160 +9042,53 @@ namespace SurfaceGeometry {
 					MatNewStAir = FindItemInList( MatNameStAir, Material, TotMaterials );
 					if ( MatNewStAir == 0 ) {
 						// Create new material
-						MatNewStAir = TotMaterials + 1;
-						TotMaterials = MatNewStAir;
-						Material.redimension( TotMaterials );
-						NominalR.redimension( TotMaterials );
-						Material( TotMaterials ).Name = MatNameStAir;
-						Material( TotMaterials ).Group = WindowGas;
-						Material( TotMaterials ).Roughness = 3;
-						Material( TotMaterials ).Conductivity = 0.0;
-						Material( TotMaterials ).Density = 0.0;
-						Material( TotMaterials ).IsoMoistCap = 0.0;
-						Material( TotMaterials ).Porosity = 0.0;
-						Material( TotMaterials ).Resistance = 0.0;
-						Material( TotMaterials ).SpecHeat = 0.0;
-						Material( TotMaterials ).ThermGradCoef = 0.0;
-						Material( TotMaterials ).Thickness = StormWindow( StormWinNum ).StormWinDistance;
-						Material( TotMaterials ).VaporDiffus = 0.0;
-						Material( TotMaterials ).GasType = 0;
-						Material( TotMaterials ).GasCon = 0.0;
-						Material( TotMaterials ).GasVis = 0.0;
-						Material( TotMaterials ).GasCp = 0.0;
-						Material( TotMaterials ).GasWght = 0.0;
-						Material( TotMaterials ).GasFract = 0.0;
-						Material( TotMaterials ).GasType( 1 ) = 1;
-						Material( TotMaterials ).GlassSpectralDataPtr = 0;
-						Material( TotMaterials ).NumberOfGasesInMixture = 1;
-						Material( TotMaterials ).GasCon( 1, 1 ) = 2.873e-3;
-						Material( TotMaterials ).GasCon( 2, 1 ) = 7.760e-5;
-						Material( TotMaterials ).GasVis( 1, 1 ) = 3.723e-6;
-						Material( TotMaterials ).GasVis( 2, 1 ) = 4.940e-8;
-						Material( TotMaterials ).GasCp( 1, 1 ) = 1002.737;
-						Material( TotMaterials ).GasCp( 2, 1 ) = 1.2324e-2;
-						Material( TotMaterials ).GasWght( 1 ) = 28.97;
-						Material( TotMaterials ).GasFract( 1 ) = 1.0;
-						Material( TotMaterials ).AbsorpSolar = 0.0;
-						Material( TotMaterials ).AbsorpThermal = 0.0;
-						Material( TotMaterials ).AbsorpVisible = 0.0;
-						Material( TotMaterials ).Trans = 0.0;
-						Material( TotMaterials ).TransVis = 0.0;
-						Material( TotMaterials ).GlassTransDirtFactor = 0.0;
-						Material( TotMaterials ).ReflectShade = 0.0;
-						Material( TotMaterials ).ReflectShadeVis = 0.0;
-						Material( TotMaterials ).AbsorpThermalBack = 0.0;
-						Material( TotMaterials ).AbsorpThermalFront = 0.0;
-						Material( TotMaterials ).ReflectSolBeamBack = 0.0;
-						Material( TotMaterials ).ReflectSolBeamFront = 0.0;
-						Material( TotMaterials ).ReflectSolDiffBack = 0.0;
-						Material( TotMaterials ).ReflectSolDiffFront = 0.0;
-						Material( TotMaterials ).ReflectVisBeamBack = 0.0;
-						Material( TotMaterials ).ReflectVisBeamFront = 0.0;
-						Material( TotMaterials ).ReflectVisDiffBack = 0.0;
-						Material( TotMaterials ).ReflectVisDiffFront = 0.0;
-						Material( TotMaterials ).TransSolBeam = 0.0;
-						Material( TotMaterials ).TransThermal = 0.0;
-						Material( TotMaterials ).TransVisBeam = 0.0;
-						Material( TotMaterials ).BlindDataPtr = 0;
-						Material( TotMaterials ).WinShadeToGlassDist = 0.0;
-						Material( TotMaterials ).WinShadeTopOpeningMult = 0.0;
-						Material( TotMaterials ).WinShadeBottomOpeningMult = 0.0;
-						Material( TotMaterials ).WinShadeLeftOpeningMult = 0.0;
-						Material( TotMaterials ).WinShadeRightOpeningMult = 0.0;
-						Material( TotMaterials ).WinShadeAirFlowPermeability = 0.0;
-						Material( TotMaterials ).EMPDVALUE = 0.0;
-						Material( TotMaterials ).MoistACoeff = 0.0;
-						Material( TotMaterials ).MoistBCoeff = 0.0;
-						Material( TotMaterials ).MoistCCoeff = 0.0;
-						Material( TotMaterials ).MoistDCoeff = 0.0;
-						Material( TotMaterials ).EMPDaCoeff = 0.0;
-						Material( TotMaterials ).EMPDbCoeff = 0.0;
-						Material( TotMaterials ).EMPDcCoeff = 0.0;
-						Material( TotMaterials ).EMPDdCoeff = 0.0;
+						MaterialProperties material_properties;
+						material_properties.Name = MatNameStAir;
+						material_properties.Group = WindowGas;
+						material_properties.Roughness = 3;
+						material_properties.Thickness = StormWindow( StormWinNum ).StormWinDistance;
+						material_properties.GasType( 1 ) = 1;
+						material_properties.NumberOfGasesInMixture = 1;
+						material_properties.GasCon( 1, 1 ) = 2.873e-3;
+						material_properties.GasCon( 2, 1 ) = 7.760e-5;
+						material_properties.GasVis( 1, 1 ) = 3.723e-6;
+						material_properties.GasVis( 2, 1 ) = 4.940e-8;
+						material_properties.GasCp( 1, 1 ) = 1002.737;
+						material_properties.GasCp( 2, 1 ) = 1.2324e-2;
+						material_properties.GasWght( 1 ) = 28.97;
+						material_properties.GasFract( 1 ) = 1.0;
+						Material.push_back( material_properties );
+						TotMaterials = Material.size();
+						MatNewStAir = TotMaterials;
 					} // End of check if new air layer material has to be created
 				}
 
 				if ( ( loop == 1 && ConstrNewSt == 0 ) || ( loop == 2 && ConstrNewStSh == 0 ) ) {
 					// Create new constructions
-					ConstrNew = TotConstructs + 1;
-					if ( loop == 1 ) {
-						Surface( SurfNum ).StormWinConstruction = ConstrNew;
-					} else {
-						Surface( SurfNum ).StormWinShadedConstruction = ConstrNew;
-					}
-					TotConstructs = ConstrNew;
-					Construct.redimension( TotConstructs );
-					NominalRforNominalUCalculation.redimension( TotConstructs );
-					NominalU.redimension( TotConstructs );
-
 					ConstrOld = ConstrNum;
 					if ( loop == 2 ) ConstrOld = ConstrNumSh;
 					TotLayersOld = Construct( ConstrOld ).TotLayers;
-					Construct( ConstrNew ).LayerPoint( {1,MaxLayersInConstruct} ) = 0;
-					Construct( ConstrNew ).LayerPoint( 1 ) = StormWinMatNum;
-					Construct( ConstrNew ).LayerPoint( 2 ) = MatNewStAir;
-					Construct( ConstrNew ).LayerPoint( {3,TotLayersOld + 2} ) = Construct( ConstrOld ).LayerPoint( {1,TotLayersOld} );
-					Construct( ConstrNew ).Name = ConstrNameSt;
-					if ( loop == 2 ) Construct( ConstrNew ).Name = ConstrNameStSh;
-					Construct( ConstrNew ).TotLayers = TotLayersOld + 2;
-					Construct( ConstrNew ).TotSolidLayers = Construct( ConstrOld ).TotSolidLayers + 1;
-					Construct( ConstrNew ).TotGlassLayers = Construct( ConstrOld ).TotGlassLayers + 1;
-					Construct( ConstrNew ).TypeIsWindow = true;
-					Construct( ConstrNew ).InsideAbsorpVis = 0.0;
-					Construct( ConstrNew ).OutsideAbsorpVis = 0.0;
-					Construct( ConstrNew ).InsideAbsorpSolar = 0.0;
-					Construct( ConstrNew ).OutsideAbsorpSolar = 0.0;
-					Construct( ConstrNew ).InsideAbsorpThermal = Construct( ConstrOld ).InsideAbsorpThermal;
-					Construct( ConstrNew ).OutsideAbsorpThermal = Material( StormWinMatNum ).AbsorpThermalFront;
-					Construct( ConstrNew ).OutsideRoughness = VerySmooth;
-					Construct( ConstrNew ).DayltPropPtr = 0;
-					Construct( ConstrNew ).CTFCross = 0.0;
-					Construct( ConstrNew ).CTFFlux = 0.0;
-					Construct( ConstrNew ).CTFInside = 0.0;
-					Construct( ConstrNew ).CTFOutside = 0.0;
-					Construct( ConstrNew ).CTFSourceIn = 0.0;
-					Construct( ConstrNew ).CTFSourceOut = 0.0;
-					Construct( ConstrNew ).CTFTimeStep = 0.0;
-					Construct( ConstrNew ).CTFTSourceOut = 0.0;
-					Construct( ConstrNew ).CTFTSourceIn = 0.0;
-					Construct( ConstrNew ).CTFTSourceQ = 0.0;
-					Construct( ConstrNew ).CTFTUserOut = 0.0;
-					Construct( ConstrNew ).CTFTUserIn = 0.0;
-					Construct( ConstrNew ).CTFTUserSource = 0.0;
-					Construct( ConstrNew ).NumHistories = 0;
-					Construct( ConstrNew ).NumCTFTerms = 0;
-					Construct( ConstrNew ).UValue = 0.0;
-					Construct( ConstrNew ).SourceSinkPresent = false;
-					Construct( ConstrNew ).SolutionDimensions = 0;
-					Construct( ConstrNew ).SourceAfterLayer = 0;
-					Construct( ConstrNew ).TempAfterLayer = 0;
-					Construct( ConstrNew ).ThicknessPerpend = 0.0;
-					Construct( ConstrNew ).AbsDiffIn = 0.0;
-					Construct( ConstrNew ).AbsDiffOut = 0.0;
-					Construct( ConstrNew ).AbsDiff = 0.0;
-					Construct( ConstrNew ).AbsDiffBack = 0.0;
-					Construct( ConstrNew ).AbsDiffShade = 0.0;
-					Construct( ConstrNew ).AbsDiffBackShade = 0.0;
-					Construct( ConstrNew ).ShadeAbsorpThermal = 0.0;
-					Construct( ConstrNew ).AbsBeamCoef = 0.0;
-					Construct( ConstrNew ).AbsBeamBackCoef = 0.0;
-					Construct( ConstrNew ).AbsBeamShadeCoef = 0.0;
-					Construct( ConstrNew ).TransDiff = 0.0;
-					Construct( ConstrNew ).TransDiffVis = 0.0;
-					Construct( ConstrNew ).ReflectSolDiffBack = 0.0;
-					Construct( ConstrNew ).ReflectSolDiffFront = 0.0;
-					Construct( ConstrNew ).ReflectVisDiffBack = 0.0;
-					Construct( ConstrNew ).ReflectVisDiffFront = 0.0;
-					Construct( ConstrNew ).TransSolBeamCoef = 0.0;
-					Construct( ConstrNew ).TransVisBeamCoef = 0.0;
-					Construct( ConstrNew ).ReflSolBeamFrontCoef = 0.0;
-					Construct( ConstrNew ).ReflSolBeamBackCoef = 0.0;
-					Construct( ConstrNew ).W5FrameDivider = 0;
-					Construct( ConstrNew ).FromWindow5DataFile = false;
-					Construct( ConstrNew ).W5FileMullionWidth = 0.0;
-					Construct( ConstrNew ).W5FileMullionOrientation = 0;
-					Construct( ConstrNew ).W5FileGlazingSysWidth = 0.0;
-					Construct( ConstrNew ).W5FileGlazingSysHeight = 0.0;
+
+					ConstructionData construction_data;
+					construction_data.LayerPoint( 1 ) = StormWinMatNum;
+					construction_data.LayerPoint( 2 ) = MatNewStAir;
+					construction_data.LayerPoint( {3,TotLayersOld + 2} ) = Construct( ConstrOld ).LayerPoint( {1,TotLayersOld} );
+					construction_data.Name = ConstrNameSt;
+					if ( loop == 2 ) construction_data.Name = ConstrNameStSh;
+					construction_data.TotLayers = TotLayersOld + 2;
+					construction_data.TotSolidLayers = Construct( ConstrOld ).TotSolidLayers + 1;
+					construction_data.TotGlassLayers = Construct( ConstrOld ).TotGlassLayers + 1;
+					construction_data.TypeIsWindow = true;
+					construction_data.InsideAbsorpThermal = Construct( ConstrOld ).InsideAbsorpThermal;
+					construction_data.OutsideAbsorpThermal = Material( StormWinMatNum ).AbsorpThermalFront;
+					construction_data.OutsideRoughness = VerySmooth;
+					Construct.push_back( construction_data );
+					TotConstructs = Construct.size();
+					if ( loop == 1 ) {
+						Surface( SurfNum ).StormWinConstruction = TotConstructs;
+					} else {
+						Surface( SurfNum ).StormWinShadedConstruction = TotConstructs;
+					}
 				} // End of check if new window constructions have to be created
 			} // End of loop over unshaded and shaded window constructions
 		} // End of loop over storm window objects
@@ -9525,56 +9373,56 @@ namespace SurfaceGeometry {
 		Const2Name = Construct( IConst ).Name + ":2";
 		IConst2 = FindItemInList( Const2Name, Construct );
 
-		++AddedSubSurfaces;
-		SurfaceTmp.redimension( ++TotSurfaces );
-
-		SurfaceTmp( TotSurfaces ).Vertex.allocate( 4 );
-
-		SurfaceTmp( TotSurfaces ).Name = SurfaceTmp( SurfNum ).Name + ":2";
-		SurfaceTmp( TotSurfaces ).Construction = IConst2;
-		SurfaceTmp( TotSurfaces ).ConstructionStoredInputValue = IConst2;
-		SurfaceTmp( TotSurfaces ).Class = SurfaceTmp( SurfNum ).Class;
-		SurfaceTmp( TotSurfaces ).Azimuth = SurfaceTmp( SurfNum ).Azimuth;
+		SurfaceData surface_data;
+		surface_data.Vertex.allocate( 4 );
+		surface_data.Name = SurfaceTmp( SurfNum ).Name + ":2";
+		surface_data.Construction = IConst2;
+		surface_data.ConstructionStoredInputValue = IConst2;
+		surface_data.Class = SurfaceTmp( SurfNum ).Class;
+		surface_data.Azimuth = SurfaceTmp( SurfNum ).Azimuth;
 		// Sine and cosine of azimuth and tilt
-		SurfaceTmp( TotSurfaces ).SinAzim = SurfaceTmp( SurfNum ).SinAzim;
-		SurfaceTmp( TotSurfaces ).CosAzim = SurfaceTmp( SurfNum ).CosAzim;
-		SurfaceTmp( TotSurfaces ).SinTilt = SurfaceTmp( SurfNum ).SinTilt;
-		SurfaceTmp( TotSurfaces ).CosTilt = SurfaceTmp( SurfNum ).CosTilt;
+		surface_data.SinAzim = SurfaceTmp( SurfNum ).SinAzim;
+		surface_data.CosAzim = SurfaceTmp( SurfNum ).CosAzim;
+		surface_data.SinTilt = SurfaceTmp( SurfNum ).SinTilt;
+		surface_data.CosTilt = SurfaceTmp( SurfNum ).CosTilt;
 		// Outward normal unit vector (pointing away from room)
-		SurfaceTmp( TotSurfaces ).Centroid = SurfaceTmp( SurfNum ).Centroid;
-		SurfaceTmp( TotSurfaces ).lcsx = SurfaceTmp( SurfNum ).lcsx;
-		SurfaceTmp( TotSurfaces ).lcsy = SurfaceTmp( SurfNum ).lcsy;
-		SurfaceTmp( TotSurfaces ).lcsz = SurfaceTmp( SurfNum ).lcsz;
-		SurfaceTmp( TotSurfaces ).NewellAreaVector = SurfaceTmp( SurfNum ).NewellAreaVector;
-		SurfaceTmp( TotSurfaces ).OutNormVec = SurfaceTmp( SurfNum ).OutNormVec;
-		SurfaceTmp( TotSurfaces ).Reveal = SurfaceTmp( SurfNum ).Reveal;
-		SurfaceTmp( TotSurfaces ).Shape = SurfaceTmp( SurfNum ).Shape;
-		SurfaceTmp( TotSurfaces ).Sides = SurfaceTmp( SurfNum ).Sides;
-		SurfaceTmp( TotSurfaces ).Tilt = SurfaceTmp( SurfNum ).Tilt;
-		SurfaceTmp( TotSurfaces ).HeatTransSurf = SurfaceTmp( SurfNum ).HeatTransSurf;
-		SurfaceTmp( TotSurfaces ).BaseSurfName = SurfaceTmp( SurfNum ).BaseSurfName;
-		SurfaceTmp( TotSurfaces ).BaseSurf = SurfaceTmp( SurfNum ).BaseSurf;
-		SurfaceTmp( TotSurfaces ).ZoneName = SurfaceTmp( SurfNum ).ZoneName;
-		SurfaceTmp( TotSurfaces ).Zone = SurfaceTmp( SurfNum ).Zone;
-		SurfaceTmp( TotSurfaces ).ExtBoundCondName = SurfaceTmp( SurfNum ).ExtBoundCondName;
-		SurfaceTmp( TotSurfaces ).ExtBoundCond = SurfaceTmp( SurfNum ).ExtBoundCond;
-		SurfaceTmp( TotSurfaces ).ExtSolar = SurfaceTmp( SurfNum ).ExtSolar;
-		SurfaceTmp( TotSurfaces ).ExtWind = SurfaceTmp( SurfNum ).ExtWind;
-		SurfaceTmp( TotSurfaces ).ViewFactorGround = SurfaceTmp( SurfNum ).ViewFactorGround;
-		SurfaceTmp( TotSurfaces ).ViewFactorSky = SurfaceTmp( SurfNum ).ViewFactorSky;
-		SurfaceTmp( TotSurfaces ).ViewFactorGroundIR = SurfaceTmp( SurfNum ).ViewFactorGroundIR;
-		SurfaceTmp( TotSurfaces ).ViewFactorSkyIR = SurfaceTmp( SurfNum ).ViewFactorSkyIR;
-		SurfaceTmp( TotSurfaces ).OSCPtr = SurfaceTmp( SurfNum ).OSCPtr;
-		SurfaceTmp( TotSurfaces ).SchedShadowSurfIndex = SurfaceTmp( SurfNum ).SchedShadowSurfIndex;
-		SurfaceTmp( TotSurfaces ).ShadowSurfSchedVaries = SurfaceTmp( SurfNum ).ShadowSurfSchedVaries;
-		SurfaceTmp( TotSurfaces ).MaterialMovInsulExt = SurfaceTmp( SurfNum ).MaterialMovInsulExt;
-		SurfaceTmp( TotSurfaces ).MaterialMovInsulInt = SurfaceTmp( SurfNum ).MaterialMovInsulInt;
-		SurfaceTmp( TotSurfaces ).SchedMovInsulExt = SurfaceTmp( SurfNum ).SchedMovInsulExt;
-		SurfaceTmp( TotSurfaces ).WindowShadingControlPtr = SurfaceTmp( SurfNum ).WindowShadingControlPtr;
-		SurfaceTmp( TotSurfaces ).ShadedConstruction = SurfaceTmp( SurfNum ).ShadedConstruction;
-		SurfaceTmp( TotSurfaces ).FrameDivider = SurfaceTmp( SurfNum ).FrameDivider;
-		SurfaceTmp( TotSurfaces ).Multiplier = SurfaceTmp( SurfNum ).Multiplier;
-		SurfaceTmp( TotSurfaces ).NetAreaShadowCalc = SurfaceTmp( SurfNum ).NetAreaShadowCalc;
+		surface_data.Centroid = SurfaceTmp( SurfNum ).Centroid;
+		surface_data.lcsx = SurfaceTmp( SurfNum ).lcsx;
+		surface_data.lcsy = SurfaceTmp( SurfNum ).lcsy;
+		surface_data.lcsz = SurfaceTmp( SurfNum ).lcsz;
+		surface_data.NewellAreaVector = SurfaceTmp( SurfNum ).NewellAreaVector;
+		surface_data.OutNormVec = SurfaceTmp( SurfNum ).OutNormVec;
+		surface_data.Reveal = SurfaceTmp( SurfNum ).Reveal;
+		surface_data.Shape = SurfaceTmp( SurfNum ).Shape;
+		surface_data.Sides = SurfaceTmp( SurfNum ).Sides;
+		surface_data.Tilt = SurfaceTmp( SurfNum ).Tilt;
+		surface_data.HeatTransSurf = SurfaceTmp( SurfNum ).HeatTransSurf;
+		surface_data.BaseSurfName = SurfaceTmp( SurfNum ).BaseSurfName;
+		surface_data.BaseSurf = SurfaceTmp( SurfNum ).BaseSurf;
+		surface_data.ZoneName = SurfaceTmp( SurfNum ).ZoneName;
+		surface_data.Zone = SurfaceTmp( SurfNum ).Zone;
+		surface_data.ExtBoundCondName = SurfaceTmp( SurfNum ).ExtBoundCondName;
+		surface_data.ExtBoundCond = SurfaceTmp( SurfNum ).ExtBoundCond;
+		surface_data.ExtSolar = SurfaceTmp( SurfNum ).ExtSolar;
+		surface_data.ExtWind = SurfaceTmp( SurfNum ).ExtWind;
+		surface_data.ViewFactorGround = SurfaceTmp( SurfNum ).ViewFactorGround;
+		surface_data.ViewFactorSky = SurfaceTmp( SurfNum ).ViewFactorSky;
+		surface_data.ViewFactorGroundIR = SurfaceTmp( SurfNum ).ViewFactorGroundIR;
+		surface_data.ViewFactorSkyIR = SurfaceTmp( SurfNum ).ViewFactorSkyIR;
+		surface_data.OSCPtr = SurfaceTmp( SurfNum ).OSCPtr;
+		surface_data.SchedShadowSurfIndex = SurfaceTmp( SurfNum ).SchedShadowSurfIndex;
+		surface_data.ShadowSurfSchedVaries = SurfaceTmp( SurfNum ).ShadowSurfSchedVaries;
+		surface_data.MaterialMovInsulExt = SurfaceTmp( SurfNum ).MaterialMovInsulExt;
+		surface_data.MaterialMovInsulInt = SurfaceTmp( SurfNum ).MaterialMovInsulInt;
+		surface_data.SchedMovInsulExt = SurfaceTmp( SurfNum ).SchedMovInsulExt;
+		surface_data.WindowShadingControlPtr = SurfaceTmp( SurfNum ).WindowShadingControlPtr;
+		surface_data.ShadedConstruction = SurfaceTmp( SurfNum ).ShadedConstruction;
+		surface_data.FrameDivider = SurfaceTmp( SurfNum ).FrameDivider;
+		surface_data.Multiplier = SurfaceTmp( SurfNum ).Multiplier;
+		surface_data.NetAreaShadowCalc = SurfaceTmp( SurfNum ).NetAreaShadowCalc;
+		SurfaceTmp.push_back( surface_data );
+		++AddedSubSurfaces;
+		++TotSurfaces;
 
 		MulWidth = Construct( IConst ).W5FileMullionWidth;
 		w2 = Construct( IConst2 ).W5FileGlazingSysWidth;
