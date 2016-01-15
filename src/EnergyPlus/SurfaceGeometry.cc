@@ -8958,7 +8958,6 @@ namespace SurfaceGeometry {
 		int ConstrOld; // Number of old construction (unshaded or shaded)
 		int ConstrNewSt; // Number of unshaded storm window construction that is created
 		int ConstrNewStSh; // Number of shaded storm window construction that is created
-		int ConstrNew; // Number of new construction with storm window (unshaded or shaded)
 		int MatNewStAir; // Number of created air layer material
 		std::string ConstrName; // Name of original unshaded window construction
 		std::string ConstrNameSh; // Name of original shaded window construction

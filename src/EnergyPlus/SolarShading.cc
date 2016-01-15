@@ -3768,9 +3768,6 @@ namespace SolarShading {
 		Array1D_int GSS; // List of shadowing surfaces numbers for a receiving surface
 		Array1D_int BKS; // List of back surface numbers for a receiving surface
 		Array1D_int SBS; // List of subsurfaces for a receiving surface
-		static int MaxGSS( 50 ); // Current Max for GSS array
-		static int MaxBKS( 50 ); // Current Max for BKS array
-		static int MaxSBS( 50 ); // Current Max for SBS array
 		bool CannotShade; // TRUE if subsurface cannot shade receiving surface
 		bool HasWindow; // TRUE if a window is present on receiving surface
 		Real64 ZMIN; // Lowest point on the receiving surface
@@ -3805,10 +3802,6 @@ namespace SolarShading {
 		HCNV.dimension( 2 * MaxHCS, 0 );
 		HCT.dimension( 2 * MaxHCS, 0.0 );
 
-		GSS.dimension( MaxGSS, 0 );
-		BKS.dimension( MaxGSS, 0 );
-		SBS.dimension( MaxGSS, 0 );
-
 		HTS = 0;
 
 		// Check every surface as a possible shadow receiving surface ("RS" = receiving surface).
@@ -3819,9 +3812,6 @@ namespace SolarShading {
 		for ( GRSNR = 1; GRSNR <= TotSurfaces; ++GRSNR ) { // Loop through all surfaces (looking for potential receiving surfaces)...
 
 			ShadowingSurf = Surface( GRSNR ).ShadowingSurf;
-			NGSS = 0;
-			NSBS = 0;
-			NBKS = 0;
 
 			if ( ! ShadowingSurf && ! Surface( GRSNR ).HeatTransSurf ) continue;
 			HTS = GRSNR;

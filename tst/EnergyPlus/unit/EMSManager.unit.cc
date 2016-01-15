@@ -76,8 +76,6 @@ using namespace ObjexxFCL;
 
 TEST_F( EnergyPlusFixture, EMSManager_TestForUniqueEMSActuators )
 {
-	EMSActuatorAvailable.allocate(100);
-
 	std::string componentTypeName1( "Chiller1" );
 	std::string componentTypeName2( "Chiller2" );
 	std::string uniqueIDName1( "Plant Component Chiller:Electric:ReformulatedEIR" );
@@ -115,13 +113,11 @@ TEST_F( EnergyPlusFixture, EMSManager_TestForUniqueEMSActuators )
 	SetupEMSActuator( componentTypeName2, uniqueIDName1, controlTypeName3, units1, EMSActuated1, testReal3 );
 	EXPECT_EQ( 6, numEMSActuatorsAvailable );
 
-	EMSActuatorAvailable.deallocate();
-
 }
 
 TEST_F( EnergyPlusFixture, Dual_NodeTempSetpoints ) {
 
-		std::string const idf_objects = delimited_string( { 
+		std::string const idf_objects = delimited_string( {
 		"Version,8.4;",
 
 		"OutdoorAir:Node, Test node;",

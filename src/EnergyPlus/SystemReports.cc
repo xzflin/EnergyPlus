@@ -1184,7 +1184,6 @@ namespace SystemReports {
 		// SUBROUTINE LOCAL VARIABLE DECLARATIONS:
 
 		int BranchNum;
-		int Idx;
 		int DemandSideLoopNum;
 		int DemandSideBranchNum;
 		int DemandSideCompNum;
