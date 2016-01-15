@@ -566,9 +566,9 @@ namespace EnergyPlus {
 		// Determines heat transfer to surface. Updates surface cell temperature.
 
 		// FUNCTION LOCAL VARIABLE DECLARATIONS:
-		Real64 numerator;
-		Real64 denominator;
-		Real64 resistance;
+		Real64 numerator( 0.0 );
+		Real64 denominator( 0.0 );
+		Real64 resistance( 0.0 );
 		Real64 incidentHeatGain;
 		Real64 incidentSolar_MJhrmin;
 		Real64 evapotransHeatLoss_Wm2;
@@ -596,11 +596,6 @@ namespace EnergyPlus {
 		Real64 const absor_Corrected( 0.77 );
 		Real64 const convert_Wm2_To_MJhrmin( 3600.0 / 1000000.0 );
 		Real64 const convert_MJhrmin_To_Wm2( 1.0 / convert_Wm2_To_MJhrmin );
-
-		// initialize values
-		numerator = 0.0;
-		denominator = 0.0;
-		resistance = 0.0;
 
 		auto & thisCell = cellArray( 1 );
 		auto & cellBelow_thisCell = cellArray( 2 );
@@ -715,9 +710,9 @@ namespace EnergyPlus {
 		// Update cell temperature based on HT from cells above and below
 
 		// SUBROUTINE LOCAL VARIABLE DECLARATIONS:
-		Real64 numerator = 0.0;
-		Real64 denominator = 0.0;
-		Real64 resistance = 0.0;
+		Real64 numerator( 0.0 );
+		Real64 denominator( 0.0 );
+		Real64 resistance( 0.0 );
 
 		auto & thisCell = cellArray( cell );
 		auto & cellAbove_thisCell = cellArray( cell - 1 );
@@ -765,19 +760,14 @@ namespace EnergyPlus {
 		//	IPCC scoping meeting on renewable energy sources: 59-80.
 
 		// SUBROUTINE LOCAL VARIABLE DECLARATIONS:
-		Real64 numerator;
-		Real64 denominator;
-		Real64 resistance;
+		Real64 numerator( 0.0 );
+		Real64 denominator( 0.0 );
+		Real64 resistance( 0.0 );
 		Real64 HTBottom;
-		Real64 geothermalGradient;
+		Real64 geothermalGradient( 0.025 ); // C/m
 
 		auto & thisCell = cellArray( totalNumCells );
 		auto & cellAbove_thisCell = cellArray( totalNumCells - 1 );
-
-		numerator = 0.0;
-		denominator = 0.0;
-		resistance = 0.0;
-		geothermalGradient = 0.025; // C/m
 
 		// Initialize
 		numerator += thisCell.temperature_prevTimeStep;

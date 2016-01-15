@@ -5550,7 +5550,7 @@ CalcHeatBalanceInsideSurf( int const ZoneToResimulate ) // if passed in, then on
 
 			if ( ( TH12 > MaxSurfaceTempLimit ) || ( TH12 < MinSurfaceTempLimit ) ) {
 				if ( WarmupFlag ) ++WarmupSurfTemp;
-				if ( ! WarmupFlag || ( WarmupFlag && WarmupSurfTemp > 10 ) || DisplayExtraWarnings ) {
+				if ( ! WarmupFlag || WarmupSurfTemp > 10 || DisplayExtraWarnings ) {
 					if ( TH12 < MinSurfaceTempLimit ) {
 						if ( surface.LowTempErrCount == 0 ) {
 							ShowSevereMessage( "Temperature (low) out of bounds [" + RoundSigDigits( TH12, 2 ) + "] for zone=\"" + zone.Name + "\", for surface=\"" + surface.Name + "\"" );
