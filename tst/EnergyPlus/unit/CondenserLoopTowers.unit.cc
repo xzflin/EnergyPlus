@@ -144,7 +144,7 @@ namespace EnergyPlus {
 		"    no,                     !- Do Plant Sizing Calculation",
 		"    Yes,                     !- Run Simulation for Sizing Periods",
 		"    no;                     !- Run Simulation for Weather File Run Periods",
-		
+
 		"  Timestep,6;",
 
 		"  ScheduleTypeLimits,",

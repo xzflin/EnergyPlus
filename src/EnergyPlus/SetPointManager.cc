@@ -8207,19 +8207,18 @@ namespace SetPointManager {
 			}
 		}
 
-
 		return HumRatCntrlType;
 	}
 
 	void
 	SetUpNewScheduledTESSetPtMgr(
-								 int const SchedPtr,
-								 int const SchedPtrCharge,
-								 Real64 NonChargeCHWTemp,
-								 Real64 ChargeCHWTemp,
-								 int const CompOpType,
-								 int const ControlNodeNum
-								 )
+		int const SchedPtr,
+		int const SchedPtrCharge,
+		Real64 NonChargeCHWTemp,
+		Real64 ChargeCHWTemp,
+		int const CompOpType,
+		int const ControlNodeNum
+	)
 	{
 		// SUBROUTINE INFORMATION:
 		//       AUTHOR         Rick Strand
@@ -8253,32 +8252,27 @@ namespace SetPointManager {
 		bool ErrorsFoundinTESSchSetup( false );
 		int NodeNum;
 
-		NumSchTESSetPtMgrs += 1;
-		NumAllSetPtMgrs    += 1;
-
-		// allocate/redimension structures for new item
-		if ( NumSchTESSetPtMgrs == 1 ) { // first time through--main structure not allocated yet
-			SchTESSetPtMgr.allocate( 1 );
-		} else if ( NumSchTESSetPtMgrs > 1 ) { // no longer first time through--redimension to new size
-			SchTESSetPtMgr.redimension( NumSchTESSetPtMgrs );
-		}
-		AllSetPtMgr.redimension( NumAllSetPtMgrs );
-
 		// Set up the scheduled TES setpoint manager information
-		SchTESSetPtMgr( NumSchTESSetPtMgrs ).SchedPtr = SchedPtr;
-		SchTESSetPtMgr( NumSchTESSetPtMgrs ).SchedPtrCharge = SchedPtrCharge;
-		SchTESSetPtMgr( NumSchTESSetPtMgrs ).NonChargeCHWTemp = NonChargeCHWTemp;
-		SchTESSetPtMgr( NumSchTESSetPtMgrs ).ChargeCHWTemp = ChargeCHWTemp;
-		SchTESSetPtMgr( NumSchTESSetPtMgrs ).CompOpType = CompOpType;
-		SchTESSetPtMgr( NumSchTESSetPtMgrs ).CtrlNodeNum = ControlNodeNum;
+		DefineScheduledTESSetPointManager scheduled_TES_setpoint_manager;
+		scheduled_TES_setpoint_manager.SchedPtr = SchedPtr;
+		scheduled_TES_setpoint_manager.SchedPtrCharge = SchedPtrCharge;
+		scheduled_TES_setpoint_manager.NonChargeCHWTemp = NonChargeCHWTemp;
+		scheduled_TES_setpoint_manager.ChargeCHWTemp = ChargeCHWTemp;
+		scheduled_TES_setpoint_manager.CompOpType = CompOpType;
+		scheduled_TES_setpoint_manager.CtrlNodeNum = ControlNodeNum;
+		SchTESSetPtMgr.push_back( scheduled_TES_setpoint_manager );
+		NumSchTESSetPtMgrs = SchTESSetPtMgr.size();
 
 		// Set up the all setpoint manager information for "verification" that no other setpoint manager controls the node that this new ones does
-		AllSetPtMgr( NumAllSetPtMgrs ).CtrlNodes.allocate( 1 );
-		AllSetPtMgr( NumAllSetPtMgrs ).CtrlNodes( 1 ) = SchTESSetPtMgr( NumSchTESSetPtMgrs ).CtrlNodeNum;
-		AllSetPtMgr( NumAllSetPtMgrs ).Name = SchSetPtMgr( NumSchTESSetPtMgrs ).Name;
-		AllSetPtMgr( NumAllSetPtMgrs ).SPMType = iSPMType_TESScheduled;
-		AllSetPtMgr( NumAllSetPtMgrs ).CtrlTypeMode = iCtrlVarType_Temp;
-		AllSetPtMgr( NumAllSetPtMgrs ).NumCtrlNodes = 1;
+		DataSetPointManager data_setpoint_manager;
+		data_setpoint_manager.CtrlNodes.allocate( 1 );
+		data_setpoint_manager.CtrlNodes( 1 ) = SchTESSetPtMgr( NumSchTESSetPtMgrs ).CtrlNodeNum;
+		data_setpoint_manager.Name = SchSetPtMgr( NumSchTESSetPtMgrs ).Name;
+		data_setpoint_manager.SPMType = iSPMType_TESScheduled;
+		data_setpoint_manager.CtrlTypeMode = iCtrlVarType_Temp;
+		data_setpoint_manager.NumCtrlNodes = 1;
+		AllSetPtMgr.push_back( data_setpoint_manager );
+		NumAllSetPtMgrs = AllSetPtMgr.size();
 
 		// Now verify that there is no overlap (no other SPM uses the node of the new setpoint manager)
 		ErrorsFoundinTESSchSetup = false;

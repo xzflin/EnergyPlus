@@ -161,62 +161,56 @@ SetupZoneInternalGain(
 		return;
 	}
 
-	if ( ZoneIntGain( ZoneNum ).NumberOfDevices == 0 ) {
-		ZoneIntGain( ZoneNum ).Device.allocate( DeviceAllocInc );
-		ZoneIntGain( ZoneNum ).MaxNumberOfDevices = DeviceAllocInc;
-	} else {
-		if ( ZoneIntGain( ZoneNum ).NumberOfDevices + 1 > ZoneIntGain( ZoneNum ).MaxNumberOfDevices ) {
-			ZoneIntGain( ZoneNum ).Device.redimension( ZoneIntGain( ZoneNum ).MaxNumberOfDevices += DeviceAllocInc );
-		}
-	}
-	++ZoneIntGain( ZoneNum ).NumberOfDevices;
+	auto & zone_int_gain( ZoneIntGain( ZoneNum ) );
 
-	ZoneIntGain( ZoneNum ).Device( ZoneIntGain( ZoneNum ).NumberOfDevices ).CompObjectType = UpperCaseObjectType;
-	ZoneIntGain( ZoneNum ).Device( ZoneIntGain( ZoneNum ).NumberOfDevices ).CompObjectName = UpperCaseObjectName;
-	ZoneIntGain( ZoneNum ).Device( ZoneIntGain( ZoneNum ).NumberOfDevices ).CompTypeOfNum = IntGainComp_TypeOfNum;
-
+	GenericComponentZoneIntGainStruct generic_comp_zone_int_gain;
+	generic_comp_zone_int_gain.CompObjectType = UpperCaseObjectType;
+	generic_comp_zone_int_gain.CompObjectName = UpperCaseObjectName;
+	generic_comp_zone_int_gain.CompTypeOfNum = IntGainComp_TypeOfNum;
 	// note pointer assignments in code below!
 	if ( present( ConvectionGainRate ) ) {
-		ZoneIntGain( ZoneNum ).Device( ZoneIntGain( ZoneNum ).NumberOfDevices ).PtrConvectGainRate >>= ConvectionGainRate;
+		generic_comp_zone_int_gain.PtrConvectGainRate >>= ConvectionGainRate;
 	} else {
-		ZoneIntGain( ZoneNum ).Device( ZoneIntGain( ZoneNum ).NumberOfDevices ).PtrConvectGainRate >>= ZeroPointerVal;
+		generic_comp_zone_int_gain.PtrConvectGainRate >>= ZeroPointerVal;
 	}
 
 	if ( present( ReturnAirConvectionGainRate ) ) {
-		ZoneIntGain( ZoneNum ).Device( ZoneIntGain( ZoneNum ).NumberOfDevices ).PtrReturnAirConvGainRate >>= ReturnAirConvectionGainRate;
+		generic_comp_zone_int_gain.PtrReturnAirConvGainRate >>= ReturnAirConvectionGainRate;
 	} else {
-		ZoneIntGain( ZoneNum ).Device( ZoneIntGain( ZoneNum ).NumberOfDevices ).PtrReturnAirConvGainRate >>= ZeroPointerVal;
+		generic_comp_zone_int_gain.PtrReturnAirConvGainRate >>= ZeroPointerVal;
 	}
 
 	if ( present( ThermalRadiationGainRate ) ) {
-		ZoneIntGain( ZoneNum ).Device( ZoneIntGain( ZoneNum ).NumberOfDevices ).PtrRadiantGainRate >>= ThermalRadiationGainRate;
+		generic_comp_zone_int_gain.PtrRadiantGainRate >>= ThermalRadiationGainRate;
 	} else {
-		ZoneIntGain( ZoneNum ).Device( ZoneIntGain( ZoneNum ).NumberOfDevices ).PtrRadiantGainRate >>= ZeroPointerVal;
+		generic_comp_zone_int_gain.PtrRadiantGainRate >>= ZeroPointerVal;
 	}
 
 	if ( present( LatentGainRate ) ) {
-		ZoneIntGain( ZoneNum ).Device( ZoneIntGain( ZoneNum ).NumberOfDevices ).PtrLatentGainRate >>= LatentGainRate;
+		generic_comp_zone_int_gain.PtrLatentGainRate >>= LatentGainRate;
 	} else {
-		ZoneIntGain( ZoneNum ).Device( ZoneIntGain( ZoneNum ).NumberOfDevices ).PtrLatentGainRate >>= ZeroPointerVal;
+		generic_comp_zone_int_gain.PtrLatentGainRate >>= ZeroPointerVal;
 	}
 
 	if ( present( ReturnAirLatentGainRate ) ) {
-		ZoneIntGain( ZoneNum ).Device( ZoneIntGain( ZoneNum ).NumberOfDevices ).PtrReturnAirLatentGainRate >>= ReturnAirLatentGainRate;
+		generic_comp_zone_int_gain.PtrReturnAirLatentGainRate >>= ReturnAirLatentGainRate;
 	} else {
-		ZoneIntGain( ZoneNum ).Device( ZoneIntGain( ZoneNum ).NumberOfDevices ).PtrReturnAirLatentGainRate >>= ZeroPointerVal;
+		generic_comp_zone_int_gain.PtrReturnAirLatentGainRate >>= ZeroPointerVal;
 	}
 
 	if ( present( CarbonDioxideGainRate ) ) {
-		ZoneIntGain( ZoneNum ).Device( ZoneIntGain( ZoneNum ).NumberOfDevices ).PtrCarbonDioxideGainRate >>= CarbonDioxideGainRate;
+		generic_comp_zone_int_gain.PtrCarbonDioxideGainRate >>= CarbonDioxideGainRate;
 	} else {
-		ZoneIntGain( ZoneNum ).Device( ZoneIntGain( ZoneNum ).NumberOfDevices ).PtrCarbonDioxideGainRate >>= ZeroPointerVal;
+		generic_comp_zone_int_gain.PtrCarbonDioxideGainRate >>= ZeroPointerVal;
 	}
 
 	if ( present( GenericContamGainRate ) ) {
-		ZoneIntGain( ZoneNum ).Device( ZoneIntGain( ZoneNum ).NumberOfDevices ).PtrGenericContamGainRate >>= GenericContamGainRate;
+		generic_comp_zone_int_gain.PtrGenericContamGainRate >>= GenericContamGainRate;
 	} else {
-		ZoneIntGain( ZoneNum ).Device( ZoneIntGain( ZoneNum ).NumberOfDevices ).PtrGenericContamGainRate >>= ZeroPointerVal;
+		generic_comp_zone_int_gain.PtrGenericContamGainRate >>= ZeroPointerVal;
 	}
+	zone_int_gain.Device.push_back( generic_comp_zone_int_gain );
+	zone_int_gain.NumberOfDevices = zone_int_gain.Device.size();
 
 }
 

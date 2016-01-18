@@ -495,8 +495,6 @@ namespace EconomicTariff {
 				ShowContinueError( "Meter referenced is not present due to a lack of equipment that uses that energy source/meter:\"" + tariff( iInObj ).reportMeter + "\"." );
 				tariff( iInObj ).reportMeterIndx = 0;
 			} else {
-				NamesOfKeys.allocate( KeyCount );
-				IndexesForKeyVar.allocate( KeyCount );
 				GetVariableKeys( tariff( iInObj ).reportMeter, TypeVar, NamesOfKeys, IndexesForKeyVar );
 				//although this retrieves all keys for a variable, we only need one so the first one is chosen
 				if ( KeyCount > 1 ) {
@@ -504,10 +502,8 @@ namespace EconomicTariff {
 					ShowContinueError( "... Multiple keys for variable select. First key will be used." );
 				}
 				//assign the index
+				assert( IndexesForKeyVar.size() > 0 );
 				tariff( iInObj ).reportMeterIndx = IndexesForKeyVar( 1 );
-				//get rid of the arrays used to get the variable number
-				NamesOfKeys.deallocate();
-				IndexesForKeyVar.deallocate();
 			}
 			//conversion factor
 			if ( SameString( cAlphaArgs( 3 ), "USERDEFINED" ) ) {

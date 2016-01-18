@@ -774,11 +774,11 @@ namespace InputProcessor {
 		bool errFlag; // Local Error condition flag, when true, object not added to Global list
 		char TargetChar; // Single character scanned to test for current field type (A or N)
 		bool BlankLine; // True when this line is "blank" (may have comment characters as first character on line)
-		static Array1D_bool AlphaOrNumeric; // Array of argument designations, True is Alpha, False is numeric, saved in ObjectDef when done
-		static Array1D_bool RequiredFields; // Array of argument required fields
-		static Array1D_bool AlphRetainCase; // Array of argument for retain case
-		static Array1D_string AlphFieldChecks; // Array with alpha field names
-		static Array1D_string AlphFieldDefaults; // Array with alpha field defaults
+		Array1D_bool AlphaOrNumeric; // Array of argument designations, True is Alpha, False is numeric, saved in ObjectDef when done
+		Array1D_bool RequiredFields; // Array of argument required fields
+		Array1D_bool AlphRetainCase; // Array of argument for retain case
+		Array1D_string AlphFieldChecks; // Array with alpha field names
+		Array1D_string AlphFieldDefaults; // Array with alpha field defaults
 		bool MinMax; // Set to true when MinMax field has been found by ReadInputLine
 		bool Default; // Set to true when Default field has been found by ReadInputLine
 		bool AutoSize; // Set to true when Autosizable field has been found by ReadInputLine
@@ -788,25 +788,14 @@ namespace InputProcessor {
 		int WhichMinMax; // =0 (none/invalid), =1 \min, =2 \min>, =3 \max, =4 \max<
 		Real64 Value; // Value returned by ReadInputLine (either min, max, default, autosize or autocalculate)
 		bool MinMaxError; // Used to see if min, max, defaults have been set appropriately (True if error)
-		static int MaxANArgs( 7700 ); // Current count of Max args to object  (9/2010)
+		// int MaxANArgs( 7700 ); // Current count of Max args to object  (9/2010)
 		bool ErrorsFoundFlag;
-		static int PrevSizeNumNumeric( -1 );
-		static int PrevCount( -1 );
-		static int PrevSizeNumAlpha( -1 );
+		int PrevSizeNumNumeric( -1 );
+		int PrevCount( -1 );
+		int PrevSizeNumAlpha( -1 );
 
 		// Object Data
-		static Array1D< RangeCheckDef > NumRangeChecks; // Structure for Range Check, Defaults of numeric fields
-		static Array1D< RangeCheckDef > TempChecks; // Structure (ref: NumRangeChecks) for re-allocation procedure
-
-		if ( ! allocated( AlphaOrNumeric ) ) {
-			AlphaOrNumeric.allocate( {0,MaxANArgs} );
-			RequiredFields.allocate( {0,MaxANArgs} );
-			AlphRetainCase.allocate( {0,MaxANArgs} );
-			NumRangeChecks.allocate( MaxANArgs );
-			AlphFieldChecks.allocate( MaxANArgs );
-			AlphFieldDefaults.allocate( MaxANArgs );
-			ObsoleteObjectsRepNames.allocate( 0 );
-		}
+		Array1D< RangeCheckDef > NumRangeChecks; // Structure for Range Check, Defaults of numeric fields
 
 		SqueezedObject = MakeUPPERCase( stripped( ProposedObject ) );
 		if ( len( SqueezedObject ) > static_cast< std::string::size_type >( MaxObjectNameLength ) ) {
@@ -844,77 +833,8 @@ namespace InputProcessor {
 			ErrorsFound = true;
 		}
 
-		// ++NumObjectDefs;
-		// ObjectDef( NumObjectDefs ).Name = SqueezedObject;
-		// ObjectDef( NumObjectDefs ).NumParams = 0;
-		// ObjectDef( NumObjectDefs ).NumAlpha = 0;
-		// ObjectDef( NumObjectDefs ).NumNumeric = 0;
-		// ObjectDef( NumObjectDefs ).NumFound = 0;
-		// ObjectDef( NumObjectDefs ).MinNumFields = 0;
-		// ObjectDef( NumObjectDefs ).NameAlpha1 = false;
-		// ObjectDef( NumObjectDefs ).ObsPtr = 0;
-		// ObjectDef( NumObjectDefs ).UniqueObject = false;
-		// ObjectDef( NumObjectDefs ).RequiredObject = false;
-		// ObjectDef( NumObjectDefs ).ExtensibleObject = false;
-		// ObjectDef( NumObjectDefs ).ExtensibleNum = 0;
-
 		ObjectsDefinition objects_definition;
 		objects_definition.Name = SqueezedObject;
-		objects_definition.NumParams = 0;
-		objects_definition.NumAlpha = 0;
-		objects_definition.NumNumeric = 0;
-		objects_definition.NumFound = 0;
-		objects_definition.MinNumFields = 0;
-		objects_definition.NameAlpha1 = false;
-		objects_definition.ObsPtr = 0;
-		objects_definition.UniqueObject = false;
-		objects_definition.RequiredObject = false;
-		objects_definition.ExtensibleObject = false;
-		objects_definition.ExtensibleNum = 0;
-		ObjectDef.push_back( objects_definition );
-		NumObjectDefs = ObjectDef.size();
-
-		if ( PrevCount == -1 ) {
-			PrevCount = MaxANArgs;
-		}
-
-		AlphaOrNumeric( {0,PrevCount} ) = true;
-		RequiredFields( {0,PrevCount} ) = false;
-		AlphRetainCase( {0,PrevCount} ) = false;
-
-		if ( PrevSizeNumAlpha == -1 ) {
-			PrevSizeNumAlpha = MaxANArgs;
-		}
-
-		AlphFieldChecks( {1,PrevSizeNumAlpha} ) = BlankString;
-		AlphFieldDefaults( {1,PrevSizeNumAlpha} ) = BlankString;
-
-		if ( PrevSizeNumNumeric == -1 ) {
-			PrevSizeNumNumeric = MaxANArgs;
-		}
-
-		//clear only portion of NumRangeChecks array used in the previous
-		//call to reduce computation time to clear this large array.
-		for ( int i = 1; i <= PrevSizeNumNumeric; ++i ) {
-			auto & numRangeCheck( NumRangeChecks( i ) );
-			numRangeCheck.MinMaxChk = false;
-			numRangeCheck.WhichMinMax( 1 ) = 0;
-			numRangeCheck.WhichMinMax( 2 ) = 0;
-			numRangeCheck.MinMaxString( 1 ).clear();
-			numRangeCheck.MinMaxString( 2 ).clear();
-			numRangeCheck.MinMaxValue( 1 ) = 0.0;
-			numRangeCheck.MinMaxValue( 2 ) = 0.0;
-			numRangeCheck.Default = 0.0;
-			numRangeCheck.DefaultChk = false;
-			numRangeCheck.DefAutoSize = false;
-			numRangeCheck.DefAutoCalculate = false;
-			numRangeCheck.FieldNumber = 0;
-			numRangeCheck.FieldName = BlankString;
-			numRangeCheck.AutoSizable = false;
-			numRangeCheck.AutoSizeValue = DefAutoSizeValue;
-			numRangeCheck.AutoCalculatable = false;
-			numRangeCheck.AutoCalculateValue = DefAutoCalculateValue;
-		}
 
 		Count = 0;
 		EndofObjectDef = false;
@@ -923,84 +843,83 @@ namespace InputProcessor {
 		while ( ! EndofFile && ! EndofObjectDef ) {
 
 			if ( CurPos < static_cast< std::string::size_type >( InputLineLength ) ) {
-				Pos = scan( InputLine.substr( CurPos, InputLineLength - CurPos ), AlphaNum );
+				auto const s = InputLine.substr( CurPos, InputLineLength - CurPos );
+				Pos = scan( s, AlphaNum );
 				if ( Pos != std::string::npos ) {
 
+					AlphaOrNumeric.emplace_back( false );
+					RequiredFields.emplace_back( false );
+					AlphRetainCase.emplace_back( false );
+					RangeCheckDef range_check_def;
+					range_check_def.AutoSizeValue = DefAutoSizeValue;
+					range_check_def.AutoCalculateValue = DefAutoCalculateValue;
+					NumRangeChecks.push_back( range_check_def );
+					AlphFieldChecks.emplace_back();
+					AlphFieldDefaults.emplace_back();
 					++Count;
 					RequiredField = false;
 					RetainCaseFlag = false;
-
-					if ( Count > MaxANArgs ) { // Reallocation
-						int const newANArgs( MaxANArgs + ANArgsDefAllocInc );
-						AlphaOrNumeric.redimension( {0,newANArgs}, false );
-						RequiredFields.redimension( {0,newANArgs}, false );
-						AlphRetainCase.redimension( {0,newANArgs}, false );
-						NumRangeChecks.redimension( newANArgs );
-						AlphFieldChecks.redimension( newANArgs );
-						AlphFieldDefaults.redimension( newANArgs );
-						MaxANArgs = newANArgs;
-					}
 
 					TargetChar = InputLine[ CurPos + Pos ];
 
 					if ( TargetChar == 'A' || TargetChar == 'a' ) {
 						AlphaOrNumeric( Count ) = true;
-						++ObjectDef( NumObjectDefs ).NumAlpha;
-						if ( FieldSet ) AlphFieldChecks( ObjectDef( NumObjectDefs ).NumAlpha ) = CurrentFieldName;
-						if ( ObjectDef( NumObjectDefs ).NumAlpha == 1 ) {
-							if ( hasi( CurrentFieldName, "NAME" ) ) ObjectDef( NumObjectDefs ).NameAlpha1 = true;
+						++objects_definition.NumAlpha;
+						if ( FieldSet ) AlphFieldChecks( objects_definition.NumAlpha ) = CurrentFieldName;
+						if ( objects_definition.NumAlpha == 1 ) {
+							if ( hasi( CurrentFieldName, "NAME" ) ) objects_definition.NameAlpha1 = true;
 						}
 					} else {
 						AlphaOrNumeric( Count ) = false;
-						++ObjectDef( NumObjectDefs ).NumNumeric;
-						if ( FieldSet ) NumRangeChecks( ObjectDef( NumObjectDefs ).NumNumeric ).FieldName = CurrentFieldName;
+						++objects_definition.NumNumeric;
+						if ( FieldSet ) NumRangeChecks( objects_definition.NumNumeric ).FieldName = CurrentFieldName;
 					}
 
 				} else {
 					ReadInputLine( idd_stream, CurPos, BlankLine, EndofFile, MinMax, WhichMinMax, MinMaxString, Value, Default, AlphDefaultString, AutoSize, AutoCalculate, RetainCaseFlag, ErrorsFoundFlag );
-					if ( ! AlphaOrNumeric( Count ) ) {
+					if ( AlphaOrNumeric.size() && ! AlphaOrNumeric( Count ) ) {
 						// only record for numeric fields
 						if ( MinMax ) {
-							NumRangeChecks( ObjectDef( NumObjectDefs ).NumNumeric ).MinMaxChk = true;
-							NumRangeChecks( ObjectDef( NumObjectDefs ).NumNumeric ).FieldNumber = Count;
+							NumRangeChecks( objects_definition.NumNumeric ).MinMaxChk = true;
+							NumRangeChecks( objects_definition.NumNumeric ).FieldNumber = Count;
 							if ( WhichMinMax <= 2 ) { //=0 (none/invalid), =1 \min, =2 \min>, =3 \max, =4 \max<
-								NumRangeChecks( ObjectDef( NumObjectDefs ).NumNumeric ).WhichMinMax( 1 ) = WhichMinMax;
-								NumRangeChecks( ObjectDef( NumObjectDefs ).NumNumeric ).MinMaxString( 1 ) = MinMaxString;
-								NumRangeChecks( ObjectDef( NumObjectDefs ).NumNumeric ).MinMaxValue( 1 ) = Value;
+								NumRangeChecks( objects_definition.NumNumeric ).WhichMinMax( 1 ) = WhichMinMax;
+								NumRangeChecks( objects_definition.NumNumeric ).MinMaxString( 1 ) = MinMaxString;
+								NumRangeChecks( objects_definition.NumNumeric ).MinMaxValue( 1 ) = Value;
 							} else {
-								NumRangeChecks( ObjectDef( NumObjectDefs ).NumNumeric ).WhichMinMax( 2 ) = WhichMinMax;
-								NumRangeChecks( ObjectDef( NumObjectDefs ).NumNumeric ).MinMaxString( 2 ) = MinMaxString;
-								NumRangeChecks( ObjectDef( NumObjectDefs ).NumNumeric ).MinMaxValue( 2 ) = Value;
+								NumRangeChecks( objects_definition.NumNumeric ).WhichMinMax( 2 ) = WhichMinMax;
+								NumRangeChecks( objects_definition.NumNumeric ).MinMaxString( 2 ) = MinMaxString;
+								NumRangeChecks( objects_definition.NumNumeric ).MinMaxValue( 2 ) = Value;
 							}
 						} // End Min/Max
 						if ( Default ) {
-							NumRangeChecks( ObjectDef( NumObjectDefs ).NumNumeric ).DefaultChk = true;
-							NumRangeChecks( ObjectDef( NumObjectDefs ).NumNumeric ).Default = Value;
-							if ( AlphDefaultString == "AUTOSIZE" ) NumRangeChecks( ObjectDef( NumObjectDefs ).NumNumeric ).DefAutoSize = true;
-							if ( AlphDefaultString == "AUTOCALCULATE" ) NumRangeChecks( ObjectDef( NumObjectDefs ).NumNumeric ).DefAutoCalculate = true;
+							NumRangeChecks( objects_definition.NumNumeric ).DefaultChk = true;
+							NumRangeChecks( objects_definition.NumNumeric ).Default = Value;
+							if ( AlphDefaultString == "AUTOSIZE" ) NumRangeChecks( objects_definition.NumNumeric ).DefAutoSize = true;
+							if ( AlphDefaultString == "AUTOCALCULATE" ) NumRangeChecks( objects_definition.NumNumeric ).DefAutoCalculate = true;
 						}
 						if ( AutoSize ) {
-							NumRangeChecks( ObjectDef( NumObjectDefs ).NumNumeric ).AutoSizable = true;
-							NumRangeChecks( ObjectDef( NumObjectDefs ).NumNumeric ).AutoSizeValue = Value;
+							NumRangeChecks( objects_definition.NumNumeric ).AutoSizable = true;
+							NumRangeChecks( objects_definition.NumNumeric ).AutoSizeValue = Value;
 						}
 						if ( AutoCalculate ) {
-							NumRangeChecks( ObjectDef( NumObjectDefs ).NumNumeric ).AutoCalculatable = true;
-							NumRangeChecks( ObjectDef( NumObjectDefs ).NumNumeric ).AutoCalculateValue = Value;
+							NumRangeChecks( objects_definition.NumNumeric ).AutoCalculatable = true;
+							NumRangeChecks( objects_definition.NumNumeric ).AutoCalculateValue = Value;
 						}
 					} else { // Alpha Field
 						if ( Default ) {
-							AlphFieldDefaults( ObjectDef( NumObjectDefs ).NumAlpha ) = AlphDefaultString;
+							AlphFieldDefaults( objects_definition.NumAlpha ) = AlphDefaultString;
 						}
 					}
 					if ( ErrorsFoundFlag ) {
 						errFlag = true;
 						ErrorsFoundFlag = false;
 					}
-					if ( RequiredField ) {
+					if ( RequiredFields.size() && RequiredField ) {
 						RequiredFields( Count ) = true;
 						MinimumNumberOfFields = max( Count, MinimumNumberOfFields );
 					}
-					if ( RetainCaseFlag ) {
+					if ( AlphRetainCase.size() && RetainCaseFlag ) {
 						AlphRetainCase( Count ) = true;
 					}
 					continue;
@@ -1053,33 +972,33 @@ namespace InputProcessor {
 			// It's a numeric object as last one...
 			ReadInputLine( idd_stream, CurPos, BlankLine, EndofFile, MinMax, WhichMinMax, MinMaxString, Value, Default, AlphDefaultString, AutoSize, AutoCalculate, RetainCaseFlag, ErrorsFoundFlag );
 			if ( MinMax ) {
-				NumRangeChecks( ObjectDef( NumObjectDefs ).NumNumeric ).MinMaxChk = true;
-				NumRangeChecks( ObjectDef( NumObjectDefs ).NumNumeric ).FieldNumber = Count;
+				NumRangeChecks( objects_definition.NumNumeric ).MinMaxChk = true;
+				NumRangeChecks( objects_definition.NumNumeric ).FieldNumber = Count;
 				if ( WhichMinMax <= 2 ) { //=0 (none/invalid), =1 \min, =2 \min>, =3 \max, =4 \max<
-					NumRangeChecks( ObjectDef( NumObjectDefs ).NumNumeric ).WhichMinMax( 1 ) = WhichMinMax;
-					NumRangeChecks( ObjectDef( NumObjectDefs ).NumNumeric ).MinMaxString( 1 ) = MinMaxString;
-					NumRangeChecks( ObjectDef( NumObjectDefs ).NumNumeric ).MinMaxValue( 1 ) = Value;
+					NumRangeChecks( objects_definition.NumNumeric ).WhichMinMax( 1 ) = WhichMinMax;
+					NumRangeChecks( objects_definition.NumNumeric ).MinMaxString( 1 ) = MinMaxString;
+					NumRangeChecks( objects_definition.NumNumeric ).MinMaxValue( 1 ) = Value;
 				} else {
-					NumRangeChecks( ObjectDef( NumObjectDefs ).NumNumeric ).WhichMinMax( 2 ) = WhichMinMax;
-					NumRangeChecks( ObjectDef( NumObjectDefs ).NumNumeric ).MinMaxString( 2 ) = MinMaxString;
-					NumRangeChecks( ObjectDef( NumObjectDefs ).NumNumeric ).MinMaxValue( 2 ) = Value;
+					NumRangeChecks( objects_definition.NumNumeric ).WhichMinMax( 2 ) = WhichMinMax;
+					NumRangeChecks( objects_definition.NumNumeric ).MinMaxString( 2 ) = MinMaxString;
+					NumRangeChecks( objects_definition.NumNumeric ).MinMaxValue( 2 ) = Value;
 				}
 			}
 			if ( Default && ! AlphaOrNumeric( Count ) ) {
-				NumRangeChecks( ObjectDef( NumObjectDefs ).NumNumeric ).DefaultChk = true;
-				NumRangeChecks( ObjectDef( NumObjectDefs ).NumNumeric ).Default = Value;
-				if ( AlphDefaultString == "AUTOSIZE" ) NumRangeChecks( ObjectDef( NumObjectDefs ).NumNumeric ).DefAutoSize = true;
-				if ( AlphDefaultString == "AUTOCALCULATE" ) NumRangeChecks( ObjectDef( NumObjectDefs ).NumNumeric ).DefAutoCalculate = true;
+				NumRangeChecks( objects_definition.NumNumeric ).DefaultChk = true;
+				NumRangeChecks( objects_definition.NumNumeric ).Default = Value;
+				if ( AlphDefaultString == "AUTOSIZE" ) NumRangeChecks( objects_definition.NumNumeric ).DefAutoSize = true;
+				if ( AlphDefaultString == "AUTOCALCULATE" ) NumRangeChecks( objects_definition.NumNumeric ).DefAutoCalculate = true;
 			} else if ( Default && AlphaOrNumeric( Count ) ) {
-				AlphFieldDefaults( ObjectDef( NumObjectDefs ).NumAlpha ) = AlphDefaultString;
+				AlphFieldDefaults( objects_definition.NumAlpha ) = AlphDefaultString;
 			}
 			if ( AutoSize ) {
-				NumRangeChecks( ObjectDef( NumObjectDefs ).NumNumeric ).AutoSizable = true;
-				NumRangeChecks( ObjectDef( NumObjectDefs ).NumNumeric ).AutoSizeValue = Value;
+				NumRangeChecks( objects_definition.NumNumeric ).AutoSizable = true;
+				NumRangeChecks( objects_definition.NumNumeric ).AutoSizeValue = Value;
 			}
 			if ( AutoCalculate ) {
-				NumRangeChecks( ObjectDef( NumObjectDefs ).NumNumeric ).AutoCalculatable = true;
-				NumRangeChecks( ObjectDef( NumObjectDefs ).NumNumeric ).AutoCalculateValue = Value;
+				NumRangeChecks( objects_definition.NumNumeric ).AutoCalculatable = true;
+				NumRangeChecks( objects_definition.NumNumeric ).AutoCalculateValue = Value;
 			}
 			if ( ErrorsFoundFlag ) {
 				errFlag = true;
@@ -1100,134 +1019,130 @@ namespace InputProcessor {
 			AlphRetainCase( Count ) = true;
 		}
 
-		ObjectDef( NumObjectDefs ).NumParams = Count; // Also the total of ObjectDef(..)%NumAlpha+ObjectDef(..)%NumNumeric
-		ObjectDef( NumObjectDefs ).MinNumFields = MinimumNumberOfFields;
+		objects_definition.NumParams = Count; // Also the total of ObjectDef(..)%NumAlpha+ObjectDef(..)%NumNumeric
+		objects_definition.MinNumFields = MinimumNumberOfFields;
 		if ( ObsoleteObject ) {
 			ObsoleteObjectsRepNames.push_back( ReplacementName );
 			NumObsoleteObjects = ObsoleteObjectsRepNames.size();
-			ObjectDef( NumObjectDefs ).ObsPtr = NumObsoleteObjects;
+			objects_definition.ObsPtr = NumObsoleteObjects;
 		}
 		if ( RequiredObject ) {
-			ObjectDef( NumObjectDefs ).RequiredObject = true;
+			objects_definition.RequiredObject = true;
 		}
 		if ( UniqueObject ) {
-			ObjectDef( NumObjectDefs ).UniqueObject = true;
+			objects_definition.UniqueObject = true;
 		}
 		if ( ExtensibleObject ) {
-			ObjectDef( NumObjectDefs ).ExtensibleObject = true;
-			ObjectDef( NumObjectDefs ).ExtensibleNum = ExtensibleNumFields;
+			objects_definition.ExtensibleObject = true;
+			objects_definition.ExtensibleNum = ExtensibleNumFields;
 		}
 
-		NumAlphaArgsFound += ObjectDef( NumObjectDefs ).NumAlpha;
-		MaxAlphaArgsFound = max( MaxAlphaArgsFound, ObjectDef( NumObjectDefs ).NumAlpha );
-		NumNumericArgsFound += ObjectDef( NumObjectDefs ).NumNumeric;
-		MaxNumericArgsFound = max( MaxNumericArgsFound, ObjectDef( NumObjectDefs ).NumNumeric );
-		ObjectDef( NumObjectDefs ).AlphaOrNumeric.allocate( Count );
-		ObjectDef( NumObjectDefs ).AlphaOrNumeric = AlphaOrNumeric( {1,Count} );
-		ObjectDef( NumObjectDefs ).AlphRetainCase.allocate( Count );
-		ObjectDef( NumObjectDefs ).AlphRetainCase = AlphRetainCase( {1,Count} );
-		PrevCount = Count;
-		ObjectDef( NumObjectDefs ).NumRangeChks.allocate( ObjectDef( NumObjectDefs ).NumNumeric );
-		if ( ObjectDef( NumObjectDefs ).NumNumeric > 0 ) {
-			ObjectDef( NumObjectDefs ).NumRangeChks = NumRangeChecks( {1,ObjectDef( NumObjectDefs ).NumNumeric} );
+		NumAlphaArgsFound += objects_definition.NumAlpha;
+		MaxAlphaArgsFound = max( MaxAlphaArgsFound, objects_definition.NumAlpha );
+		NumNumericArgsFound += objects_definition.NumNumeric;
+		MaxNumericArgsFound = max( MaxNumericArgsFound, objects_definition.NumNumeric );
+		// objects_definition.AlphaOrNumeric.allocate( Count );
+		objects_definition.AlphaOrNumeric = AlphaOrNumeric;
+		// objects_definition.AlphRetainCase.allocate( Count );
+		objects_definition.AlphRetainCase = AlphRetainCase;
+		// PrevCount = Count;
+		// objects_definition.NumRangeChks.allocate( objects_definition.NumNumeric );
+		if ( objects_definition.NumNumeric > 0 ) {
+			objects_definition.NumRangeChks = NumRangeChecks;
 		}
-		PrevSizeNumNumeric = ObjectDef( NumObjectDefs ).NumNumeric; //used to clear only portion of NumRangeChecks array
-		ObjectDef( NumObjectDefs ).AlphFieldChks.allocate( ObjectDef( NumObjectDefs ).NumAlpha );
-		if ( ObjectDef( NumObjectDefs ).NumAlpha > 0 ) {
-			ObjectDef( NumObjectDefs ).AlphFieldChks = AlphFieldChecks( {1,ObjectDef( NumObjectDefs ).NumAlpha} );
+		PrevSizeNumNumeric = objects_definition.NumNumeric; //used to clear only portion of NumRangeChecks array
+		// objects_definition.AlphFieldChks.allocate( objects_definition.NumAlpha );
+		if ( objects_definition.NumAlpha > 0 ) {
+			objects_definition.AlphFieldChks = AlphFieldChecks;
 		}
-		ObjectDef( NumObjectDefs ).AlphFieldDefs.allocate( ObjectDef( NumObjectDefs ).NumAlpha );
-		if ( ObjectDef( NumObjectDefs ).NumAlpha > 0 ) {
-			ObjectDef( NumObjectDefs ).AlphFieldDefs = AlphFieldDefaults( {1,ObjectDef( NumObjectDefs ).NumAlpha} );
+		// objects_definition.AlphFieldDefs.allocate( objects_definition.NumAlpha );
+		if ( objects_definition.NumAlpha > 0 ) {
+			objects_definition.AlphFieldDefs = AlphFieldDefaults;
 		}
-		PrevSizeNumAlpha = ObjectDef( NumObjectDefs ).NumAlpha;
-		ObjectDef( NumObjectDefs ).ReqField.allocate( Count );
-		ObjectDef( NumObjectDefs ).ReqField = RequiredFields( {1,Count} );
-		for ( Count = 1; Count <= ObjectDef( NumObjectDefs ).NumNumeric; ++Count ) {
-			if ( ObjectDef( NumObjectDefs ).NumRangeChks( Count ).MinMaxChk ) {
+		PrevSizeNumAlpha = objects_definition.NumAlpha;
+		// objects_definition.ReqField.allocate( Count );
+		objects_definition.ReqField = RequiredFields;
+		for ( Count = 1; Count <= objects_definition.NumNumeric; ++Count ) {
+			if ( objects_definition.NumRangeChks( Count ).MinMaxChk ) {
 				// Checking MinMax Range (min vs. max and vice versa)
 				MinMaxError = false;
 				// check min against max
-				if ( ObjectDef( NumObjectDefs ).NumRangeChks( Count ).WhichMinMax( 1 ) == 1 ) {
+				if ( objects_definition.NumRangeChks( Count ).WhichMinMax( 1 ) == 1 ) {
 					// min
-					Value = ObjectDef( NumObjectDefs ).NumRangeChks( Count ).MinMaxValue( 1 );
-					if ( ObjectDef( NumObjectDefs ).NumRangeChks( Count ).WhichMinMax( 2 ) == 3 ) {
-						if ( Value > ObjectDef( NumObjectDefs ).NumRangeChks( Count ).MinMaxValue( 2 ) ) MinMaxError = true;
-					} else if ( ObjectDef( NumObjectDefs ).NumRangeChks( Count ).WhichMinMax( 2 ) == 4 ) {
-						if ( Value == ObjectDef( NumObjectDefs ).NumRangeChks( Count ).MinMaxValue( 2 ) ) MinMaxError = true;
+					Value = objects_definition.NumRangeChks( Count ).MinMaxValue( 1 );
+					if ( objects_definition.NumRangeChks( Count ).WhichMinMax( 2 ) == 3 ) {
+						if ( Value > objects_definition.NumRangeChks( Count ).MinMaxValue( 2 ) ) MinMaxError = true;
+					} else if ( objects_definition.NumRangeChks( Count ).WhichMinMax( 2 ) == 4 ) {
+						if ( Value == objects_definition.NumRangeChks( Count ).MinMaxValue( 2 ) ) MinMaxError = true;
 					}
-				} else if ( ObjectDef( NumObjectDefs ).NumRangeChks( Count ).WhichMinMax( 1 ) == 2 ) {
+				} else if ( objects_definition.NumRangeChks( Count ).WhichMinMax( 1 ) == 2 ) {
 					// min>
-					Value = ObjectDef( NumObjectDefs ).NumRangeChks( Count ).MinMaxValue( 1 ) + rTinyValue; // infintesimally bigger than min
-					if ( ObjectDef( NumObjectDefs ).NumRangeChks( Count ).WhichMinMax( 2 ) == 3 ) {
-						if ( Value > ObjectDef( NumObjectDefs ).NumRangeChks( Count ).MinMaxValue( 2 ) ) MinMaxError = true;
-					} else if ( ObjectDef( NumObjectDefs ).NumRangeChks( Count ).WhichMinMax( 2 ) == 4 ) {
-						if ( Value == ObjectDef( NumObjectDefs ).NumRangeChks( Count ).MinMaxValue( 2 ) ) MinMaxError = true;
+					Value = objects_definition.NumRangeChks( Count ).MinMaxValue( 1 ) + rTinyValue; // infintesimally bigger than min
+					if ( objects_definition.NumRangeChks( Count ).WhichMinMax( 2 ) == 3 ) {
+						if ( Value > objects_definition.NumRangeChks( Count ).MinMaxValue( 2 ) ) MinMaxError = true;
+					} else if ( objects_definition.NumRangeChks( Count ).WhichMinMax( 2 ) == 4 ) {
+						if ( Value == objects_definition.NumRangeChks( Count ).MinMaxValue( 2 ) ) MinMaxError = true;
 					}
 				}
 				// check max against min
-				if ( ObjectDef( NumObjectDefs ).NumRangeChks( Count ).WhichMinMax( 2 ) == 3 ) {
+				if ( objects_definition.NumRangeChks( Count ).WhichMinMax( 2 ) == 3 ) {
 					// max
-					Value = ObjectDef( NumObjectDefs ).NumRangeChks( Count ).MinMaxValue( 2 );
+					Value = objects_definition.NumRangeChks( Count ).MinMaxValue( 2 );
 					// Check max value against min
-					if ( ObjectDef( NumObjectDefs ).NumRangeChks( Count ).WhichMinMax( 1 ) == 1 ) {
-						if ( Value < ObjectDef( NumObjectDefs ).NumRangeChks( Count ).MinMaxValue( 1 ) ) MinMaxError = true;
-					} else if ( ObjectDef( NumObjectDefs ).NumRangeChks( Count ).WhichMinMax( 1 ) == 2 ) {
-						if ( Value == ObjectDef( NumObjectDefs ).NumRangeChks( Count ).MinMaxValue( 1 ) ) MinMaxError = true;
+					if ( objects_definition.NumRangeChks( Count ).WhichMinMax( 1 ) == 1 ) {
+						if ( Value < objects_definition.NumRangeChks( Count ).MinMaxValue( 1 ) ) MinMaxError = true;
+					} else if ( objects_definition.NumRangeChks( Count ).WhichMinMax( 1 ) == 2 ) {
+						if ( Value == objects_definition.NumRangeChks( Count ).MinMaxValue( 1 ) ) MinMaxError = true;
 					}
-				} else if ( ObjectDef( NumObjectDefs ).NumRangeChks( Count ).WhichMinMax( 2 ) == 4 ) {
+				} else if ( objects_definition.NumRangeChks( Count ).WhichMinMax( 2 ) == 4 ) {
 					// max<
-					Value = ObjectDef( NumObjectDefs ).NumRangeChks( Count ).MinMaxValue( 2 ) - rTinyValue; // infintesimally bigger than min
-					if ( ObjectDef( NumObjectDefs ).NumRangeChks( Count ).WhichMinMax( 1 ) == 1 ) {
-						if ( Value < ObjectDef( NumObjectDefs ).NumRangeChks( Count ).MinMaxValue( 1 ) ) MinMaxError = true;
-					} else if ( ObjectDef( NumObjectDefs ).NumRangeChks( Count ).WhichMinMax( 1 ) == 2 ) {
-						if ( Value == ObjectDef( NumObjectDefs ).NumRangeChks( Count ).MinMaxValue( 1 ) ) MinMaxError = true;
+					Value = objects_definition.NumRangeChks( Count ).MinMaxValue( 2 ) - rTinyValue; // infintesimally bigger than min
+					if ( objects_definition.NumRangeChks( Count ).WhichMinMax( 1 ) == 1 ) {
+						if ( Value < objects_definition.NumRangeChks( Count ).MinMaxValue( 1 ) ) MinMaxError = true;
+					} else if ( objects_definition.NumRangeChks( Count ).WhichMinMax( 1 ) == 2 ) {
+						if ( Value == objects_definition.NumRangeChks( Count ).MinMaxValue( 1 ) ) MinMaxError = true;
 					}
 				}
 				// check if error condition
 				if ( MinMaxError ) {
 					//  Error stated min is not in range with stated max
-					MinMaxString = IPTrimSigDigits( ObjectDef( NumObjectDefs ).NumRangeChks( Count ).FieldNumber );
-					ShowSevereError( "IP: IDD: Field #" + MinMaxString + " conflict in Min/Max specifications/values, in class=" + ObjectDef( NumObjectDefs ).Name, EchoInputFile );
+					MinMaxString = IPTrimSigDigits( objects_definition.NumRangeChks( Count ).FieldNumber );
+					ShowSevereError( "IP: IDD: Field #" + MinMaxString + " conflict in Min/Max specifications/values, in class=" + objects_definition.Name, EchoInputFile );
 					errFlag = true;
 				}
 			}
-			if ( ObjectDef( NumObjectDefs ).NumRangeChks( Count ).DefaultChk ) {
+			if ( objects_definition.NumRangeChks( Count ).DefaultChk ) {
 				// Check Default against MinMaxRange
 				//  Don't check when default is autosize...
-				if ( ObjectDef( NumObjectDefs ).NumRangeChks( Count ).AutoSizable && ObjectDef( NumObjectDefs ).NumRangeChks( Count ).DefAutoSize ) continue;
-				if ( ObjectDef( NumObjectDefs ).NumRangeChks( Count ).AutoCalculatable && ObjectDef( NumObjectDefs ).NumRangeChks( Count ).DefAutoCalculate ) continue;
+				if ( objects_definition.NumRangeChks( Count ).AutoSizable && objects_definition.NumRangeChks( Count ).DefAutoSize ) continue;
+				if ( objects_definition.NumRangeChks( Count ).AutoCalculatable && objects_definition.NumRangeChks( Count ).DefAutoCalculate ) continue;
 				MinMaxError = false;
-				Value = ObjectDef( NumObjectDefs ).NumRangeChks( Count ).Default;
-				if ( ObjectDef( NumObjectDefs ).NumRangeChks( Count ).WhichMinMax( 1 ) == 1 ) {
-					if ( Value < ObjectDef( NumObjectDefs ).NumRangeChks( Count ).MinMaxValue( 1 ) ) MinMaxError = true;
-				} else if ( ObjectDef( NumObjectDefs ).NumRangeChks( Count ).WhichMinMax( 1 ) == 2 ) {
-					if ( Value <= ObjectDef( NumObjectDefs ).NumRangeChks( Count ).MinMaxValue( 1 ) ) MinMaxError = true;
+				Value = objects_definition.NumRangeChks( Count ).Default;
+				if ( objects_definition.NumRangeChks( Count ).WhichMinMax( 1 ) == 1 ) {
+					if ( Value < objects_definition.NumRangeChks( Count ).MinMaxValue( 1 ) ) MinMaxError = true;
+				} else if ( objects_definition.NumRangeChks( Count ).WhichMinMax( 1 ) == 2 ) {
+					if ( Value <= objects_definition.NumRangeChks( Count ).MinMaxValue( 1 ) ) MinMaxError = true;
 				}
-				if ( ObjectDef( NumObjectDefs ).NumRangeChks( Count ).WhichMinMax( 2 ) == 3 ) {
-					if ( Value > ObjectDef( NumObjectDefs ).NumRangeChks( Count ).MinMaxValue( 2 ) ) MinMaxError = true;
-				} else if ( ObjectDef( NumObjectDefs ).NumRangeChks( Count ).WhichMinMax( 2 ) == 4 ) {
-					if ( Value >= ObjectDef( NumObjectDefs ).NumRangeChks( Count ).MinMaxValue( 2 ) ) MinMaxError = true;
+				if ( objects_definition.NumRangeChks( Count ).WhichMinMax( 2 ) == 3 ) {
+					if ( Value > objects_definition.NumRangeChks( Count ).MinMaxValue( 2 ) ) MinMaxError = true;
+				} else if ( objects_definition.NumRangeChks( Count ).WhichMinMax( 2 ) == 4 ) {
+					if ( Value >= objects_definition.NumRangeChks( Count ).MinMaxValue( 2 ) ) MinMaxError = true;
 				}
 				if ( MinMaxError ) {
 					//  Error stated default is not in min/max range
-					MinMaxString = IPTrimSigDigits( ObjectDef( NumObjectDefs ).NumRangeChks( Count ).FieldNumber );
-					ShowSevereError( "IP: IDD: Field #" + MinMaxString + " default is invalid for Min/Max values, in class=" + ObjectDef( NumObjectDefs ).Name, EchoInputFile );
+					MinMaxString = IPTrimSigDigits( objects_definition.NumRangeChks( Count ).FieldNumber );
+					ShowSevereError( "IP: IDD: Field #" + MinMaxString + " default is invalid for Min/Max values, in class=" + objects_definition.Name, EchoInputFile );
 					errFlag = true;
 				}
 			}
 		}
 
 		if ( errFlag ) {
-			ShowContinueError( "IP: Errors occured in ObjectDefinition for Class=" + ObjectDef( NumObjectDefs ).Name + ", Object not available for IDF processing.", EchoInputFile );
-			ObjectDef( NumObjectDefs ).AlphaOrNumeric.deallocate();
-			ObjectDef( NumObjectDefs ).NumRangeChks.deallocate();
-			ObjectDef( NumObjectDefs ).AlphFieldChks.deallocate();
-			ObjectDef( NumObjectDefs ).AlphFieldDefs.deallocate();
-			ObjectDef( NumObjectDefs ).ReqField.deallocate();
-			ObjectDef( NumObjectDefs ).AlphRetainCase.deallocate();
-			--NumObjectDefs;
+			ShowContinueError( "IP: Errors occured in ObjectDefinition for Class=" + objects_definition.Name + ", Object not available for IDF processing.", EchoInputFile );
 			ErrorsFound = true;
+		} else {
+			ObjectDef.push_back( objects_definition );
+			NumObjectDefs = ObjectDef.size();
 		}
 
 	}
@@ -1915,19 +1830,6 @@ namespace InputProcessor {
 			MaxNumericIDFArgsFound = max( MaxNumericIDFArgsFound, LineItem.NumNumbers );
 			MaxAlphaIDFDefArgsFound = max( MaxAlphaIDFDefArgsFound, ObjectDef( Found ).NumAlpha );
 			MaxNumericIDFDefArgsFound = max( MaxNumericIDFDefArgsFound, ObjectDef( Found ).NumNumeric );
-			// IDFRecords( NumIDFRecords ).Name = LineItem.Name;
-			// IDFRecords( NumIDFRecords ).NumNumbers = LineItem.NumNumbers;
-			// IDFRecords( NumIDFRecords ).NumAlphas = LineItem.NumAlphas;
-			// IDFRecords( NumIDFRecords ).ObjectDefPtr = LineItem.ObjectDefPtr;
-			// IDFRecords( NumIDFRecords ).Alphas.allocate( LineItem.NumAlphas );
-			// IDFRecords( NumIDFRecords ).Alphas = LineItem.Alphas( {1,LineItem.NumAlphas} );
-			// IDFRecords( NumIDFRecords ).AlphBlank.allocate( LineItem.NumAlphas );
-			// IDFRecords( NumIDFRecords ).AlphBlank = LineItem.AlphBlank( {1,LineItem.NumAlphas} );
-			// IDFRecords( NumIDFRecords ).Numbers.allocate( LineItem.NumNumbers );
-			// IDFRecords( NumIDFRecords ).Numbers = LineItem.Numbers( {1,LineItem.NumNumbers} );
-			// IDFRecords( NumIDFRecords ).NumBlank.allocate( LineItem.NumNumbers );
-			// IDFRecords( NumIDFRecords ).NumBlank = LineItem.NumBlank( {1,LineItem.NumNumbers} );
-
 			LineDefinition line_definition;
 			line_definition.Name = LineItem.Name;
 			line_definition.NumNumbers = LineItem.NumNumbers;

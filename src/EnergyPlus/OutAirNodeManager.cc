@@ -221,11 +221,10 @@ namespace OutAirNodeManager {
 		int OutAirInletNodeListNum; // OUTSIDE AIR INLET NODE LIST index
 		int OutsideAirNodeSingleNum; // OUTSIDE AIR NODE index
 		int AlphaNum; // index into Alphas
-		int ListSize; // size of OutAirInletNodeList
+		int ListSize( 0 ); // size of OutAirInletNodeList
 		//  LOGICAL :: AlreadyInList ! flag used for checking for duplicate input
 		bool ErrorsFound;
 		bool ErrInList;
-		int CurSize;
 		int NextFluidStreamNum; // Fluid stream index (all outside air inlet nodes need a unique fluid stream number)
 		Array1D_int TmpNums;
 		std::string CurrentModuleObject; // Object type for getting and error messages
@@ -244,10 +243,6 @@ namespace OutAirNodeManager {
 		NumOutsideAirNodes = 0;
 		ErrorsFound = false;
 		NextFluidStreamNum = 1;
-
-		ListSize = 0;
-		CurSize = 100;
-		TmpNums.dimension( CurSize, 0 );
 
 		GetObjectDefMaxArgs( "NodeList", NumParams, NumAlphas, NumNums );
 		NodeNums.dimension( NumParams, 0 );
@@ -286,11 +281,8 @@ namespace OutAirNodeManager {
 					for ( NodeNum = 1; NodeNum <= NumNodes; ++NodeNum ) {
 						// Duplicates here are not a problem, just ignore
 						if ( ! any_eq( TmpNums, NodeNums( NodeNum ) ) ) {
-							++ListSize;
-							if ( ListSize > CurSize ) {
-								TmpNums.redimension( CurSize += 100, 0 );
-							}
-							TmpNums( ListSize ) = NodeNums( NodeNum );
+							TmpNums.push_back( NodeNums( NodeNum ) );
+							ListSize = TmpNums.size();
 						}
 					}
 				}
@@ -326,11 +318,8 @@ namespace OutAirNodeManager {
 				}
 
 				if ( ! any_eq( TmpNums, NodeNums( 1 ) ) ) {
-					++ListSize;
-					if ( ListSize > CurSize ) {
-						TmpNums.redimension( CurSize += 100, 0 );
-					}
-					TmpNums( ListSize ) = NodeNums( 1 );
+					TmpNums.push_back( NodeNums( 1 ) );
+					ListSize = TmpNums.size();
 				} else { // Duplicates are a problem
 					ShowSevereError( CurrentModuleObject + ", duplicate " + cAlphaFields( 1 ) + " = " + Alphas( 1 ) );
 					ShowContinueError( "Duplicate " + cAlphaFields( 1 ) + " might be found in an OutdoorAir:NodeList." );

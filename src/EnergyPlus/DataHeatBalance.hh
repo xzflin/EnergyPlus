@@ -2334,7 +2334,6 @@ namespace DataHeatBalance {
 		Real64 QBBCON; // ENERGY CONVECTED FROM BASEBOARD HEATING
 		Real64 QBBRAD; // ENERGY RADIATED FROM BASEBOARD HEATING
 		int NumberOfDevices;
-		int MaxNumberOfDevices;
 		Array1D< GenericComponentZoneIntGainStruct > Device;
 
 		// Default Constructor
@@ -2372,8 +2371,7 @@ namespace DataHeatBalance {
 			QSELAT( 0.0 ),
 			QBBCON( 0.0 ),
 			QBBRAD( 0.0 ),
-			NumberOfDevices( 0 ),
-			MaxNumberOfDevices( 0 )
+			NumberOfDevices( 0 )
 		{}
 
 	};

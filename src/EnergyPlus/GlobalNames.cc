@@ -174,16 +174,12 @@ namespace GlobalNames {
 			ShowContinueError( "...Current entry is Chiller Type=\"" + TypeToVerify + "\"." );
 			ErrorFound = true;
 		} else {
-			if ( NumChillers == 0 ) {
-				CurMaxChillers = 4;
-				ChillerNames.allocate( CurMaxChillers );
-			} else if ( NumChillers == CurMaxChillers ) {
-				CurMaxChillers += 4;
-				ChillerNames.redimension( CurMaxChillers );
-			}
-			++NumChillers;
-			ChillerNames( NumChillers ).CompType = MakeUPPERCase( TypeToVerify );
-			ChillerNames( NumChillers ).CompName = NameToVerify;
+
+			ComponentNameData component_name_data;
+			component_name_data.CompType = MakeUPPERCase( TypeToVerify );
+			component_name_data.CompName = NameToVerify;
+			ChillerNames.push_back( component_name_data );
+			NumChillers = ChillerNames.size();
 		}
 	}
 
@@ -241,16 +237,11 @@ namespace GlobalNames {
 			ShowContinueError( "...Current entry is Baseboard Type=\"" + TypeToVerify + "\"." );
 			ErrorFound = true;
 		} else {
-			if ( NumBaseboards == 0 ) {
-				CurMaxBaseboards = 4;
-				BaseboardNames.allocate( CurMaxBaseboards );
-			} else if ( NumBaseboards == CurMaxBaseboards ) {
-				CurMaxBaseboards += 4;
-				BaseboardNames.redimension( CurMaxBaseboards );
-			}
-			++NumBaseboards;
-			BaseboardNames( NumBaseboards ).CompType = TypeToVerify;
-			BaseboardNames( NumBaseboards ).CompName = NameToVerify;
+			ComponentNameData component_name_data;
+			component_name_data.CompType = TypeToVerify;
+			component_name_data.CompName = NameToVerify;
+			BaseboardNames.push_back( component_name_data );
+			NumBaseboards = BaseboardNames.size();
 		}
 
 	}
@@ -309,16 +300,11 @@ namespace GlobalNames {
 			ShowContinueError( "...Current entry is Boiler Type=\"" + TypeToVerify + "\"." );
 			ErrorFound = true;
 		} else {
-			if ( NumBoilers == 0 ) {
-				CurMaxBoilers = 4;
-				BoilerNames.allocate( CurMaxBoilers );
-			} else if ( NumBoilers == CurMaxBoilers ) {
-				CurMaxBoilers += 4;
-				BoilerNames.redimension( CurMaxBoilers );
-			}
-			++NumBoilers;
-			BoilerNames( NumBoilers ).CompType = TypeToVerify;
-			BoilerNames( NumBoilers ).CompName = NameToVerify;
+			ComponentNameData component_name_data;
+			component_name_data.CompType = TypeToVerify;
+			component_name_data.CompName = NameToVerify;
+			BoilerNames.push_back( component_name_data );
+			NumBoilers = BoilerNames.size();
 		}
 
 	}
@@ -377,16 +363,11 @@ namespace GlobalNames {
 			ShowContinueError( "...Current entry is Coil Type=\"" + TypeToVerify + "\"." );
 			ErrorFound = true;
 		} else {
-			if ( NumCoils == 0 ) {
-				CurMaxCoils = 4;
-				CoilNames.allocate( CurMaxCoils );
-			} else if ( NumCoils == CurMaxCoils ) {
-				CurMaxCoils += 4;
-				CoilNames.redimension( CurMaxCoils );
-			}
-			++NumCoils;
-			CoilNames( NumCoils ).CompType = MakeUPPERCase( TypeToVerify );
-			CoilNames( NumCoils ).CompName = NameToVerify;
+			ComponentNameData component_name_data;
+			component_name_data.CompType = MakeUPPERCase( TypeToVerify );
+			component_name_data.CompName = NameToVerify;
+			CoilNames.push_back( component_name_data );
+			NumCoils = CoilNames.size();
 		}
 
 	}
@@ -411,10 +392,10 @@ namespace GlobalNames {
 			ShowContinueError( "...Current entry is Air Distribution Unit Type=\"" + TypeToVerify + "\"." );
 			ErrorFound = true;
 		} else {
-			++numAirDistUnits;
 			aDUData.CompType = MakeUPPERCase( TypeToVerify );
 			aDUData.CompName = NameToVerify;
 			aDUNames.push_back( aDUData );
+			numAirDistUnits = aDUNames.size();
 		}
 
 	}

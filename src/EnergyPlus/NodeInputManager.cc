@@ -714,7 +714,7 @@ namespace NodeInputManager {
 		// na
 
 		// SUBROUTINE LOCAL VARIABLE DECLARATIONS:
-		static int NumNode( 0 ); // Loop Variable
+		int NumNode( 0 ); // Loop Variable
 		static std::string cNodeFluidType;
 
 		if ( NodeFluidType != NodeType_Air && NodeFluidType != NodeType_Water && NodeFluidType != NodeType_Electric && NodeFluidType != NodeType_Steam && NodeFluidType != NodeType_Unknown ) {
@@ -725,7 +725,6 @@ namespace NodeInputManager {
 			ShowFatalError( "AssignNodeNumber: Preceding issue causes termination." );
 		}
 
-		NumNode = 0;
 		if ( NumOfUniqueNodeNames > 0 ) {
 			NumNode = FindItemInList( Name, NodeID( {1,NumOfUniqueNodeNames} ), NumOfUniqueNodeNames );
 			if ( NumNode > 0 ) {
@@ -744,20 +743,12 @@ namespace NodeInputManager {
 			} else {
 				++NumOfUniqueNodeNames;
 				NumOfNodes = NumOfUniqueNodeNames;
-
-				Node.redimension( NumOfNodes );
-				NodeID.redimension( {0,NumOfNodes} );
-				NodeRef.redimension( NumOfNodes );
-				MarkedNode.redimension( NumOfNodes );
-				// Set new item in Node
-				Node( NumOfNodes ).FluidType = NodeFluidType;
-				NodeRef( NumOfNodes ) = 0;
-				NodeID( NumOfUniqueNodeNames ) = Name;
-				// NodeData node_data;
-				// node_data.FluidType = NodeFluidType;
-				// Node.push_back( node_data );
-				// NodeRef.emplace_back( 0 );
-				// NodeID.push_back( Name );
+				NodeData node_data;
+				node_data.FluidType = NodeFluidType;
+				Node.push_back( node_data );
+				NodeRef.emplace_back( 0 );
+				NodeID.push_back( Name );
+				MarkedNode.emplace_back();
 
 				AssignNodeNumber = NumOfUniqueNodeNames;
 			}
@@ -1004,11 +995,8 @@ namespace NodeInputManager {
 					//          CALL ShowContinueError('Context='//TRIM(CurCheckContextName))
 					ErrorsFound = true;
 				} else {
-					++NumCheckNodes;
-					if ( NumCheckNodes > MaxCheckNodes ) {
-						UniqueNodeNames.redimension( MaxCheckNodes += 100 );
-					}
-					UniqueNodeNames( NumCheckNodes ) = CheckName;
+					UniqueNodeNames.push_back( CheckName );
+					NumCheckNodes = UniqueNodeNames.size();
 				}
 			}
 
@@ -1026,11 +1014,8 @@ namespace NodeInputManager {
 					//          CALL ShowContinueError('Context='//TRIM(CurCheckContextName))
 					ErrorsFound = true;
 				} else {
-					++NumCheckNodes;
-					if ( NumCheckNodes > MaxCheckNodes ) {
-						UniqueNodeNames.redimension( MaxCheckNodes += 100 );
-					}
-					UniqueNodeNames( NumCheckNodes ) = NodeID( CheckNumber );
+					UniqueNodeNames.push_back( NodeID( CheckNumber ) );
+					NumCheckNodes = UniqueNodeNames.size();
 				}
 			}
 

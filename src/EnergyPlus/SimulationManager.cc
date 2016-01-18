@@ -1393,11 +1393,8 @@ namespace SimulationManager {
 
 		// Using/Aliasing
 		using namespace DataOutputs;
-		using OutputProcessor::MaxRVariable;
-		using OutputProcessor::NumOfRVariable_Setup;
 		using OutputProcessor::NumOfRVariable_Sum;
 		using OutputProcessor::NumOfRVariable_Meter;
-		using OutputProcessor::MaxIVariable;
 		using OutputProcessor::NumOfIVariable_Setup;
 		using OutputProcessor::NumOfIVariable_Sum;
 		using OutputProcessor::NumOfRVariable;
@@ -1443,7 +1440,6 @@ namespace SimulationManager {
 
 		EchoInputFile = FindUnitNumber( DataStringGlobals::outputAuditFileName );
 		// Record some items on the audit file
-		gio::write( EchoInputFile, fmtLD ) << "NumOfRVariable=" << NumOfRVariable_Setup;
 		gio::write( EchoInputFile, fmtLD ) << "NumOfRVariable(Total)=" << NumTotalRVariable;
 		gio::write( EchoInputFile, fmtLD ) << "NumOfRVariable(Actual)=" << NumOfRVariable;
 		gio::write( EchoInputFile, fmtLD ) << "NumOfRVariable(Summed)=" << NumOfRVariable_Sum;
@@ -1452,8 +1448,6 @@ namespace SimulationManager {
 		gio::write( EchoInputFile, fmtLD ) << "NumOfIVariable(Total)=" << NumTotalIVariable;
 		gio::write( EchoInputFile, fmtLD ) << "NumOfIVariable(Actual)=" << NumOfIVariable;
 		gio::write( EchoInputFile, fmtLD ) << "NumOfIVariable(Summed)=" << NumOfIVariable_Sum;
-		gio::write( EchoInputFile, fmtLD ) << "MaxRVariable=" << MaxRVariable;
-		gio::write( EchoInputFile, fmtLD ) << "MaxIVariable=" << MaxIVariable;
 		gio::write( EchoInputFile, fmtLD ) << "NumEnergyMeters=" << NumEnergyMeters;
 		gio::write( EchoInputFile, fmtLD ) << "NumVarMeterArrays=" << NumVarMeterArrays;
 		gio::write( EchoInputFile, fmtLD ) << "maxNumberOfFigures=" << maxNumberOfFigures;

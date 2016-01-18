@@ -652,9 +652,9 @@ namespace EMSManager {
 		int InternVarNum; // do loop counter for internal variables used (outer)
 		int InternalVarAvailNum; // do loop counter for internal variables available (inner)
 		int Loop; // do loop counter
-		static int MaxNumAlphas( 0 ); // argument for call to GetObjectDefMaxArgs
-		static int MaxNumNumbers( 0 ); // argument for call to GetObjectDefMaxArgs
-		static int TotalArgs( 0 ); // argument for call to GetObjectDefMaxArgs
+		int MaxNumAlphas( 0 ); // argument for call to GetObjectDefMaxArgs
+		int MaxNumNumbers( 0 ); // argument for call to GetObjectDefMaxArgs
+		int TotalArgs( 0 ); // argument for call to GetObjectDefMaxArgs
 		bool errFlag;
 
 		// FLOW:
@@ -1308,9 +1308,8 @@ namespace EMSManager {
 		// note that schedules are not getting VarType set right...
 
 		if ( NumKeys > 0 ) {
-			KeyName.allocate( NumKeys );
-			KeyIndex.allocate( NumKeys );
 			GetVariableKeys( VarName, VarType, KeyName, KeyIndex );
+			assert( static_cast<unsigned long>( NumKeys ) == KeyIndex.size() );
 
 			if ( KeyName( 1 ) == "ENVIRONMENT" ) {
 				VarIndex = KeyIndex( 1 );
@@ -1323,9 +1322,6 @@ namespace EMSManager {
 				}
 				if ( Found ) VarIndex = KeyIndex( KeyNum );
 			}
-
-			KeyName.deallocate();
-			KeyIndex.deallocate();
 		}
 
 	}

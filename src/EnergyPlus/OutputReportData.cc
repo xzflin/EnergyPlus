@@ -97,11 +97,10 @@ namespace EnergyPlus {
 		// this hides the Objexx arrays and returns regular vectors
 		Array1D_string tempNamesOfKeys;
 		Array1D_int tempIndexesForKeyVar;
-		tempNamesOfKeys.allocate( keyCount );
-		tempIndexesForKeyVar.allocate( keyCount );
 		GetVariableKeys( m_variMeter, typeVar, tempNamesOfKeys, tempIndexesForKeyVar ); //call outputprocessor routine with member variable
 		namesOfKeys.clear();
 		indexesForKeyVar.clear();
+		keyCount = tempIndexesForKeyVar.size();
 		for ( int iKey = 1; iKey <= keyCount; ++iKey ) {
 			namesOfKeys.push_back( tempNamesOfKeys( iKey ) );
 			indexesForKeyVar.push_back( tempIndexesForKeyVar( iKey ) );
@@ -111,5 +110,3 @@ namespace EnergyPlus {
 
 
 } // EnergyPlus
-
-

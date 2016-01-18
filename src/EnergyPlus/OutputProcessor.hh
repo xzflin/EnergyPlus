@@ -149,17 +149,14 @@ namespace OutputProcessor {
 	extern int CurrentReportNumber;
 	extern int NumVariablesForOutput;
 	extern int MaxVariablesForOutput;
-	extern int NumOfRVariable_Setup;
 	extern int NumTotalRVariable;
 	extern int NumOfRVariable_Sum;
 	extern int NumOfRVariable_Meter;
 	extern int NumOfRVariable;
-	extern int MaxRVariable;
 	extern int NumOfIVariable_Setup;
 	extern int NumTotalIVariable;
 	extern int NumOfIVariable_Sum;
 	extern int NumOfIVariable;
-	extern int MaxIVariable;
 	extern bool OutputInitialized;
 	extern int ProduceReportVDD;
 	extern int OutputFileMeterDetails; // Unit number for Meter Details file (output)
@@ -196,10 +193,6 @@ namespace OutputProcessor {
 
 	extern int MaxNumSubcategories;
 	extern bool isFinalYear;
-
-	// All routines should be listed here whether private or not
-	//PUBLIC  ReallocateTVar
-	//PUBLIC  SetReportNow
 
 	// Types
 
@@ -665,31 +658,6 @@ namespace OutputProcessor {
 		int const ReportFreq // Reporting Frequency
 	);
 
-	inline
-	void
-	ReallocateIntegerArray(
-		Array1D_int & Array,
-		int & ArrayMax, // Current and resultant dimension for Array
-		int const ArrayInc // increment for redimension
-	)
-	{
-		Array.redimension( ArrayMax += ArrayInc, 0 );
-	}
-
-	inline
-	void
-	ReallocateRVar()
-	{
-		RVariableTypes.redimension( MaxRVariable += RVarAllocInc );
-	}
-
-	inline
-	void
-	ReallocateIVar()
-	{
-		IVariableTypes.redimension( MaxIVariable += IVarAllocInc );
-	}
-
 	int
 	ValidateIndexType(
 		std::string const & IndexTypeKey, // Index type (Zone, HVAC) for variables
@@ -1127,8 +1095,8 @@ void
 GetVariableKeys(
 	std::string const & varName, // Standard variable name
 	int const varType, // 1=integer, 2=real, 3=meter
-	Array1S_string keyNames, // Specific key name
-	Array1S_int keyVarIndexes // Array index for
+	Array1D_string & keyNames, // Specific key name
+	Array1D_int & keyVarIndexes // Array index for
 );
 
 bool

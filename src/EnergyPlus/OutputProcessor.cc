@@ -213,17 +213,14 @@ namespace OutputProcessor {
 	int CurrentReportNumber( 0 );
 	int NumVariablesForOutput( 0 );
 	int MaxVariablesForOutput( 0 );
-	int NumOfRVariable_Setup( 0 );
 	int NumTotalRVariable( 0 );
 	int NumOfRVariable_Sum( 0 );
 	int NumOfRVariable_Meter( 0 );
 	int NumOfRVariable( 0 );
-	int MaxRVariable( 0 );
 	int NumOfIVariable_Setup( 0 );
 	int NumTotalIVariable( 0 );
 	int NumOfIVariable_Sum( 0 );
 	int NumOfIVariable( 0 );
-	int MaxIVariable( 0 );
 	bool OutputInitialized( false );
 	int ProduceReportVDD( ReportVDD_No );
 	int OutputFileMeterDetails( 0 ); // Unit number for Meter Details file (output)
@@ -273,11 +270,11 @@ namespace OutputProcessor {
 		Real64 LEndMin( -1.0 ); // Helps set minutes for timestamp output
 		bool GetMeterIndexFirstCall( true ); //trigger setup in GetMeterIndex
 		bool InitFlag( true );
+		Array1D_int keyVarIndexes; // Array index for specific key name
+		Array1D_string varNames; // stored variable names
+		Array1D_int ivarNames; // pointers for sorted information
+		int numVarNames( 0 ); // number of variable names
 	}
-
-	// All routines should be listed here whether private or not
-	//PUBLIC  ReallocateTVar
-	//PUBLIC  SetReportNow
 
 	// Object Data
 	Array1D< TimeSteps > TimeValue( 2 ); // Pointers to the actual TimeStep variables
@@ -329,17 +326,14 @@ namespace OutputProcessor {
 		CurrentReportNumber = 0;
 		NumVariablesForOutput = 0;
 		MaxVariablesForOutput = 0;
-		NumOfRVariable_Setup = 0;
 		NumTotalRVariable = 0;
 		NumOfRVariable_Sum = 0;
 		NumOfRVariable_Meter = 0;
 		NumOfRVariable = 0;
-		MaxRVariable = 0;
 		NumOfIVariable_Setup = 0;
 		NumTotalIVariable = 0;
 		NumOfIVariable_Sum = 0;
 		NumOfIVariable = 0;
-		MaxIVariable = 0;
 		OutputInitialized = false;
 		ProduceReportVDD = ReportVDD_No;
 		OutputFileMeterDetails = 0;
@@ -376,6 +370,10 @@ namespace OutputProcessor {
 		LEndMin = -1.0;
 		GetMeterIndexFirstCall = true ;
 		InitFlag = true;
+		keyVarIndexes.deallocate();
+		varNames.deallocate();
+		ivarNames.deallocate();
+		int numVarNames = 0;
 		TimeValue.deallocate();
 		RVariableTypes.deallocate();
 		IVariableTypes.deallocate();
@@ -426,13 +424,11 @@ namespace OutputProcessor {
 
 		// SUBROUTINE LOCAL VARIABLE DECLARATIONS:
 
-		RVariableTypes.allocate( RVarAllocInc );
+		// RVariableTypes.allocate( RVarAllocInc );
 		RVar.allocate();
-		MaxRVariable = RVarAllocInc;
 
-		IVariableTypes.allocate( IVarAllocInc );
+		// IVariableTypes.allocate( IVarAllocInc );
 		IVar.allocate();
-		MaxIVariable = IVarAllocInc;
 
 		// First index is the frequency designation (-1 = each call, etc)
 		// Second index is the variable type (1=Average, 2=Sum)
@@ -450,9 +446,9 @@ namespace OutputProcessor {
 		FreqNotice( 2, 3 ) = " !Monthly  [Value,Min,Day,Hour,Minute,Max,Day,Hour,Minute]";
 		FreqNotice( 2, 4 ) = " !RunPeriod [Value,Min,Month,Day,Hour,Minute,Max,Month,Day,Hour,Minute]";
 
-		ReportList.allocate( 500 );
-		NumReportList = 500;
-		ReportList = 0;
+		// ReportList.allocate( 500 );
+		// NumReportList = 500;
+		// ReportList = 0;
 		NumExtraVars = 0;
 
 		// Initialize end use category names - the indices must match up with endUseNames in OutputReportTabular
@@ -624,8 +620,10 @@ namespace OutputProcessor {
 			// Do a quick check
 			Item = FindItem( VarName, ReqRepVars, &ReqReportVariables::VarName );
 
-			NumExtraVars = 0;
-			ReportList = 0;
+			// NumExtraVars = 0;
+			// ReportList = 0;
+			ReportList.deallocate();
+			NumExtraVars = ReportList.size();
 			MinLook = 999999999;
 			MaxLook = -999999999;
 
@@ -723,11 +721,8 @@ namespace OutputProcessor {
 			}
 
 			if ( ! Dup ) {
-				++NumExtraVars;
-				if ( NumExtraVars == NumReportList ) {
-					ReportList.redimension( NumReportList += 100, 0 );
-				}
-				ReportList( NumExtraVars ) = Loop;
+				ReportList.emplace_back( Loop );
+				NumExtraVars = ReportList.size();
 			}
 
 		}
@@ -800,11 +795,8 @@ namespace OutputProcessor {
 			}
 
 			if ( ! Dup ) {
-				++NumExtraVars;
-				if ( NumExtraVars == NumReportList ) {
-					ReportList.redimension( NumReportList += 100, 0 );
-				}
-				ReportList( NumExtraVars ) = Loop;
+				ReportList.emplace_back( Loop );
+				NumExtraVars = ReportList.size();
 			}
 
 		}
@@ -1683,10 +1675,10 @@ namespace OutputProcessor {
 				continue;
 			}
 			if ( allocated( VarsOnCustomMeter ) ) VarsOnCustomMeter.deallocate();
-			VarsOnCustomMeter.allocate( 1000 );
-			VarsOnCustomMeter = 0;
-			MaxVarsOnCustomMeter = 1000;
-			NumVarsOnCustomMeter = 0;
+			// VarsOnCustomMeter.allocate( 1000 );
+			// VarsOnCustomMeter = 0;
+			// MaxVarsOnCustomMeter = 1000;
+			// NumVarsOnCustomMeter = 0;
 			for ( fldIndex = 3; fldIndex <= NumAlpha; fldIndex += 2 ) {
 				if ( cAlphaArgs( fldIndex ) == "*" || lAlphaFieldBlanks( fldIndex ) ) {
 					KeyIsStar = true;
@@ -1736,17 +1728,13 @@ namespace OutputProcessor {
 				}
 				if ( ( TypeVar == VarType_Real || TypeVar == VarType_Integer ) && AvgSumVar == SummedVar ) {
 					Tagged = true;
-					NamesOfKeys.allocate( KeyCount );
-					IndexesForKeyVar.allocate( KeyCount );
 					GetVariableKeys( cAlphaArgs( fldIndex + 1 ), TypeVar, NamesOfKeys, IndexesForKeyVar );
+					KeyCount = IndexesForKeyVar.size();
 					iOnMeter = 0;
 					if ( KeyIsStar ) {
 						for ( iKey = 1; iKey <= KeyCount; ++iKey ) {
-							++NumVarsOnCustomMeter;
-							if ( NumVarsOnCustomMeter > MaxVarsOnCustomMeter ) {
-								VarsOnCustomMeter.redimension( MaxVarsOnCustomMeter += 100, 0 );
-							}
-							VarsOnCustomMeter( NumVarsOnCustomMeter ) = IndexesForKeyVar( iKey );
+							VarsOnCustomMeter.push_back( IndexesForKeyVar( iKey ) );
+							NumVarsOnCustomMeter = VarsOnCustomMeter.size();
 							iOnMeter = 1;
 						}
 						if ( iOnMeter == 0 ) {
@@ -1756,11 +1744,8 @@ namespace OutputProcessor {
 					} else { // Key is not "*"
 						for ( iKey = 1; iKey <= KeyCount; ++iKey ) {
 							if ( NamesOfKeys( iKey ) != cAlphaArgs( fldIndex ) ) continue;
-							++NumVarsOnCustomMeter;
-							if ( NumVarsOnCustomMeter > MaxVarsOnCustomMeter ) {
-								VarsOnCustomMeter.redimension( MaxVarsOnCustomMeter += 100, 0 );
-							}
-							VarsOnCustomMeter( NumVarsOnCustomMeter ) = IndexesForKeyVar( iKey );
+							VarsOnCustomMeter.push_back( IndexesForKeyVar( iKey ) );
+							NumVarsOnCustomMeter = VarsOnCustomMeter.size();
 							iOnMeter = 1;
 						}
 						if ( iOnMeter == 0 ) {
@@ -1773,20 +1758,16 @@ namespace OutputProcessor {
 				}
 				if ( TypeVar == VarType_Meter && AvgSumVar == SummedVar ) {
 					Tagged = true;
-					NamesOfKeys.allocate( KeyCount );
-					IndexesForKeyVar.allocate( KeyCount );
 					GetVariableKeys( cAlphaArgs( fldIndex + 1 ), TypeVar, NamesOfKeys, IndexesForKeyVar );
+					assert( IndexesForKeyVar.size() > 0 );
 					WhichMeter = IndexesForKeyVar( 1 );
 					NamesOfKeys.deallocate();
 					IndexesForKeyVar.deallocate();
 					// for meters there will only be one key...  but it has variables associated...
 					for ( iOnMeter = 1; iOnMeter <= NumVarMeterArrays; ++iOnMeter ) {
 						if ( ! any_eq( VarMeterArrays( iOnMeter ).OnMeters, WhichMeter ) ) continue;
-						++NumVarsOnCustomMeter;
-						if ( NumVarsOnCustomMeter > MaxVarsOnCustomMeter ) {
-							VarsOnCustomMeter.redimension( MaxVarsOnCustomMeter += 100, 0 );
-						}
-						VarsOnCustomMeter( NumVarsOnCustomMeter ) = VarMeterArrays( iOnMeter ).RepVariable;
+						VarsOnCustomMeter.push_back( VarMeterArrays( iOnMeter ).RepVariable );
+						NumVarsOnCustomMeter = VarsOnCustomMeter.size();
 					}
 				}
 				if ( ! Tagged ) { // couldn't find place for this item on a meter
@@ -1835,10 +1816,6 @@ namespace OutputProcessor {
 				continue;
 			}
 			if ( allocated( VarsOnCustomMeter ) ) VarsOnCustomMeter.deallocate();
-			VarsOnCustomMeter.allocate( 1000 );
-			VarsOnCustomMeter = 0;
-			MaxVarsOnCustomMeter = 1000;
-			NumVarsOnCustomMeter = 0;
 
 			lbrackPos = index( cAlphaArgs( 3 ), '[' );
 			if ( lbrackPos != std::string::npos ) cAlphaArgs( 1 ).erase( lbrackPos );
@@ -1850,28 +1827,18 @@ namespace OutputProcessor {
 			}
 			//  Set up array of Vars that are on the source meter (for later validation).
 			if ( allocated( VarsOnSourceMeter ) ) VarsOnSourceMeter.deallocate();
-			VarsOnSourceMeter.allocate( 1000 );
-			VarsOnSourceMeter = 0;
-			MaxVarsOnSourceMeter = 1000;
-			NumVarsOnSourceMeter = 0;
 			for ( iKey = 1; iKey <= NumVarMeterArrays; ++iKey ) {
 				if ( VarMeterArrays( iKey ).NumOnMeters == 0 && VarMeterArrays( iKey ).NumOnCustomMeters == 0 ) continue;
 				//  On a meter
 				if ( any_eq( VarMeterArrays( iKey ).OnMeters, WhichMeter ) ) {
-					++NumVarsOnSourceMeter;
-					if ( NumVarsOnSourceMeter > MaxVarsOnSourceMeter ) {
-						VarsOnSourceMeter.redimension( MaxVarsOnSourceMeter += 100, 0 );
-					}
-					VarsOnSourceMeter( NumVarsOnSourceMeter ) = VarMeterArrays( iKey ).RepVariable;
+					VarsOnSourceMeter.push_back( VarMeterArrays( iKey ).RepVariable );
+					NumVarsOnSourceMeter = VarsOnSourceMeter.size();
 					continue;
 				}
 				if ( VarMeterArrays( iKey ).NumOnCustomMeters == 0 ) continue;
 				if ( any_eq( VarMeterArrays( iKey ).OnCustomMeters, WhichMeter ) ) {
-					++NumVarsOnSourceMeter;
-					if ( NumVarsOnSourceMeter > MaxVarsOnSourceMeter ) {
-						VarsOnSourceMeter.redimension( MaxVarsOnSourceMeter += 100, 0 );
-					}
-					VarsOnSourceMeter( NumVarsOnSourceMeter ) = VarMeterArrays( iKey ).RepVariable;
+					VarsOnSourceMeter.push_back( VarMeterArrays( iKey ).RepVariable );
+					NumVarsOnSourceMeter = VarsOnSourceMeter.size();
 					continue;
 				}
 			}
@@ -1927,17 +1894,13 @@ namespace OutputProcessor {
 				}
 				if ( ( TypeVar == VarType_Real || TypeVar == VarType_Integer ) && AvgSumVar == SummedVar ) {
 					Tagged = true;
-					NamesOfKeys.allocate( KeyCount );
-					IndexesForKeyVar.allocate( KeyCount );
 					GetVariableKeys( cAlphaArgs( fldIndex + 1 ), TypeVar, NamesOfKeys, IndexesForKeyVar );
+					KeyCount = IndexesForKeyVar.size();
 					iOnMeter = 0;
 					if ( KeyIsStar ) {
 						for ( iKey = 1; iKey <= KeyCount; ++iKey ) {
-							++NumVarsOnCustomMeter;
-							if ( NumVarsOnCustomMeter > MaxVarsOnCustomMeter ) {
-								VarsOnCustomMeter.redimension( MaxVarsOnCustomMeter += 100, 0 );
-							}
-							VarsOnCustomMeter( NumVarsOnCustomMeter ) = IndexesForKeyVar( iKey );
+							VarsOnCustomMeter.push_back( IndexesForKeyVar( iKey ) );
+							NumVarsOnCustomMeter = VarsOnCustomMeter.size();
 							iOnMeter = 1;
 						}
 						if ( iOnMeter == 0 ) {
@@ -1947,11 +1910,8 @@ namespace OutputProcessor {
 					} else {
 						for ( iKey = 1; iKey <= KeyCount; ++iKey ) {
 							if ( NamesOfKeys( iKey ) != cAlphaArgs( fldIndex ) ) continue;
-							++NumVarsOnCustomMeter;
-							if ( NumVarsOnCustomMeter > MaxVarsOnCustomMeter ) {
-								VarsOnCustomMeter.redimension( MaxVarsOnCustomMeter += 100, 0 );
-							}
-							VarsOnCustomMeter( NumVarsOnCustomMeter ) = IndexesForKeyVar( iKey );
+							VarsOnCustomMeter.push_back( IndexesForKeyVar( iKey ) );
+							NumVarsOnCustomMeter = VarsOnCustomMeter.size();
 							iOnMeter = 1;
 						}
 						if ( iOnMeter == 0 ) {
@@ -1964,9 +1924,8 @@ namespace OutputProcessor {
 				}
 				if ( TypeVar == VarType_Meter && AvgSumVar == SummedVar ) {
 					Tagged = true;
-					NamesOfKeys.allocate( KeyCount );
-					IndexesForKeyVar.allocate( KeyCount );
 					GetVariableKeys( cAlphaArgs( fldIndex + 1 ), TypeVar, NamesOfKeys, IndexesForKeyVar );
+					assert( IndexesForKeyVar.size() > 0 );
 					WhichMeter = IndexesForKeyVar( 1 );
 					NamesOfKeys.deallocate();
 					IndexesForKeyVar.deallocate();
@@ -1978,11 +1937,8 @@ namespace OutputProcessor {
 							testb = any_eq( VarMeterArrays( iOnMeter ).OnCustomMeters, WhichMeter );
 						}
 						if ( ! ( testa || testb ) ) continue;
-						++NumVarsOnCustomMeter;
-						if ( NumVarsOnCustomMeter > MaxVarsOnCustomMeter ) {
-							VarsOnCustomMeter.redimension( MaxVarsOnCustomMeter += 100, 0 );
-						}
-						VarsOnCustomMeter( NumVarsOnCustomMeter ) = VarMeterArrays( iOnMeter ).RepVariable;
+						VarsOnCustomMeter.push_back( VarMeterArrays( iOnMeter ).RepVariable );
+						NumVarsOnCustomMeter = VarsOnCustomMeter.size();
 					}
 				}
 				if ( ! Tagged ) { // couldn't find place for this item on a meter
@@ -2534,15 +2490,17 @@ namespace OutputProcessor {
 		// SUBROUTINE LOCAL VARIABLE DECLARATIONS:
 
 		if ( MeterArrayPtr == 0 ) {
-			VarMeterArrays.redimension( ++NumVarMeterArrays );
+			MeterArrayType meter_array_type;
+			meter_array_type.RepVariable = RepVarNum;
+			meter_array_type.OnCustomMeters.allocate( 1 );
+			meter_array_type.NumOnCustomMeters = 1;
+			VarMeterArrays.push_back( meter_array_type );
+			NumVarMeterArrays = VarMeterArrays.size();
 			MeterArrayPtr = NumVarMeterArrays;
-			VarMeterArrays( NumVarMeterArrays ).NumOnMeters = 0;
-			VarMeterArrays( NumVarMeterArrays ).RepVariable = RepVarNum;
-			VarMeterArrays( NumVarMeterArrays ).OnMeters = 0;
-			VarMeterArrays( NumVarMeterArrays ).OnCustomMeters.allocate( 1 );
-			VarMeterArrays( NumVarMeterArrays ).NumOnCustomMeters = 1;
 		} else { // MeterArrayPtr set
-			VarMeterArrays( MeterArrayPtr ).OnCustomMeters.redimension( ++VarMeterArrays( MeterArrayPtr ).NumOnCustomMeters );
+			auto & meter_array_type( VarMeterArrays( MeterArrayPtr ) );
+			++meter_array_type.NumOnCustomMeters;
+			meter_array_type.OnCustomMeters.push_back( meter_array_type.NumOnCustomMeters );
 		}
 		VarMeterArrays( MeterArrayPtr ).OnCustomMeters( VarMeterArrays( MeterArrayPtr ).NumOnCustomMeters ) = MeterIndex;
 
@@ -3970,17 +3928,12 @@ namespace OutputProcessor {
 				}
 
 				if ( ! Found ) {
-					// Add the subcategory by reallocating the array
-					NumSubs = EndUseCategory( EndUseNum ).NumSubcategories;
-					EndUseCategory( EndUseNum ).SubcategoryName.redimension( NumSubs + 1 );
-
-					EndUseCategory( EndUseNum ).NumSubcategories = NumSubs + 1;
-					EndUseCategory( EndUseNum ).SubcategoryName( NumSubs + 1 ) = EndUseSubName;
-
-					if ( EndUseCategory( EndUseNum ).NumSubcategories > MaxNumSubcategories ) {
-						MaxNumSubcategories = EndUseCategory( EndUseNum ).NumSubcategories;
+					auto & end_use_category( EndUseCategory( EndUseNum ) );
+					end_use_category.SubcategoryName.push_back( EndUseSubName );
+					end_use_category.NumSubcategories = end_use_category.SubcategoryName.size();
+					if ( end_use_category.NumSubcategories > MaxNumSubcategories ) {
+						MaxNumSubcategories = end_use_category.NumSubcategories;
 					}
-
 					Found = true;
 				}
 				break;
@@ -5311,8 +5264,8 @@ SetupOutputVariable(
 	CheckReportVariable( KeyedValue, VarName );
 
 	if ( NumExtraVars == 0 ) {
-		NumExtraVars = 1;
-		ReportList = -1;
+		ReportList.emplace_back( -1 );
+		NumExtraVars = ReportList.size();
 	}
 
 	// If ReportFreq present, overrides input
@@ -5326,9 +5279,6 @@ SetupOutputVariable(
 	OnMeter = false; // just a safety initialization
 
 	for ( Loop = 1; Loop <= NumExtraVars; ++Loop ) {
-
-		if ( Loop == 1 ) ++NumOfRVariable_Setup;
-
 		if ( Loop == 1 ) {
 			OnMeter = false;
 			if ( present( ResourceTypeKey ) ) {
@@ -5371,38 +5321,32 @@ SetupOutputVariable(
 
 		if ( ! OnMeter && ! ThisOneOnTheList ) continue;
 
-		++NumOfRVariable;
+		RealVariableType real_variable_type;
+		real_variable_type.IndexType = IndexType;
+		real_variable_type.StoreType = VariableType;
+		real_variable_type.VarName = KeyedValue + ':' + VarName;
+		real_variable_type.VarNameOnly = VarName;
+		real_variable_type.VarNameOnlyUC = MakeUPPERCase( VarName );
+		real_variable_type.VarNameUC = MakeUPPERCase( real_variable_type.VarName );
+		real_variable_type.KeyNameOnlyUC = MakeUPPERCase( KeyedValue );
+		real_variable_type.UnitsString = UnitsString;
+		RVariableTypes.push_back( real_variable_type );
+		NumOfRVariable = RVariableTypes.size();
+		CV = NumOfRVariable;
+
 		if ( Loop == 1 && VariableType == SummedVar ) {
 			++NumOfRVariable_Sum;
 			if ( present( ResourceTypeKey ) ) {
 				if ( ! ResourceTypeKey().empty() ) ++NumOfRVariable_Meter;
 			}
 		}
-		if ( NumOfRVariable > MaxRVariable ) {
-			ReallocateRVar();
-		}
-		CV = NumOfRVariable;
-		RVariableTypes( CV ).IndexType = IndexType;
-		RVariableTypes( CV ).StoreType = VariableType;
-		RVariableTypes( CV ).VarName = KeyedValue + ':' + VarName;
-		RVariableTypes( CV ).VarNameOnly = VarName;
-		RVariableTypes( CV ).VarNameOnlyUC = MakeUPPERCase( VarName );
-		RVariableTypes( CV ).VarNameUC = MakeUPPERCase( RVariableTypes( CV ).VarName );
-		RVariableTypes( CV ).KeyNameOnlyUC = MakeUPPERCase( KeyedValue );
-		RVariableTypes( CV ).UnitsString = UnitsString;
+
 		AssignReportNumber( CurrentReportNumber );
-		gio::write( IDOut, fmtLD ) << CurrentReportNumber;
-		strip( IDOut );
+		IDOut = std::to_string( CurrentReportNumber );
 
 		RVariable.allocate();
-		RVariable().Value = 0.0;
-		RVariable().TSValue = 0.0;
-		RVariable().StoreValue = 0.0;
-		RVariable().NumStored = 0.0;
 		RVariable().MaxValue = MaxSetValue;
-		RVariable().maxValueDate = 0;
 		RVariable().MinValue = MinSetValue;
-		RVariable().minValueDate = 0;
 
 		RVariableTypes( CV ).VarPtr >>= RVariable;
 		RVariable().Which >>= ActualVariable;
@@ -5410,13 +5354,7 @@ SetupOutputVariable(
 		RVariableTypes( CV ).ReportID = CurrentReportNumber;
 		RVariable().ReportIDChr = IDOut.substr( 0, 15 );
 		RVariable().StoreType = VariableType;
-		RVariable().Stored = false;
-		RVariable().Report = false;
 		RVariable().ReportFreq = ReportHourly;
-		RVariable().SchedPtr = 0;
-		RVariable().MeterArrayPtr = 0;
-		RVariable().ZoneMult = 1;
-		RVariable().ZoneListMult = 1;
 		if ( present( ZoneMult ) && present( ZoneListMult ) ) {
 			RVariable().ZoneMult = ZoneMult;
 			RVariable().ZoneListMult = ZoneListMult;
@@ -5440,13 +5378,14 @@ SetupOutputVariable(
 			}
 		}
 
+		auto const testing = NumExtraVars;
+
 		if ( ReportList( Loop ) == -1 ) continue;
 
 		RVariable().Report = true;
 
 		if ( ReportList( Loop ) == 0 ) {
 			RVariable().ReportFreq = RepFreq;
-			RVariable().SchedPtr = 0;
 		} else {
 			RVariable().ReportFreq = ReqRepVars( ReportList( Loop ) ).ReportFreq;
 			RVariable().SchedPtr = ReqRepVars( ReportList( Loop ) ).SchedPtr;
@@ -5599,35 +5538,27 @@ SetupOutputVariable(
 
 		if ( ! ThisOneOnTheList ) continue;
 
-		++NumOfIVariable;
+		IntegerVariableType integer_variable_type;
+		integer_variable_type.IndexType = IndexType;
+		integer_variable_type.StoreType = VariableType;
+		integer_variable_type.VarName = KeyedValue + ':' + VarName;
+		integer_variable_type.VarNameOnly = VarName;
+		integer_variable_type.VarNameUC = MakeUPPERCase( integer_variable_type.VarName );
+		integer_variable_type.UnitsString = UnitsString;
+		IVariableTypes.push_back( integer_variable_type );
+		NumOfIVariable = IVariableTypes.size();
+		CV = NumOfIVariable;
+
 		if ( Loop == 1 && VariableType == SummedVar ) {
 			++NumOfIVariable_Sum;
 		}
-		if ( NumOfIVariable > MaxIVariable ) {
-			ReallocateIVar();
-		}
 
-		CV = NumOfIVariable;
-		IVariableTypes( CV ).IndexType = IndexType;
-		IVariableTypes( CV ).StoreType = VariableType;
-		IVariableTypes( CV ).VarName = KeyedValue + ':' + VarName;
-		IVariableTypes( CV ).VarNameOnly = VarName;
-		IVariableTypes( CV ).VarNameUC = MakeUPPERCase( IVariableTypes( CV ).VarName );
-		IVariableTypes( CV ).UnitsString = UnitsString;
 		AssignReportNumber( CurrentReportNumber );
-		gio::write( IDOut, fmtLD ) << CurrentReportNumber;
-		strip( IDOut );
+		IDOut = std::to_string( CurrentReportNumber );
 
 		IVariable.allocate();
-		IVariable().Value = 0.0;
-		IVariable().StoreValue = 0.0;
-		IVariable().TSValue = 0.0;
-		IVariable().NumStored = 0.0;
-		//    IVariable%LastTSValue=0
 		IVariable().MaxValue = IMaxSetValue;
-		IVariable().maxValueDate = 0;
 		IVariable().MinValue = IMinSetValue;
-		IVariable().minValueDate = 0;
 
 		IVariableTypes( CV ).VarPtr >>= IVariable;
 		IVariable().Which >>= ActualVariable;
@@ -5635,10 +5566,7 @@ SetupOutputVariable(
 		IVariableTypes( CV ).ReportID = CurrentReportNumber;
 		IVariable().ReportIDChr = IDOut.substr( 0, 15 );
 		IVariable().StoreType = VariableType;
-		IVariable().Stored = false;
-		IVariable().Report = false;
 		IVariable().ReportFreq = ReportHourly;
-		IVariable().SchedPtr = 0;
 
 		if ( ReportList( Loop ) == -1 ) continue;
 
@@ -5646,7 +5574,6 @@ SetupOutputVariable(
 
 		if ( ReportList( Loop ) == 0 ) {
 			IVariable().ReportFreq = RepFreq;
-			IVariable().SchedPtr = 0;
 		} else {
 			IVariable().ReportFreq = ReqRepVars( ReportList( Loop ) ).ReportFreq;
 			IVariable().SchedPtr = ReqRepVars( ReportList( Loop ) ).SchedPtr;
@@ -7157,16 +7084,8 @@ IncrementInstMeterCache()
 	// Using/Aliasing
 	using namespace OutputProcessor;
 
-	if ( ! allocated( InstMeterCache ) ) {
-		InstMeterCache.dimension( InstMeterCacheSizeInc, 0 ); //zero the entire array
-		InstMeterCacheLastUsed = 1;
-	} else {
-		++InstMeterCacheLastUsed;
-		// if larger than current size grow the array
-		if ( InstMeterCacheLastUsed > InstMeterCacheSize ) {
-			InstMeterCache.redimension( InstMeterCacheSize += InstMeterCacheSizeInc, 0 );
-		}
-	}
+	InstMeterCache.emplace_back( 0 );
+	InstMeterCacheLastUsed = InstMeterCache.size();
 }
 
 Real64
@@ -7583,10 +7502,12 @@ GetVariableKeyCountandType(
 	// na
 
 	// SUBROUTINE LOCAL VARIABLE DECLARATIONS:
-	static Array1D_int keyVarIndexes; // Array index for specific key name
-	static int curKeyVarIndexLimit; // current limit for keyVarIndexes
 	//////////// hoisted into namespace ////////////////////////////////////////////////
 	// static bool InitFlag( true ); // for initting the keyVarIndexes array
+	// static Array1D_int keyVarIndexes; // Array index for specific key name
+	// static Array1D_string varNames; // stored variable names
+	// static Array1D_int ivarNames; // pointers for sorted information
+	// static int numVarNames; // number of variable names
 	////////////////////////////////////////////////////////////////////////////////////
 	int Loop; // Loop counters
 	int Loop2;
@@ -7596,14 +7517,9 @@ GetVariableKeyCountandType(
 	bool Duplicate; // True if keyname is a duplicate
 	std::string VarKeyPlusName; // Full variable name including keyname and units
 	std::string varNameUpper; // varName pushed to all upper case
-	static Array1D_string varNames; // stored variable names
-	static Array1D_int ivarNames; // pointers for sorted information
-	static int numVarNames; // number of variable names
 
 	// INITIALIZATIONS
 	if ( InitFlag ) {
-		curKeyVarIndexLimit = 1000;
-		keyVarIndexes.allocate( curKeyVarIndexLimit );
 		numVarNames = NumVariablesForOutput;
 		varNames.allocate( numVarNames );
 		for ( Loop = 1; Loop <= NumVariablesForOutput; ++Loop ) {
@@ -7624,9 +7540,9 @@ GetVariableKeyCountandType(
 		SetupAndSort( varNames, ivarNames );
 	}
 
-	keyVarIndexes = 0;
 	varType = VarType_NotFound;
-	numKeys = 0;
+	keyVarIndexes.deallocate();
+	numKeys = keyVarIndexes.size();
 	varAvgSum = 0;
 	varStepType = 0;
 	varUnits = "";
@@ -7639,6 +7555,8 @@ GetVariableKeyCountandType(
 	if ( VFound != 0 ) {
 		varType = DDVariableTypes( ivarNames( VFound ) ).VariableType;
 	}
+
+	auto const test3 = keyVarIndexes;
 
 	if ( varType == VarType_Integer ) {
 		// Search Integer Variables
@@ -7657,11 +7575,8 @@ GetVariableKeyCountandType(
 						if ( VarKeyPlusName == IVariableTypes( keyVarIndexes( Loop2 ) ).VarNameUC ) Duplicate = true;
 					}
 					if ( ! Duplicate ) {
-						++numKeys;
-						if ( numKeys > curKeyVarIndexLimit ) {
-							keyVarIndexes.redimension( curKeyVarIndexLimit += 500, 0 );
-						}
-						keyVarIndexes( numKeys ) = Loop;
+						keyVarIndexes.push_back( Loop );
+						numKeys = keyVarIndexes.size();
 						varAvgSum = DDVariableTypes( ivarNames( VFound ) ).StoreType;
 						varStepType = DDVariableTypes( ivarNames( VFound ) ).IndexType;
 						varUnits = DDVariableTypes( ivarNames( VFound ) ).UnitsString;
@@ -7681,14 +7596,13 @@ GetVariableKeyCountandType(
 				// frequencies
 				VarKeyPlusName = RVariableTypes( Loop ).VarNameUC;
 				for ( Loop2 = 1; Loop2 <= numKeys; ++Loop2 ) {
-					if ( VarKeyPlusName == RVariableTypes( keyVarIndexes( Loop2 ) ).VarNameUC ) Duplicate = true;
+					auto const test1 = keyVarIndexes( Loop2 );
+					auto const test2 = RVariableTypes( test1 ).VarNameUC;
+					if ( VarKeyPlusName == test2 ) Duplicate = true;
 				}
 				if ( ! Duplicate ) {
-					++numKeys;
-					if ( numKeys > curKeyVarIndexLimit ) {
-						keyVarIndexes.redimension( curKeyVarIndexLimit += 500, 0 );
-					}
-					keyVarIndexes( numKeys ) = Loop;
+					keyVarIndexes.push_back( Loop );
+					numKeys = keyVarIndexes.size();
 					varAvgSum = DDVariableTypes( ivarNames( VFound ) ).StoreType;
 					varStepType = DDVariableTypes( ivarNames( VFound ) ).IndexType;
 					varUnits = DDVariableTypes( ivarNames( VFound ) ).UnitsString;
@@ -7701,12 +7615,13 @@ GetVariableKeyCountandType(
 	// Use the GetMeterIndex function
 	// Meters do not have keys, so only one will be found
 	if ( ! Found ) {
-		keyVarIndexes( 1 ) = GetMeterIndex( varName );
-		if ( keyVarIndexes( 1 ) > 0 ) {
+		auto const meterIndex = GetMeterIndex( varName );
+		if ( meterIndex > 0 ) {
 			Found = true;
-			numKeys = 1;
+			keyVarIndexes.push_back( meterIndex );
+			numKeys = keyVarIndexes.size();
 			varType = VarType_Meter;
-			varUnits = EnergyMeters( keyVarIndexes( 1 ) ).Units;
+			varUnits = EnergyMeters( meterIndex ).Units;
 			varAvgSum = SummedVar;
 			varStepType = ZoneVar;
 		}
@@ -7716,12 +7631,13 @@ GetVariableKeyCountandType(
 	// Use the GetScheduleIndex function
 	// Schedules do not have keys, so only one will be found
 	if ( ! Found ) {
-		keyVarIndexes( 1 ) = GetScheduleIndex( varName );
-		if ( keyVarIndexes( 1 ) > 0 ) {
+		auto const scheduleIndex = GetScheduleIndex( varName );
+		if ( scheduleIndex > 0 ) {
 			Found = true;
-			numKeys = 1;
+			keyVarIndexes.push_back( scheduleIndex );
+			numKeys = keyVarIndexes.size();
 			varType = VarType_Schedule;
-			varUnits = GetScheduleType( keyVarIndexes( 1 ) );
+			varUnits = GetScheduleType( scheduleIndex );
 			varAvgSum = AveragedVar;
 			varStepType = ZoneVar;
 		}
@@ -7733,8 +7649,8 @@ void
 GetVariableKeys(
 	std::string const & varName, // Standard variable name
 	int const varType, // 1=integer, 2=real, 3=meter
-	Array1S_string keyNames, // Specific key name
-	Array1S_int keyVarIndexes // Array index for
+	Array1D_string & keyNames, // Specific key name
+	Array1D_int & keyVarIndexes // Array index for
 )
 {
 
@@ -7796,8 +7712,6 @@ GetVariableKeys(
 	keyVarIndexes = 0;
 	numKeys = 0;
 	Duplicate = false;
-	maxKeyNames = size( keyNames );
-	maxkeyVarIndexes = size( keyVarIndexes );
 	varNameUpper = MakeUPPERCase( varName );
 
 	// Select based on variable type:  integer, real, or meter
@@ -7815,12 +7729,9 @@ GetVariableKeys(
 						if ( VarKeyPlusName == IVariableTypes( keyVarIndexes( Loop2 ) ).VarNameUC ) Duplicate = true;
 					}
 					if ( ! Duplicate ) {
-						++numKeys;
-						if ( ( numKeys > maxKeyNames ) || ( numKeys > maxkeyVarIndexes ) ) {
-							ShowFatalError( "Invalid array size in GetVariableKeys" );
-						}
-						keyNames( numKeys ) = IVariableTypes( Loop ).VarNameUC.substr( 0, Position );
-						keyVarIndexes( numKeys ) = Loop;
+						keyVarIndexes.push_back( Loop );
+						keyNames.push_back( IVariableTypes( Loop ).VarNameUC.substr( 0, Position ) );
+						numKeys = keyVarIndexes.size();
 					}
 				}
 			}
@@ -7837,29 +7748,20 @@ GetVariableKeys(
 					if ( VarKeyPlusName == RVariableTypes( keyVarIndexes( Loop2 ) ).VarNameUC ) Duplicate = true;
 				}
 				if ( ! Duplicate ) {
-					++numKeys;
-					if ( ( numKeys > maxKeyNames ) || ( numKeys > maxkeyVarIndexes ) ) {
-						ShowFatalError( "Invalid array size in GetVariableKeys" );
-					}
-					keyNames( numKeys ) = RVariableTypes( Loop ).KeyNameOnlyUC;
-					keyVarIndexes( numKeys ) = Loop;
+					keyVarIndexes.push_back( Loop );
+					keyNames.push_back( RVariableTypes( Loop ).KeyNameOnlyUC );
+					numKeys = keyVarIndexes.size();
 				}
 			}
 		}
 	} else if ( varType == VarType_Meter ) { // Meter
-		numKeys = 1;
-		if ( ( numKeys > maxKeyNames ) || ( numKeys > maxkeyVarIndexes ) ) {
-			ShowFatalError( "Invalid array size in GetVariableKeys" );
-		}
-		keyNames( 1 ) = "Meter";
-		keyVarIndexes( 1 ) = GetMeterIndex( varName );
+		keyVarIndexes.push_back( GetMeterIndex( varName ) );
+		keyNames.emplace_back( "Meter" );
+		numKeys = keyVarIndexes.size();
 	} else if ( varType == VarType_Schedule ) { // Schedule
-		numKeys = 1;
-		if ( ( numKeys > maxKeyNames ) || ( numKeys > maxkeyVarIndexes ) ) {
-			ShowFatalError( "Invalid array size in GetVariableKeys" );
-		}
-		keyNames( 1 ) = "Environment";
-		keyVarIndexes( 1 ) = GetScheduleIndex( varName );
+		keyVarIndexes.push_back( GetScheduleIndex( varName ) );
+		keyNames.emplace_back( "Environment" );
+		numKeys = keyVarIndexes.size();
 	} else {
 		// do nothing
 	}
@@ -8315,7 +8217,7 @@ AddToOutputVariableList(
 		dd_variable_type.VarNameOnly = VarName;
 		dd_variable_type.UnitsString = UnitsString;
 		DDVariableTypes.push_back( dd_variable_type );
-		++NumVariablesForOutput;
+		NumVariablesForOutput = DDVariableTypes.size();
 	} else if ( UnitsString != DDVariableTypes( dup ).UnitsString ) { // not the same as first units
 		int dup2 = 0;// for duplicate variable name
 		while ( DDVariableTypes( dup ).Next != 0 ) {
@@ -8334,7 +8236,7 @@ AddToOutputVariableList(
 			dd_variable_type.VarNameOnly = VarName;
 			dd_variable_type.UnitsString = UnitsString;
 			DDVariableTypes.push_back( dd_variable_type );
-			++NumVariablesForOutput;
+			NumVariablesForOutput = DDVariableTypes.size();
 			DDVariableTypes( dup ).Next = NumVariablesForOutput;
 		}
 	}

@@ -977,8 +977,6 @@ namespace OutputReportTabular {
 		int AvgSumVar;
 		int StepTypeVar;
 		std::string UnitsVar; // Units sting, may be blank
-		//CHARACTER(len=MaxNameLength), DIMENSION(:), ALLOCATABLE :: NamesOfKeys      ! Specific key name
-		//INTEGER, DIMENSION(:) , ALLOCATABLE                     :: IndexesForKeyVar ! Array index
 		Array1D_string UniqueKeyNames;
 		int UniqueKeyCount;
 		int iKey;
@@ -994,7 +992,6 @@ namespace OutputReportTabular {
 		static bool VarWarning( true );
 		static int ErrCount1( 0 );
 		static int ErrCount2( 0 );
-		//INTEGER       :: maxKeyCount
 
 		// if not a running a weather simulation do not create reports
 		if ( ! DoWeathSim ) return;
@@ -1004,15 +1001,6 @@ namespace OutputReportTabular {
 		// This approach seems inefficient but I know of no other way to size
 		// the arrays prior to filling them and to size the arrays basically
 		// the same steps must be gone through as with filling the arrays.
-
-		//#ifdef ITM_KEYCACHE
-		// Noel comment:  How about allocating these variables once for the whole routine?
-		//    Again, if a max value for key count can be agreed upon, we could use it here --
-		//    otherwise, will have to have re-allocate logic.
-		//maxKeyCount=1500 ! ?
-		//ALLOCATE(NamesOfKeys(maxKeyCount))
-		//ALLOCATE(IndexesForKeyVar(maxKeyCount))
-		//#endif
 
 		MonthlyColumnsCount = 0;
 		MonthlyTablesCount = 0;
@@ -1024,21 +1012,11 @@ namespace OutputReportTabular {
 			UniqueKeyCount = 0;
 			for ( colNum = 1; colNum <= NumColumns; ++colNum ) {
 
-				//#ifdef ITM_KEYCACHE
 				// Noel comment:  First time in this TabNum/ColNum loop, let's save the results
 				//  of GetVariableKeyCountandType & GetVariableKeys.
 				curVariMeter = MakeUPPERCase( MonthlyFieldSetInput( FirstColumn + colNum - 1 ).variMeter );
 				// call the key count function but only need count during this pass
 				GetVariableKeyCountandType( curVariMeter, KeyCount, TypeVar, AvgSumVar, StepTypeVar, UnitsVar );
-				//    IF (KeyCount > maxKeyCount) THEN
-				//      DEALLOCATE(NamesOfKeys)
-				//      DEALLOCATE(IndexesForKeyVar)
-				//      maxKeyCount=KeyCount
-				//      ALLOCATE(NamesOfKeys(maxKeyCount))
-				//      ALLOCATE(IndexesForKeyVar(maxKeyCount))
-				//    ENDIF
-				MonthlyFieldSetInput( FirstColumn + colNum - 1 ).NamesOfKeys.allocate( KeyCount );
-				MonthlyFieldSetInput( FirstColumn + colNum - 1 ).IndexesForKeyVar.allocate( KeyCount );
 
 				// fill keys?
 				GetVariableKeys( curVariMeter, TypeVar, MonthlyFieldSetInput( FirstColumn + colNum - 1 ).NamesOfKeys, MonthlyFieldSetInput( FirstColumn + colNum - 1 ).IndexesForKeyVar );
@@ -1050,18 +1028,6 @@ namespace OutputReportTabular {
 				MonthlyFieldSetInput( FirstColumn + colNum - 1 ).varAvgSum = AvgSumVar;
 				MonthlyFieldSetInput( FirstColumn + colNum - 1 ).varStepType = StepTypeVar;
 				MonthlyFieldSetInput( FirstColumn + colNum - 1 ).varUnits = UnitsVar;
-				//    DO iKey = 1, KeyCount
-				//      MonthlyFieldSetInput(FirstColumn + ColNum - 1)%NamesOfKeys(iKey) = NamesOfKeys(iKey)  !noel
-				//      MonthlyFieldSetInput(FirstColumn + ColNum - 1)%IndexesForKeyVar(iKey) = IndexesForKeyVar(iKey)  !noel
-				//    ENDDO
-				//#else
-				//    curVariMeter = MakeUPPERCase(MonthlyFieldSetInput(FirstColumn + ColNum - 1)%variMeter)
-				//    ! call the key count function but only need count during this pass
-				//    CALL GetVariableKeyCountandType(curVariMeter,KeyCount,TypeVar,AvgSumVar,StepTypeVar,UnitsVar)
-				//    ALLOCATE(NamesOfKeys(KeyCount))
-				//    ALLOCATE(IndexesForKeyVar(KeyCount))
-				//    CALL GetVariableKeys(curVariMeter,TypeVar,NamesOfKeys,IndexesForKeyVar)
-				//#endif
 
 				for ( iKey = 1; iKey <= KeyCount; ++iKey ) {
 					found = 0;
@@ -1081,12 +1047,6 @@ namespace OutputReportTabular {
 						++UniqueKeyCount;
 					}
 				}
-				//#ifdef ITM_KEYCACHE
-				//    ! Don't deallocate here, only allocating/deallocating once for the whole routine
-				//#else
-				//    DEALLOCATE(NamesOfKeys)
-				//    DEALLOCATE(IndexesForKeyVar)
-				//#endif
 			} //colNum
 			// fix for CR8285 - when monthly report is only environmental variables
 			if ( environmentKeyFound && UniqueKeyCount == 0 ) {
@@ -1140,18 +1100,6 @@ namespace OutputReportTabular {
 				AvgSumVar = MonthlyFieldSetInput( FirstColumn + colNum - 1 ).varAvgSum;
 				StepTypeVar = MonthlyFieldSetInput( FirstColumn + colNum - 1 ).varStepType;
 				UnitsVar = MonthlyFieldSetInput( FirstColumn + colNum - 1 ).varUnits;
-				//    DO iKey = 1, KeyCount  !noel
-				//       NamesOfKeys(iKey) = MonthlyFieldSetInput(FirstColumn + ColNum - 1)%NamesOfKeys(iKey)  !noel
-				//       IndexesForKeyVar(iKey) = MonthlyFieldSetInput(FirstColumn + ColNum - 1)%IndexesForKeyVar(iKey) !noel
-				//    ENDDO
-				//#else
-				//    curVariMeter = MakeUPPERCase(MonthlyFieldSetInput(FirstColumn + ColNum - 1)%variMeter)
-				//    ! call the key count function but only need count during this pass
-				//    CALL GetVariableKeyCountandType(curVariMeter,KeyCount,TypeVar,AvgSumVar,StepTypeVar,UnitsVar)
-				//    ALLOCATE(NamesOfKeys(KeyCount))
-				//    ALLOCATE(IndexesForKeyVar(KeyCount))
-				//    CALL GetVariableKeys(curVariMeter,TypeVar,NamesOfKeys,IndexesForKeyVar)
-				//#endif
 
 				if ( KeyCount == 0 ) {
 					++ErrCount1;
@@ -1187,12 +1135,6 @@ namespace OutputReportTabular {
 						UniqueKeyNames( UniqueKeyCount ) = MonthlyFieldSetInput( FirstColumn + colNum - 1 ).NamesOfKeys( iKey );
 					}
 				}
-				//#ifdef ITM_KEYCACHE
-				//    ! Don't deallocate here, only allocating/deallocating once for the whole routine
-				//#else
-				//    DEALLOCATE(NamesOfKeys)
-				//    DEALLOCATE(IndexesForKeyVar)
-				//#endif
 			}
 			// fix for CR8285 - when monthly report is only environmental variables
 			if ( environmentKeyFound && UniqueKeyCount == 0 ) {
@@ -1233,18 +1175,6 @@ namespace OutputReportTabular {
 					AvgSumVar = MonthlyFieldSetInput( FirstColumn + colNum - 1 ).varAvgSum;
 					StepTypeVar = MonthlyFieldSetInput( FirstColumn + colNum - 1 ).varStepType;
 					UnitsVar = MonthlyFieldSetInput( FirstColumn + colNum - 1 ).varUnits;
-					//    DO iKey = 1, KeyCount  !noel
-					//       NamesOfKeys(iKey) = MonthlyFieldSetInput(FirstColumn + ColNum - 1)%NamesOfKeys(iKey)  !noel
-					//       IndexesForKeyVar(iKey) = MonthlyFieldSetInput(FirstColumn + ColNum - 1)%IndexesForKeyVar(iKey) !noel
-					//    ENDDO
-					//#else
-					//    curVariMeter = MakeUPPERCase(MonthlyFieldSetInput(FirstColumn + ColNum - 1)%variMeter)
-					//    ! call the key count function but only need count during this pass
-					//    CALL GetVariableKeyCountandType(curVariMeter,KeyCount,TypeVar,AvgSumVar,StepTypeVar,UnitsVar)
-					//    ALLOCATE(NamesOfKeys(KeyCount))
-					//    ALLOCATE(IndexesForKeyVar(KeyCount))
-					//    CALL GetVariableKeys(curVariMeter,TypeVar,NamesOfKeys,IndexesForKeyVar)
-					//#endif
 
 					if ( KeyCount == 1 ) { // first test if KeyCount is one to avoid referencing a zero element array
 						if ( SameString( MonthlyFieldSetInput( FirstColumn + colNum - 1 ).NamesOfKeys( 1 ), "ENVIRONMENT" ) ) {
@@ -1331,19 +1261,9 @@ namespace OutputReportTabular {
 						MonthlyColumns( mColumn ).units = "Invalid/Undefined";
 						MonthlyColumns( mColumn ).aggType = aggTypeSumOrAvg;
 					}
-					//#ifdef ITM_KEYCACHE
-					//#else
-					//    DEALLOCATE(NamesOfKeys)
-					//    DEALLOCATE(IndexesForKeyVar)
-					//#endif
 				} //ColNum
 			} //kUniqueKey
 		} //TabNum the end of the loop through the inputs objects
-
-		//#ifdef ITM_KEYCACHE
-		//DEALLOCATE(NamesOfKeys)
-		//DEALLOCATE(IndexesForKeyVar)
-		//#endif
 	}
 
 	void
