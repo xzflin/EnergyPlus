@@ -5878,12 +5878,12 @@ namespace PlantPipingSystemsManager {
 		int PrevUBound;
 
 		auto & cell( PipingSystemDomains( DomainNum ).Cells( X, Y, Z ) );
-		if ( ! allocated( cell.NeighborInformation ) ) {
+		if ( cell.NeighborInformation.empty() ) {
 			cell.NeighborInformation.allocate( {0,0} );
 			PrevUBound = -1;
 		} else {
 			PrevUBound = cell.NeighborInformation.u1();
-			cell.NeighborInformation.redimension( {0,PrevUBound + 1} );
+			cell.NeighborInformation.emplace_back();
 		}
 
 		cell.NeighborInformation( PrevUBound + 1 ).Direction = Direction;

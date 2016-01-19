@@ -373,7 +373,7 @@ namespace OutputProcessor {
 		keyVarIndexes.deallocate();
 		varNames.deallocate();
 		ivarNames.deallocate();
-		int numVarNames = 0;
+		numVarNames = 0;
 		TimeValue.deallocate();
 		RVariableTypes.deallocate();
 		IVariableTypes.deallocate();
@@ -1643,10 +1643,10 @@ namespace OutputProcessor {
 		int iKey1;
 		bool MeterCreated;
 		Array1D_int VarsOnCustomMeter;
-		int MaxVarsOnCustomMeter;
+		// int MaxVarsOnCustomMeter;
 		int NumVarsOnCustomMeter;
 		Array1D_int VarsOnSourceMeter;
-		int MaxVarsOnSourceMeter;
+		// int MaxVarsOnSourceMeter;
 		int NumVarsOnSourceMeter;
 		int iOnMeter;
 		int WhichMeter;
@@ -3913,7 +3913,6 @@ namespace OutputProcessor {
 		// SUBROUTINE LOCAL VARIABLE DECLARATIONS:
 		int EndUseNum;
 		int EndUseSubNum;
-		int NumSubs;
 
 		bool Found = false;
 		for ( EndUseNum = 1; EndUseNum <= NumEndUses; ++EndUseNum ) {
@@ -5378,8 +5377,6 @@ SetupOutputVariable(
 			}
 		}
 
-		auto const testing = NumExtraVars;
-
 		if ( ReportList( Loop ) == -1 ) continue;
 
 		RVariable().Report = true;
@@ -5511,8 +5508,8 @@ SetupOutputVariable(
 	CheckReportVariable( KeyedValue, VarName );
 
 	if ( NumExtraVars == 0 ) {
-		NumExtraVars = 1;
-		ReportList = -1;
+		ReportList.emplace_back( -1 );
+		NumExtraVars = ReportList.size();
 	}
 
 	// If ReportFreq present, overrides input
@@ -7701,8 +7698,6 @@ GetVariableKeys(
 	int Loop2;
 	std::string::size_type Position; // Starting point of search string
 	bool Duplicate; // True if keyname is a duplicate
-	int maxKeyNames; // Max allowable # of key names=size of keyNames array
-	int maxkeyVarIndexes; // Max allowable # of key indexes=size of keyVarIndexes array
 	int numKeys; // Number of keys found
 	std::string VarKeyPlusName; // Full variable name including keyname and units
 	std::string varNameUpper; // varName pushed to all upper case

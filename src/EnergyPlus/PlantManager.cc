@@ -3756,13 +3756,14 @@ namespace PlantManager {
 
 		auto & loop_side( PlantLoop( LoopNum ).LoopSide( LoopSideNum ) );
 		auto & pumps( loop_side.Pumps );
-		int const nPumpsAfterIncrement = loop_side.TotalPumps = pumps.size() + 1;
-		pumps.redimension( nPumpsAfterIncrement );
-		pumps( nPumpsAfterIncrement ).PumpName = PumpName;
-		// pumps( nPumpsAfterIncrement ).PumpTypeOf = FindItemInList( PumpType, SimPlantEquipTypes );
-		pumps( nPumpsAfterIncrement ).BranchNum = BranchNum;
-		pumps( nPumpsAfterIncrement ).CompNum = CompNum;
-		pumps( nPumpsAfterIncrement ).PumpOutletNode = PumpOutletNode;
+		LoopSidePumpInformation loop_side_pump_info;
+		loop_side_pump_info.PumpName = PumpName;
+		// loop_side_pump_info.PumpTypeOf = FindItemInList( PumpType, SimPlantEquipTypes );
+		loop_side_pump_info.BranchNum = BranchNum;
+		loop_side_pump_info.CompNum = CompNum;
+		loop_side_pump_info.PumpOutletNode = PumpOutletNode;
+		pumps.push_back( loop_side_pump_info );
+		loop_side.TotalPumps = pumps.size();
 		loop_side.BranchPumpsExist = HasBranchPumps;
 	}
 

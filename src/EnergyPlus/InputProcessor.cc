@@ -791,7 +791,7 @@ namespace InputProcessor {
 		// int MaxANArgs( 7700 ); // Current count of Max args to object  (9/2010)
 		bool ErrorsFoundFlag;
 		int PrevSizeNumNumeric( -1 );
-		int PrevCount( -1 );
+		// int PrevCount( -1 );
 		int PrevSizeNumAlpha( -1 );
 
 		// Object Data

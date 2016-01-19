@@ -1450,27 +1450,19 @@ namespace PlantUtilities {
 
 		// SUBROUTINE LOCAL VARIABLE DECLARATIONS:
 
-
-		CriteriaData CurCriteria; // for convenience
-
 		if ( UniqueCriteriaCheckIndex <= 0 ) { // If we don't yet have an index, we need to initialize
 
-			// We need to start by allocating, or REallocating the array
-			int const CurrentNumChecksStored( CriteriaChecks.size() + 1 );
-			CriteriaChecks.redimension( CurrentNumChecksStored );
-
-			// Store the unique name and location
-			CriteriaChecks( CurrentNumChecksStored ).CallingCompLoopNum = LoopNum;
-			CriteriaChecks( CurrentNumChecksStored ).CallingCompLoopSideNum = LoopSide;
-			CriteriaChecks( CurrentNumChecksStored ).CallingCompBranchNum = BranchNum;
-			CriteriaChecks( CurrentNumChecksStored ).CallingCompCompNum = CompNum;
+			CriteriaData criteria_data;
+			criteria_data.CallingCompLoopNum = LoopNum;
+			criteria_data.CallingCompLoopSideNum = LoopSide;
+			criteria_data.CallingCompBranchNum = BranchNum;
+			criteria_data.CallingCompCompNum = CompNum;
+			CriteriaChecks.push_back( criteria_data );
+			UniqueCriteriaCheckIndex = CriteriaChecks.size();
 
 			// Since this was the first pass, it is safe to assume something has changed!
 			// Therefore we'll set the sim flag to true
 			PlantLoop( ConnectedLoopNum ).LoopSide( ConnectedLoopSide ).SimLoopSideNeeded = true;
-
-			// Make sure we return the proper value of index
-			UniqueCriteriaCheckIndex = CurrentNumChecksStored;
 
 		} else { // We already have an index
 
@@ -1478,27 +1470,27 @@ namespace PlantUtilities {
 			//  sim flag status based on the criteria type
 
 			// First store the current check in a single variable instead of array for readability
-			CurCriteria = CriteriaChecks( UniqueCriteriaCheckIndex );
+			auto curCriteria = CriteriaChecks( UniqueCriteriaCheckIndex );
 
 			// Check to make sure we didn't reuse the index in multiple components
-			if ( CurCriteria.CallingCompLoopNum != LoopNum || CurCriteria.CallingCompLoopSideNum != LoopSide || CurCriteria.CallingCompBranchNum != BranchNum || CurCriteria.CallingCompCompNum != CompNum ) {
+			if ( curCriteria.CallingCompLoopNum != LoopNum || curCriteria.CallingCompLoopSideNum != LoopSide || curCriteria.CallingCompBranchNum != BranchNum || curCriteria.CallingCompCompNum != CompNum ) {
 				// Diagnostic fatal: component does not properly utilize unique indexing
 			}
 
 			// Initialize, then check if we are out of range
 			{ auto const SELECT_CASE_var( CriteriaType );
 			if ( SELECT_CASE_var == CriteriaType_MassFlowRate ) {
-				if ( std::abs( CurCriteria.ThisCriteriaCheckValue - CriteriaValue ) > CriteriaDelta_MassFlowRate ) {
+				if ( std::abs( curCriteria.ThisCriteriaCheckValue - CriteriaValue ) > CriteriaDelta_MassFlowRate ) {
 					PlantLoop( ConnectedLoopNum ).LoopSide( ConnectedLoopSide ).SimLoopSideNeeded = true;
 				}
 
 			} else if ( SELECT_CASE_var == CriteriaType_Temperature ) {
-				if ( std::abs( CurCriteria.ThisCriteriaCheckValue - CriteriaValue ) > CriteriaDelta_Temperature ) {
+				if ( std::abs( curCriteria.ThisCriteriaCheckValue - CriteriaValue ) > CriteriaDelta_Temperature ) {
 					PlantLoop( ConnectedLoopNum ).LoopSide( ConnectedLoopSide ).SimLoopSideNeeded = true;
 				}
 
 			} else if ( SELECT_CASE_var == CriteriaType_HeatTransferRate ) {
-				if ( std::abs( CurCriteria.ThisCriteriaCheckValue - CriteriaValue ) > CriteriaDelta_HeatTransferRate ) {
+				if ( std::abs( curCriteria.ThisCriteriaCheckValue - CriteriaValue ) > CriteriaDelta_HeatTransferRate ) {
 					PlantLoop( ConnectedLoopNum ).LoopSide( ConnectedLoopSide ).SimLoopSideNeeded = true;
 				}
 
@@ -1883,31 +1875,23 @@ namespace PlantUtilities {
 
 		auto & loop_side_1( PlantLoop( Loop1Num ).LoopSide( Loop1LoopSideNum ) );
 		auto & connected_1( loop_side_1.Connected );
-		if ( allocated( connected_1 ) ) {
-			TotalConnected = ++loop_side_1.TotalConnected;
-			connected_1.redimension( TotalConnected );
-		} else {
-			TotalConnected = loop_side_1.TotalConnected = 1;
-			connected_1.allocate( 1 );
-		}
-		connected_1( TotalConnected ).LoopNum = Loop2Num;
-		connected_1( TotalConnected ).LoopSideNum = Loop2LoopSideNum;
-		connected_1( TotalConnected ).ConnectorTypeOf_Num = PlantComponentTypeOfNum;
-		connected_1( TotalConnected ).LoopDemandsOnRemote = Loop1DemandsOnLoop2;
+		ConnectedLoopData connected_loop_data1;
+		connected_loop_data1.LoopNum = Loop2Num;
+		connected_loop_data1.LoopSideNum = Loop2LoopSideNum;
+		connected_loop_data1.ConnectorTypeOf_Num = PlantComponentTypeOfNum;
+		connected_loop_data1.LoopDemandsOnRemote = Loop1DemandsOnLoop2;
+		connected_1.push_back( connected_loop_data1 );
+		loop_side_1.TotalConnected = connected_1.size();
 
 		auto & loop_side_2( PlantLoop( Loop2Num ).LoopSide( Loop2LoopSideNum ) );
 		auto & connected_2( loop_side_2.Connected );
-		if ( allocated( connected_2 ) ) {
-			TotalConnected = ++loop_side_2.TotalConnected;
-			connected_2.redimension( TotalConnected );
-		} else {
-			TotalConnected = loop_side_2.TotalConnected = 1;
-			connected_2.allocate( 1 );
-		}
-		connected_2( TotalConnected ).LoopNum = Loop1Num;
-		connected_2( TotalConnected ).LoopSideNum = Loop1LoopSideNum;
-		connected_2( TotalConnected ).ConnectorTypeOf_Num = PlantComponentTypeOfNum;
-		connected_2( TotalConnected ).LoopDemandsOnRemote = Loop2DemandsOnLoop1;
+		ConnectedLoopData connected_loop_data2;
+		connected_loop_data2.LoopNum = Loop1Num;
+		connected_loop_data2.LoopSideNum = Loop1LoopSideNum;
+		connected_loop_data2.ConnectorTypeOf_Num = PlantComponentTypeOfNum;
+		connected_loop_data2.LoopDemandsOnRemote = Loop2DemandsOnLoop1;
+		connected_2.push_back( connected_loop_data2 );
+		loop_side_2.TotalConnected = connected_2.size();
 
 	}
 

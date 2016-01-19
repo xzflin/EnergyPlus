@@ -534,8 +534,8 @@ namespace OutAirNodeManager {
 
 		if ( NodeNumber > 0 ) {
 			if ( ! Okay ) { // Add new outside air node to list
-				OutsideAirNodeList.redimension( ++NumOutsideAirNodes );
-				OutsideAirNodeList( NumOutsideAirNodes ) = NodeNumber;
+				OutsideAirNodeList.push_back( NodeNumber );
+				NumOutsideAirNodes = OutsideAirNodeList.size();
 				TmpNums = OutsideAirNodeList;
 				//register new node..
 				GetNodeNums( NodeID( NodeNumber ), DummyNumber, TmpNums, errFlag, NodeType_Air, "OutdoorAir:Node", "OutdoorAir:Node", NodeConnectionType_OutsideAir, NumOutsideAirNodes, ObjectIsNotParent, IncrementFluidStreamYes );

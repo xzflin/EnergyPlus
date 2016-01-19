@@ -259,7 +259,6 @@ namespace WindowComplexManager {
 
 		if ( TotComplexFenStates <= 0 ) return; //Nothing to do if no complex fenestration states
 		//Construct Basis List
-		BasisList.allocate( TotComplexFenStates );
 
 		//Note:  Construction of the basis list contains the assumption of identical incoming and outgoing bases in
 		//            that the complex fenestration state definition contains only one basis description, hence
@@ -270,18 +269,21 @@ namespace WindowComplexManager {
 		for ( IConst = FirstBSDF; IConst <= FirstBSDF + TotComplexFenStates - 1; ++IConst ) {
 			MatrixNo = Construct( IConst ).BSDFInput.BasisMatIndex;
 			if ( NumBasis == 0 ) {
-				NumBasis = 1;
-				ConstructBasis( IConst, BasisList( 1 ) );
+				BasisStruct basis_struct;
+				ConstructBasis( IConst, basis_struct );
+				BasisList.push_back( basis_struct );
+				NumBasis = BasisList.size();
 			} else {
 				for ( IBasis = 1; IBasis <= NumBasis; ++IBasis ) {
 					if ( MatrixNo == BasisList( IBasis ).BasisMatIndex ) goto BsLoop_loop;
 				}
-				++NumBasis;
-				ConstructBasis( IConst, BasisList( NumBasis ) );
+				BasisStruct basis_struct;
+				ConstructBasis( IConst, basis_struct );
+				BasisList.push_back( basis_struct );
+				NumBasis = BasisList.size();
 			}
 			BsLoop_loop: ;
 		}
-		BasisList.redimension( NumBasis );
 		//  Proceed to set up geometry for complex fenestration states
 		ComplexWind.allocate( TotSurfaces ); //Set up companion array to SurfaceWindow to hold window
 		//     geometry for each state.  This is an allocatable array of
@@ -550,12 +552,12 @@ namespace WindowComplexManager {
 		// Expands states by one
 		int NumOfStates = SurfaceWindow( iSurf ).ComplexFen.NumStates;
 
-		ComplexWind( iSurf ).Geom.redimension( NumOfStates + 1 );
-		SurfaceWindow( iSurf ).ComplexFen.State.redimension( NumOfStates + 1 );
+		ComplexWind( iSurf ).Geom.emplace_back();
+		SurfaceWindow( iSurf ).ComplexFen.State.emplace_back();
 
 		// Do daylighting geometry only in case it is initialized. If daylighting is not used then no need to expand state for that
 		if ( ComplexWind( iSurf ).DaylightingInitialized ) {
-			ComplexWind( iSurf ).DaylghtGeom.redimension( NumOfStates + 1 );
+			ComplexWind( iSurf ).DaylghtGeom.emplace_back();
 			ComplexWind( iSurf ).DaylightingInitialized = false;
 		} else {
 			ComplexWind( iSurf ).DaylghtGeom.allocate( NumOfStates + 1 );

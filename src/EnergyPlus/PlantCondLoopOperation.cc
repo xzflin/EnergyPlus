@@ -1823,8 +1823,6 @@ namespace PlantCondLoopOperation {
 		int ThisTypeOfNum;
 		int CompOpNum;
 		int OldNumOpSchemes;
-		int NewNumEquipLists;
-		int NewNumOpSchemes;
 		int NumSearchResults;
 		bool GetInputOK; // successful Get Input
 
@@ -1939,17 +1937,16 @@ namespace PlantCondLoopOperation {
 								}
 								if ( FoundSchemeMatch ) { // op scheme already exists, but need to add a list to the existing OpScheme
 									auto & this_op_scheme( dummy_loop_equip.OpScheme( thisSchemeNum ) );
-									NewNumEquipLists = this_op_scheme.NumEquipLists + 1;
-									this_op_scheme.EquipList.redimension( NewNumEquipLists );
-									this_op_scheme.NumEquipLists = NewNumEquipLists;
-									this_op_scheme.EquipList( NewNumEquipLists ).ListPtr = ListNum;
-									this_op_scheme.EquipList( NewNumEquipLists ).CompPtr = EquipNum;
+									EquipListPtrData equip_list_ptr_data;
+									equip_list_ptr_data.ListPtr = ListNum;
+									equip_list_ptr_data.CompPtr = EquipNum;
+									this_op_scheme.EquipList.push_back( equip_list_ptr_data );
+									this_op_scheme.NumEquipLists = this_op_scheme.EquipList.size();
 								} else { // !FoundSchemeMatch: Add new op scheme and a new list
-									NewNumOpSchemes = OldNumOpSchemes + 1;
-									dummy_loop_equip.OpScheme.redimension( NewNumOpSchemes );
-									auto & new_op_scheme( dummy_loop_equip.OpScheme( NewNumOpSchemes ) );
+									dummy_loop_equip.OpScheme.emplace_back();
+									dummy_loop_equip.NumOpSchemes = dummy_loop_equip.OpScheme.size();
+									auto & new_op_scheme( dummy_loop_equip.OpScheme( dummy_loop_equip.NumOpSchemes ) );
 									new_op_scheme.EquipList.allocate( 1 );
-									dummy_loop_equip.NumOpSchemes = NewNumOpSchemes;
 									new_op_scheme.NumEquipLists = 1;
 									new_op_scheme.OpSchemePtr = OpNum;
 									new_op_scheme.EquipList( 1 ).ListPtr = ListNum;
