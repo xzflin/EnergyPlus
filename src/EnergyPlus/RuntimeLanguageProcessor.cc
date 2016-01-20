@@ -1143,7 +1143,7 @@ namespace RuntimeLanguageProcessor {
 		bool LastED; // last character in a numeric was an E or D
 
 		// Object Data
-		static Array1D< TokenType > Token;
+		Array1D< TokenType > Token;
 
 		// FLOW:
 		CountDoLooping = 0;
@@ -1186,7 +1186,9 @@ namespace RuntimeLanguageProcessor {
 			}
 
 			// Extend the token array
-			// Token.redimension( ++NumTokens );
+			Token.emplace_back();
+			NumTokens = Token.size();
+			auto & token_type( Token( NumTokens ) );
 
 			// Get the next token
 			StringToken = "";
@@ -1259,7 +1261,6 @@ namespace RuntimeLanguageProcessor {
 
 				// Save the number token
 				if ( ! ErrorFlag ) {
-					TokenType token_type;
 					token_type.Type = TokenNumber;
 					token_type.String = StringToken;
 					if ( DeveloperFlag ) gio::write( OutputFileDebug, fmtA ) << "Number=\"" + StringToken + "\"";
@@ -1269,8 +1270,6 @@ namespace RuntimeLanguageProcessor {
 						--token_type.Number;
 						MinusFound = false;
 					}
-					Token.push_back( token_type );
-					NumTokens = Token.size();
 					if ( ErrorFlag ) {
 						// Error: something wrong with this number!
 						ShowSevereError( "EMS Parse Expression, for \"" + ErlStack( StackNum ).Name + "\"." );
@@ -1303,18 +1302,13 @@ namespace RuntimeLanguageProcessor {
 				}
 
 				// Save the variable token
-				TokenType token_type;
 				token_type.Type = TokenVariable;
 				token_type.String = StringToken;
 				if ( DeveloperFlag ) gio::write( OutputFileDebug, fmtA ) << "Variable=\"" + StringToken + "\"";
 				token_type.Variable = NewEMSVariable( StringToken, StackNum );
-				Token.push_back( token_type );
-				NumTokens = Token.size();
 
 			} else if ( is_any_of( NextChar, "+-*/^=<>@|&" ) ) {
 				// Parse an operator token
-				TokenType token_type;
-
 				if ( NextChar == '-' ) {
 					StringToken = "-";
 					if ( MultFound ) {
@@ -1710,14 +1704,10 @@ namespace RuntimeLanguageProcessor {
 						ShowFatalError( "EMS, caught unexpected token = \"" + StringToken + "\" ; while parsing string=" + String );
 					}
 				}
-
-				Token.push_back( token_type );
-				NumTokens = Token.size();
 				++Pos;
 
 			} else if ( is_any_of( NextChar, "()" ) ) {
 				// Parse a parenthesis token
-				TokenType token_type;
 				++Pos;
 				StringToken = NextChar;
 				if ( DeveloperFlag ) gio::write( OutputFileDebug, fmtA ) << "PAREN \"" + StringToken + "\"";
@@ -1728,8 +1718,6 @@ namespace RuntimeLanguageProcessor {
 					OperatorProcessing = true;
 				}
 				if ( NextChar == ')' ) token_type.Parenthesis = ParenthesisRight;
-				Token.push_back( token_type );
-				NumTokens = Token.size();
 
 			} else if ( is_any_of( NextChar, "\"" ) ) {
 				// Parse a string literal token
@@ -3741,9 +3729,10 @@ namespace RuntimeLanguageProcessor {
 			if ( present( Value ) ) erl_variable_type.Value = Value;
 			ErlVariable.push_back( erl_variable_type );
 			NumErlVariables = ErlVariable.size();
+			VariableNum = NumErlVariables;
 		}
 
-		return NumErlVariables;
+		return VariableNum;
 	}
 
 	void

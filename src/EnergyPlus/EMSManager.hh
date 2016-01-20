@@ -97,7 +97,7 @@ namespace EMSManager {
 	// Functions
 	void
 	clear_state();
-	
+
 	void
 	CheckIfAnyEMS();
 
@@ -149,7 +149,7 @@ namespace EMSManager {
 	);
 
 	bool
-	CheckIfNodeMoreInfoSensedByEMS( 
+	CheckIfNodeMoreInfoSensedByEMS(
 		int const nodeNum, // index of node being checked.
 		std::string const & varName
 	);
