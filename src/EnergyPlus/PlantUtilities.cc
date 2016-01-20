@@ -1871,8 +1871,6 @@ namespace PlantUtilities {
 
 		bool const Loop2DemandsOnLoop1( ! Loop1DemandsOnLoop2 );
 
-		int TotalConnected;
-
 		auto & loop_side_1( PlantLoop( Loop1Num ).LoopSide( Loop1LoopSideNum ) );
 		auto & connected_1( loop_side_1.Connected );
 		ConnectedLoopData connected_loop_data1;

@@ -306,7 +306,6 @@ namespace EMSManager {
 		using OutputProcessor::RealVariables;
 		using OutputProcessor::RealVariableType;
 		using OutputProcessor::RVar;
-		using OutputProcessor::RVariableTypes;
 
 		// Locals
 		// SUBROUTINE ARGUMENT DEFINITIONS:

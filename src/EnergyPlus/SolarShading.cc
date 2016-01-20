@@ -3765,9 +3765,6 @@ namespace SolarShading {
 		// na
 
 		// SUBROUTINE LOCAL VARIABLE DECLARATIONS:
-		Array1D_int GSS; // List of shadowing surfaces numbers for a receiving surface
-		Array1D_int BKS; // List of back surface numbers for a receiving surface
-		Array1D_int SBS; // List of subsurfaces for a receiving surface
 		bool CannotShade; // TRUE if subsurface cannot shade receiving surface
 		bool HasWindow; // TRUE if a window is present on receiving surface
 		Real64 ZMIN; // Lowest point on the receiving surface
@@ -3823,6 +3820,7 @@ namespace SolarShading {
 			ZMIN = minval( Surface( GRSNR ).Vertex, &Vector::z );
 
 			// Check every surface as a possible shadow casting surface ("SS" = shadow sending)
+			Array1D_int GSS; // List of shadowing surfaces numbers for a receiving surface
 			NGSS = 0;
 			if ( SolarDistribution != MinimalShadowing ) { // Except when doing simplified exterior shadowing.
 
@@ -3869,6 +3867,7 @@ namespace SolarShading {
 
 			// Check every surface as a receiving subsurface of the receiving surface
 			NSBS = 0;
+			Array1D_int SBS; // List of subsurfaces for a receiving surface
 			HasWindow = false;
 			//legacy: IF (OSENV(HTS) > 10) WINDOW=.TRUE. -->Note: WINDOW was set true for roof ponds, solar walls, or other zones
 			for ( SBSNR = 1; SBSNR <= TotSurfaces; ++SBSNR ) { // Loop through the surfaces yet again (looking for subsurfaces of GRSNR)...
@@ -3887,6 +3886,7 @@ namespace SolarShading {
 
 			// Check every surface as a back surface
 			NBKS = 0;
+			Array1D_int BKS; // List of back surface numbers for a receiving surface
 			//                                        Except for simplified
 			//                                        interior solar distribution,
 			if ( ( SolarDistribution == FullInteriorExterior ) && ( HasWindow ) ) { // For full interior solar distribution | and a window present on base surface (GRSNR)
@@ -3938,10 +3938,6 @@ namespace SolarShading {
 			}
 
 		} // ...end of surfaces (GRSNR) DO loop
-
-		GSS.deallocate();
-		SBS.deallocate();
-		BKS.deallocate();
 
 		shd_stream << "Shadowing Combinations\n";
 		if ( SolarDistribution == MinimalShadowing ) {
