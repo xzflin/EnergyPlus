@@ -3601,20 +3601,12 @@ namespace EconomicTariff {
 
 		// SUBROUTINE LOCAL VARIABLE DECLARATIONS:
 		Array1D< Real64 > curMonthlyArray( MaxNumMonths );
-		static int sizeIncrement( 50 );
 
 		curMonthlyArray = monthlyArray;
-		if ( ! allocated( stack ) ) {
-			stack.allocate( sizeIncrement );
-			sizeStack = sizeIncrement;
-			topOfStack = 1;
-		} else {
-			++topOfStack;
-			// if larger than current size grow the array
-			if ( topOfStack > sizeStack ) {
-				stack.redimension( sizeStack += sizeIncrement );
-			}
-		}
+
+		stack.emplace_back();
+		sizeStack = stack.size();
+		topOfStack = sizeStack;
 		//now push the values on to the stack
 		stack( topOfStack ).varPt = variablePointer;
 		//check if variable has been evaluated if it is CHARGE:SIMPLE, CHARGE:BLOCK, RATCHET, or QUALIFY

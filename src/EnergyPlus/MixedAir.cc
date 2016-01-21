@@ -2954,19 +2954,18 @@ namespace MixedAir {
 
 				// Shrink final arrays to conserve environment space
 				if ( TempMechVentArrayCounter < vent_mech.NumofVentMechZones ) {
-					vent_mech.Zone.redimension( TempMechVentArrayCounter );
-					vent_mech.ZoneOAAreaRate.redimension( TempMechVentArrayCounter );
-					vent_mech.ZoneOAPeopleRate.redimension( TempMechVentArrayCounter );
-					vent_mech.ZoneOAFlow.redimension( TempMechVentArrayCounter );
-					vent_mech.ZoneOAACH.redimension( TempMechVentArrayCounter );
-					vent_mech.ZoneDesignSpecOAObjIndex.redimension( TempMechVentArrayCounter );
-					vent_mech.ZoneDesignSpecOAObjName.redimension( TempMechVentArrayCounter );
-
-					vent_mech.ZoneADEffCooling.redimension( TempMechVentArrayCounter );
-					vent_mech.ZoneADEffHeating.redimension( TempMechVentArrayCounter );
-					vent_mech.ZoneADEffSchPtr.redimension( TempMechVentArrayCounter );
-					vent_mech.ZoneADEffSchName.redimension( TempMechVentArrayCounter );
-
+					auto const mech_to_remove = vent_mech.NumofVentMechZones - TempMechVentArrayCounter;
+					vent_mech.Zone.erase( vent_mech.Zone.end() - mech_to_remove, vent_mech.Zone.end() );
+					vent_mech.ZoneOAAreaRate.erase( vent_mech.ZoneOAAreaRate.end() - mech_to_remove, vent_mech.ZoneOAAreaRate.end() );
+					vent_mech.ZoneOAPeopleRate.erase( vent_mech.ZoneOAPeopleRate.end() - mech_to_remove, vent_mech.ZoneOAPeopleRate.end() );
+					vent_mech.ZoneOAFlow.erase( vent_mech.ZoneOAFlow.end() - mech_to_remove, vent_mech.ZoneOAFlow.end() );
+					vent_mech.ZoneOAACH.erase( vent_mech.ZoneOAACH.end() - mech_to_remove, vent_mech.ZoneOAACH.end() );
+					vent_mech.ZoneDesignSpecOAObjIndex.erase( vent_mech.ZoneDesignSpecOAObjIndex.end() - mech_to_remove, vent_mech.ZoneDesignSpecOAObjIndex.end() );
+					vent_mech.ZoneDesignSpecOAObjName.erase( vent_mech.ZoneDesignSpecOAObjName.end() - mech_to_remove, vent_mech.ZoneDesignSpecOAObjName.end() );
+					vent_mech.ZoneADEffCooling.erase( vent_mech.ZoneADEffCooling.end() - mech_to_remove, vent_mech.ZoneADEffCooling.end() );
+					vent_mech.ZoneADEffHeating.erase( vent_mech.ZoneADEffHeating.end() - mech_to_remove, vent_mech.ZoneADEffHeating.end() );
+					vent_mech.ZoneADEffSchPtr.erase( vent_mech.ZoneADEffSchPtr.end() - mech_to_remove, vent_mech.ZoneADEffSchPtr.end() );
+					vent_mech.ZoneADEffSchName.erase( vent_mech.ZoneADEffSchName.end() - mech_to_remove, vent_mech.ZoneADEffSchName.end() );
 					vent_mech.NumofVentMechZones = TempMechVentArrayCounter;
 				}
 

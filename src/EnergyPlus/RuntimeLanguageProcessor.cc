@@ -1831,7 +1831,7 @@ namespace RuntimeLanguageProcessor {
 								if ( LastPos + 1 <= NumTokens ) {
 									Token( {Pos+1,NewNumTokens} ) = Token( {LastPos+1,_} );
 								}
-								Token.redimension( NewNumTokens );
+								Token.erase( Token.end() - NumSubTokens - 1, Token.end() );
 								Token( Pos ).Type = TokenExpression;
 								Token( Pos ).Expression = ExpressionNum;
 								Token( Pos ).String = "Expr";
@@ -1974,7 +1974,7 @@ namespace RuntimeLanguageProcessor {
 						Token( Pos - 1 ).Expression = ExpressionNum;
 						Token( Pos - 1 ).String = "Expr";
 						NumTokens -= 2;
-						Token.redimension( NumTokens );
+						Token.erase( Token.end() - 2, Token.end() );
 					}
 				}
 

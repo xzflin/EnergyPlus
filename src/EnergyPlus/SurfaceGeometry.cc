@@ -1050,22 +1050,18 @@ namespace SurfaceGeometry {
 
 		// Have to make room for added surfaces, if needed
 		FirstTotalSurfaces = SurfNum + AddedSubSurfaces;
-		// if ( NeedToAddSurfaces + NeedToAddSubSurfaces > 0 ) {
-		// 	SurfaceTmp.redimension( TotSurfaces );
-		// }
 
 		SurfaceWindow.allocate( TotSurfaces );
 
 		// add the "need to add" surfaces
 		// if ( NeedToAddSurfaces + NeedToAddSubSurfaces > 0 ) CurNewSurf = FirstTotalSurfaces;
 		for ( SurfNum = 1; SurfNum <= FirstTotalSurfaces; ++SurfNum ) {
-			auto & old_surface_data( SurfaceTmp( SurfNum ) );
-			if ( old_surface_data.ExtBoundCond != UnenteredAdjacentZoneSurface ) continue;
+			if ( SurfaceTmp( SurfNum ).ExtBoundCond != UnenteredAdjacentZoneSurface ) continue;
 			// Need to add surface
-			SurfaceTmp.emplace_back();
+			SurfaceTmp.push_back( SurfaceTmp( SurfNum ) );
 			CurNewSurf = SurfaceTmp.size();
-			auto & surface_data( old_surface_data );
-			surface_data = old_surface_data;
+			auto & surface_data( SurfaceTmp( CurNewSurf ) );
+			auto & old_surface_data( SurfaceTmp( CurNewSurf - 1 ) );
 			//  Basic parameters are the same for both surfaces.
 			Found = FindItemInList( old_surface_data.ExtBoundCondName, Zone, NumOfZones );
 			if ( Found == 0 ) continue;
@@ -6697,12 +6693,11 @@ namespace SurfaceGeometry {
 		Real64 SurfWorldAz;
 		Real64 SurfTilt;
 		int n;
-		//  TYPE(Vector) :: temp1
 
-		auto & old_surface_data( SurfaceTmp( SurfNum ) );
 		SurfaceTmp.emplace_back();
 		SurfNum = SurfaceTmp.size();
 		auto & surface_data( SurfaceTmp( SurfNum ) );
+		auto & old_surface_data( SurfaceTmp( SurfNum - 1 ) );
 
 		NVert = old_surface_data.Sides;
 		surface_data.Vertex.allocate( NVert );

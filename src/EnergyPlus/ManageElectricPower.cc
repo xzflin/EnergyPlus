@@ -204,7 +204,6 @@ namespace ManageElectricPower {
 	int ElecProducedStorageIndex( 0 );
 
 	int MaxRainflowArrayBounds( 100 );
-	int MaxRainflowArrayInc( 100 );
 
 	// SUBROUTINE SPECIFICATIONS FOR MODULE PrimaryPlantLoops
 
@@ -244,7 +243,6 @@ namespace ManageElectricPower {
 		ElecProducedWTIndex = 0;
 		ElecProducedStorageIndex = 0;
 		MaxRainflowArrayBounds = 100;
-		MaxRainflowArrayInc = 100;
 		ElecStorage.deallocate();
 		Inverter.deallocate();
 		ElecLoadCenter.deallocate();
@@ -2866,9 +2864,12 @@ namespace ManageElectricPower {
 					//        The arrary size needs to be increased when count = MaxRainflowArrayBounds. Please note that (MaxRainflowArrayBounds +1)
 					//        is the index used in the subroutine RainFlow. So we cannot reallocate array size until count = MaxRainflowArrayBounds +1.
 					if ( ElecStorage( ElecStorNum ).count0 == MaxRainflowArrayBounds ) {
-						ElecStorage( ElecStorNum ).B10.redimension( MaxRainflowArrayBounds + 1 + MaxRainflowArrayInc, 0.0 );
-						ElecStorage( ElecStorNum ).X0.redimension( MaxRainflowArrayBounds + 1 + MaxRainflowArrayInc, 0.0 );
-						MaxRainflowArrayBounds += MaxRainflowArrayInc;
+						// The array size must be 1 larger than MaxRainflowArrayBounds.
+						for (size_t i = 0; i < 2; i++) {
+							ElecStorage( ElecStorNum ).B10.emplace_back( 0.0 );
+							ElecStorage( ElecStorNum ).X0.emplace_back( 0.0 );
+						}
+						++MaxRainflowArrayBounds;
 					}
 
 					Rainflow( ElecStorage( ElecStorNum ).CycleBinNum, Input0, ElecStorage( ElecStorNum ).B10, ElecStorage( ElecStorNum ).X0, ElecStorage( ElecStorNum ).count0, ElecStorage( ElecStorNum ).Nmb0, ElecStorage( ElecStorNum ).OneNmb0, MaxRainflowArrayBounds + 1 );

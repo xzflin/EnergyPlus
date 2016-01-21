@@ -121,7 +121,6 @@ namespace ManageElectricPower {
 	extern int ElecProducedWTIndex;
 
 	extern int MaxRainflowArrayBounds;
-	extern int MaxRainflowArrayInc;
 
 	// SUBROUTINE SPECIFICATIONS FOR MODULE PrimaryPlantLoops
 
