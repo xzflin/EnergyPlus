@@ -1042,6 +1042,7 @@ namespace ManageElectricPower {
 		int NumofKiBaMElecStorage;
 		int InvertNum;
 		int StorNum;
+		int BattStorIndex;
 		int TransfNum;
 		int Found;
 		int NumAlphaBeforeMeter; // Number of Alpha fields before the extensible meters
@@ -1313,8 +1314,11 @@ namespace ManageElectricPower {
 
 			if ( NumofKiBaMElecStorage > 0 ) {
 				cCurrentModuleObject = "ElectricLoadCenter:Storage:Battery";
-				for ( StorNum = 1 + NumofSimpleElecStorage; StorNum <= NumofKiBaMElecStorage; ++StorNum ) {
-					GetObjectItem( cCurrentModuleObject, StorNum, cAlphaArgs, NumAlphas, rNumericArgs, NumNums, IOStat, _, lAlphaFieldBlanks, cAlphaFieldNames, cNumericFieldNames );
+				for ( BattStorIndex = 1; BattStorIndex <= NumofKiBaMElecStorage; ++BattStorIndex ) {
+					GetObjectItem( cCurrentModuleObject, BattStorIndex, cAlphaArgs, NumAlphas, rNumericArgs, NumNums, IOStat, _, lAlphaFieldBlanks, cAlphaFieldNames, cNumericFieldNames );
+
+					StorNum = BattStorIndex + NumofSimpleElecStorage;
+
 					IsNotOK = false;
 					IsBlank = false;
 					VerifyName( cAlphaArgs( 1 ), StorageNames, StorNum - 1, IsNotOK, IsBlank, cCurrentModuleObject + " Name" );
@@ -1461,13 +1465,17 @@ namespace ManageElectricPower {
 				SetupOutputVariable( "Electric Storage Discharge Energy [J]", ElecStorage( StorNum ).DrawnEnergy, "System", "Sum", ElecStorage( StorNum ).Name, _, "ElectricityProduced", "ELECTRICSTORAGE", _, "Plant" );
 				SetupOutputVariable( "Electric Storage Thermal Loss Rate [W]", ElecStorage( StorNum ).ThermLossRate, "System", "Average", ElecStorage( StorNum ).Name );
 				SetupOutputVariable( "Electric Storage Thermal Loss Energy [J]", ElecStorage( StorNum ).ThermLossEnergy, "System", "Sum", ElecStorage( StorNum ).Name );
+				if ( ElecStorage( StorNum ).StorageModelMode == SimpleBucketStorage ) {
+					SetupEMSInternalVariable( "Electrical Storage Simmple Maximum Capacity", ElecStorage( StorNum ).Name, "[J]", ElecStorage( StorNum ).MaxEnergyCapacity );
+				} else if ( ElecStorage( StorNum ).StorageModelMode == KiBaMBattery ) {
+					SetupEMSInternalVariable( "Electrical Storage Battery Maximum Capacity", ElecStorage( StorNum ).Name, "[Ah]", ElecStorage( StorNum ).MaxAhCapacity );
+				}
 				if ( AnyEnergyManagementSystemInModel ) {
-					if ( ElecStorage( StorNum ).StorageModelMode == SimpleBucketStorage ) {
-						SetupEMSInternalVariable( "Electrical Storage Maximum Capacity", ElecStorage( StorNum ).Name, "[J]", ElecStorage( StorNum ).MaxEnergyCapacity );
-					} else if ( ElecStorage( StorNum ).StorageModelMode == KiBaMBattery ) {
-						SetupEMSInternalVariable( "Electrical Storage Maximum Capacity", ElecStorage( StorNum ).Name, "[Ah]", ElecStorage( StorNum ).MaxAhCapacity );
-					}
-
+					//if ( ElecStorage( StorNum ).StorageModelMode == SimpleBucketStorage ) {
+					//	SetupEMSInternalVariable( "Electrical Storage Maximum Capacity", ElecStorage( StorNum ).Name, "[J]", ElecStorage( StorNum ).MaxEnergyCapacity );
+					//} else if ( ElecStorage( StorNum ).StorageModelMode == KiBaMBattery ) {
+					//	SetupEMSInternalVariable( "Electrical Storage Maximum Capacity", ElecStorage( StorNum ).Name, "[Ah]", ElecStorage( StorNum ).MaxAhCapacity );
+					//}
 					SetupEMSActuator( "Electrical Storage", ElecStorage( StorNum ).Name, "Power Draw Rate", "[W]", ElecStorage( StorNum ).EMSOverridePelFromStorage, ElecStorage( StorNum ).EMSValuePelFromStorage );
 					SetupEMSActuator( "Electrical Storage", ElecStorage( StorNum ).Name, "Power Charge Rate", "[W]", ElecStorage( StorNum ).EMSOverridePelIntoStorage, ElecStorage( StorNum ).EMSValuePelIntoStorage );
 				}
