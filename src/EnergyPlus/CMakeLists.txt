@@ -457,6 +457,8 @@ SET( SRC
   SolarShading.hh
   SortAndStringUtilities.cc
   SortAndStringUtilities.hh
+  SpawnSurgicalTools.cc
+  SpawnSurgicalTools.hh
   SplitterComponent.cc
   SplitterComponent.hh
   StandardRatings.cc

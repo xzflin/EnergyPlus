@@ -139,6 +139,7 @@ extern "C" {
 #include <SetPointManager.hh>
 #include <SizingManager.hh>
 #include <SolarShading.hh>
+#include <SpawnSurgicalTools.hh>
 #include <SQLiteProcedures.hh>
 #include <SystemReports.hh>
 #include <UtilityRoutines.hh>
@@ -483,6 +484,8 @@ namespace SimulationManager {
 		EnvCount = 0;
 		WarmupFlag = true;
 
+		Real64 integratedVariable = 0.0;
+
 		while ( Available ) {
 
 			GetNextEnvironment( Available, ErrorsFound );
@@ -588,6 +591,8 @@ namespace SimulationManager {
 						ManageWeather();
 
 						ManageExteriorEnergyUse();
+
+						integratedVariable = SpawnSurgicalTools::integrateDummyODE( integratedVariable, TimeStepZone );
 
 						ManageHeatBalance();
 

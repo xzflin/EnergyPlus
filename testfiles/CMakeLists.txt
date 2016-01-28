@@ -27,6 +27,7 @@ ADD_SIMULATION_TEST(IDF_FILE 5ZoneAirCooledConvCoefPIU.idf EPW_FILE USA_CO_Golde
 ADD_SIMULATION_TEST(IDF_FILE 5ZoneAirCooledDemandLimiting.idf EPW_FILE USA_IL_Chicago-OHare.Intl.AP.725300_TMY3.epw)
 ADD_SIMULATION_TEST(IDF_FILE 5ZoneAirCooledDemandLimiting_FixedRateVentilation.idf EPW_FILE USA_IL_Chicago-OHare.Intl.AP.725300_TMY3.epw)
 ADD_SIMULATION_TEST(IDF_FILE 5ZoneAirCooledDemandLimiting_ReductionRatioVentilation.idf EPW_FILE USA_IL_Chicago-OHare.Intl.AP.725300_TMY3.epw)
+ADD_SIMULATION_TEST(IDF_FILE 5ZoneAirCooledSpawnSurgeryPatient.idf EPW_FILE USA_CO_Golden-NREL.724666_TMY3.epw)
 ADD_SIMULATION_TEST(IDF_FILE 5ZoneAirCooledWithCoupledInGradeSlab.idf EPW_FILE USA_IL_Chicago-OHare.Intl.AP.725300_TMY3.epw)
 ADD_SIMULATION_TEST(IDF_FILE 5ZoneAirCooled_UniformLoading.idf EPW_FILE USA_IL_Chicago-OHare.Intl.AP.725300_TMY3.epw)
 ADD_SIMULATION_TEST(IDF_FILE 5ZoneAirCooled_VRPSizing.idf EPW_FILE USA_IL_Chicago-OHare.Intl.AP.725300_TMY3.epw)
@@ -524,7 +525,7 @@ ADD_SIMULATION_TEST(IDF_FILE BasicsFiles/Exercise2.idf EPW_FILE USA_IL_Chicago-O
 
 
 # Macro files
-ADD_SIMULATION_TEST(IDF_FILE AbsorptionChiller_Macro.imf EPW_FILE USA_IL_Chicago-OHare.Intl.AP.725300_TMY3.epw ENERGYPLUS_FLAGS -m) 
+ADD_SIMULATION_TEST(IDF_FILE AbsorptionChiller_Macro.imf EPW_FILE USA_IL_Chicago-OHare.Intl.AP.725300_TMY3.epw ENERGYPLUS_FLAGS -m)
 
 # External interface files -- note they don't work on Mac
 if ( NOT APPLE )
