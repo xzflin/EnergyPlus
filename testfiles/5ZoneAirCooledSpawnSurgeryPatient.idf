@@ -104,6 +104,42 @@ Output:Variable,*,Spawn Surgery Dummy Integrated Value,timestep;
 Output:Variable,*,Spawn Surgery Dummy Time Derivative,timestep;
 Output:Diagnostics,ReportDuringWarmup;
 
+!  EnergyManagementSystem:Sensor,
+!    IntegratedValue,                  !- Name
+!    Edwin,             !- Output:Variable or Output:Meter Index Key Name
+!    Spawn Surgery Dummy Integrated Value;  !- Output:Variable or Output:Meter Name
+
+!  EnergyManagementSystem:Actuator,
+!    TimeDerivative,            !- Name
+!    Edwin,    !- Actuated Component Unique Name
+!    Branch,  !- Actuated Component Type
+!    Time Derivative;  !- Actuated Component Control Type
+
+  EnergyManagementSystem:GlobalVariable,
+    TimeDerivative;
+
+  EnergyManagementSystem:ProgramCallingManager,
+    DoesntMatter,  !- Name
+    BeginTimestepBeforePredictor,  !- EnergyPlus Model Calling Point
+    UpdateTimeDerivative;    !- Program Name 1
+
+  EnergyManagementSystem:Program,
+    UpdateTimeDerivative,    !- Name
+    SET TimeDerivative = ( - 0.005 ) * PlenumTemp + 5;
+
+
+  Output:Variable,PLENUM-1,Zone Mean Air Temperature,hourly;
+  EnergyManagementSystem:Sensor,
+    PlenumTemp,    !- Name
+    PLENUM-1,               !- Output:Variable or Output:Meter Index Key Name
+    Zone Mean Air Temperature;  !- Output:Variable or Output:Meter Name
+
+
+  Output:EnergyManagementSystem,
+    Verbose,                 !- Actuator Availability Dictionary Reporting
+    Verbose,                 !- Internal Variable Availability Dictionary Reporting
+    Verbose;                 !- EMS Runtime Language Debug Output Level
+
   Version,8.4;
 
   Building,
