@@ -448,7 +448,7 @@ namespace OutputReportTabular {
 		WriteTabularFiles = false;
 		unitsStyle = 0;
 		numStyles = 0;
-		TabularOutputFile = Array1D< std::ofstream * > ( maxNumStyles, { &csv_stream, &tab_stream, &fix_stream, &htm_stream, &xml_stream } ); 
+		TabularOutputFile = Array1D< std::ofstream * > ( maxNumStyles, { &csv_stream, &tab_stream, &fix_stream, &htm_stream, &xml_stream } );
 		del = Array1D_string ( maxNumStyles );
 		TableStyle = Array1D_int ( maxNumStyles, 0 );
 		timeInYear = 0.0;
@@ -10814,7 +10814,7 @@ namespace OutputReportTabular {
 			//  feneSolarInstantSeq = 0.0d0
 			feneSolarRadSeq.allocate( TotDesDays + TotRunDesPersDays, NumOfTimeStepInHour * 24, TotSurfaces );
 			feneSolarRadSeq = 0.0;
-			feneSolarDelaySeq.allocate( TotDesDays + TotRunDesPersDays, NumOfTimeStepInHour * 24, TotSurfaces );
+			feneSolarDelaySeq.allocate( TotDesDays + TotRunDesPersDays, NumOfTimeStepInHour * 24, NumOfZones );
 			feneSolarDelaySeq = 0.0;
 			surfDelaySeq.allocate( TotDesDays + TotRunDesPersDays, NumOfTimeStepInHour * 24, TotSurfaces );
 			surfDelaySeq = 0.0;
