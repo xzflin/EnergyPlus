@@ -101,6 +101,7 @@
 ! Utility Tariffs:                None
 
 Output:Variable,*,Spawn Surgery Dummy Integrated Value,timestep;
+Output:Variable,*,Spawn Surgery Dummy Time Derivative,timestep;
 Output:Diagnostics,ReportDuringWarmup;
 
   Version,8.4;

@@ -5,7 +5,7 @@
 
 namespace SpawnSurgicalTools {
 	Real64 integrateDummyODE( Real64 initialValue, Real64 timestep );
-	Real64 getTimeDerivative();
+	Real64 getTimeDerivative( Real64 initialValue );
 }
 
 #endif //SPAWN_SURGICAL_TOOLS_HH
