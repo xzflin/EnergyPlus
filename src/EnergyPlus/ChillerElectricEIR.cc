@@ -672,9 +672,12 @@ namespace ChillerElectricEIR {
 				ElectricEIRChiller( EIRChillerNum ).HeatRecOutletNodeNum = 0;
 				if ( ! lAlphaFieldBlanks( 11 ) || ! lAlphaFieldBlanks( 12 ) ) {
 					//  IF (cAlphaArgs(11) /= ' ' .or. cAlphaArgs(12) /= ' ') THEN
-					ShowWarningError( RoutineName + cCurrentModuleObject + "=\"" + cAlphaArgs( 1 ) + "\"" );
-					ShowContinueError( "Since Reference Heat Reclaim Volume Flow Rate = 0.0, heat recovery is inactive." );
-					ShowContinueError( "However, node names were specified for heat recovery inlet or outlet nodes." );
+					ShowSevereError( RoutineName + cCurrentModuleObject + "=\"" + cAlphaArgs( 1 ) + "\"" );
+					ShowContinueError( "Invalid input configuration for heat recovery operation." );
+					ShowContinueError( "Field: \"" + cNumericFieldNames( 14 ) + "\" was blank or zero, " );
+					ShowContinueError( "however, heat recovery node names were entered." );
+					ShowContinueError( "Either use a non-zero value for the flow rate, or remove the node names." );
+					ErrorsFound = true;
 				}
 			}
 
