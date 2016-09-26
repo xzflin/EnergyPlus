@@ -1525,23 +1525,17 @@ namespace EnergyPlus {
 			else if ( ( SensLoad < ( -1.0 * SmallLoad ) ) ||
 			          ( LatentLoad < ( -1.0 * SmallLoad ) ) )//simultaneous SC and WH calls
 			{
-				if ( ( IntegratedHeatPumps( DXCoilNum ).ControlledZoneTemp >
-					IntegratedHeatPumps( DXCoilNum ).TindoorWHHighPriority ) &&
-					( OutDryBulbTemp >
-					IntegratedHeatPumps( DXCoilNum ).TambientWHHighPriority ) )
+				if ( WHHeatVolSave < IntegratedHeatPumps( DXCoilNum ).WaterVolSCDWH )//small water heating amount
 				{
-					if ( WHHeatVolSave < IntegratedHeatPumps( DXCoilNum ).WaterVolSCDWH )//small water heating amount
-					{
-						IntegratedHeatPumps( DXCoilNum ).CurMode = IHPOperationMode::SCDWHMode;
-						IntegratedHeatPumps( DXCoilNum ).WaterFlowAccumVol = WHHeatVolSave;
-					}
-					else {
-						if ( 1 == IntegratedHeatPumps( DXCoilNum ).ModeMatchSCWH ) //water heating priority
-							IntegratedHeatPumps( DXCoilNum ).CurMode = IHPOperationMode::SCWHMatchWHMode;
-						else  //space cooling piority
-							IntegratedHeatPumps( DXCoilNum ).CurMode = IHPOperationMode::SCWHMatchSCMode;
-					};
+					IntegratedHeatPumps( DXCoilNum ).CurMode = IHPOperationMode::SCDWHMode;
+					IntegratedHeatPumps( DXCoilNum ).WaterFlowAccumVol = WHHeatVolSave;
 				}
+				else {
+					if ( 1 == IntegratedHeatPumps( DXCoilNum ).ModeMatchSCWH ) //water heating priority
+						IntegratedHeatPumps( DXCoilNum ).CurMode = IHPOperationMode::SCWHMatchWHMode;
+					else  //space cooling piority
+						IntegratedHeatPumps( DXCoilNum ).CurMode = IHPOperationMode::SCWHMatchSCMode;
+				};
 
 			}
 			else if ( ( IntegratedHeatPumps( DXCoilNum ).ControlledZoneTemp >
