@@ -224,6 +224,8 @@ namespace DataDaylighting {
 		bool AdjZoneHasDayltgCtrl;
 		int MapCount; // Number of maps assigned to Zone
 		Array1D_int ZoneToMap; // Pointers to maps allocated to Zone
+		bool EMSIllumSetpt1OverrideOn; // if true, then EMS is calling to override the first illuminance setpoint
+		Real64 EMSIllumSetpt1Value; // value EMS is directing to use [lux]
 
 		// Default Constructor
 		ZoneDaylightCalc() :

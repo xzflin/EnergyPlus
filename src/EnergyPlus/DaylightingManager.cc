@@ -91,6 +91,7 @@
 #include <DaylightingDevices.hh>
 #include <DElightManagerF.hh>
 #include <DisplayRoutines.hh>
+#include <EMSManager.hh>
 #include <General.hh>
 #include <InputProcessor.hh>
 #include <InternalHeatGains.hh>
@@ -4620,6 +4621,7 @@ namespace DaylightingManager {
 		using InputProcessor::FindItemInList;
 		using InputProcessor::SameString;
 		using General::RoundSigDigits;
+		using DataGlobals::AnyEnergyManagementSystemInModel;
 
 		int IOStat;
 		int NumAlpha;
@@ -4757,6 +4759,10 @@ namespace DaylightingManager {
 					SetupOutputVariable( "Daylighting Reference Point " + std::to_string( refPtNum ) + " Glare Index []", zone_daylight.GlareIndexAtRefPt( refPtNum ), "Zone", "Average", zone_daylight.Name );
 					SetupOutputVariable( "Daylighting Reference Point " + std::to_string( refPtNum ) + " Glare Index Setpoint Exceeded Time [hr]", zone_daylight.TimeExceedingGlareIndexSPAtRefPt( refPtNum ), "Zone", "Sum", zone_daylight.Name );
 				}
+			}
+			if ( AnyEnergyManagementSystemInModel ) {
+				SetupEMSActuator( "Daylighting:Controls", zone_daylight.Name, "Illuminance Setpoint 1", "[lux]", zone_daylight.EMSIllumSetpt1OverrideOn,
+					zone_daylight.EMSIllumSetpt1Value);
 			}
 			// Register Error if 0 DElight RefPts have been input for valid DElight object
 			if ( countRefPts < 1 ) {
@@ -5892,6 +5898,9 @@ namespace DaylightingManager {
 		// Initialize reference point illuminance and window background luminance
 		for ( IL = 1; IL <= NREFPT; ++IL ) {
 			SetPnt( IL ) = ZoneDaylight( ZoneNum ).IllumSetPoint( IL );
+			if ( IL == 1 && ZoneDaylight( ZoneNum ).EMSIllumSetpt1OverrideOn ) {
+				SetPnt( 1 ) = ZoneDaylight( ZoneNum ).EMSIllumSetpt1Value;
+			}
 			DaylIllum( IL ) = 0.0;
 			ZoneDaylight( ZoneNum ).BacLum( IL ) = 0.0;
 		}
