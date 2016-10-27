@@ -179,6 +179,7 @@ namespace DataGlobals {
 	extern std::ostream * err_stream; // Internal stream used for err output (used for performance)
 	extern int StdOutputRecordCount; // Count of Standard output records
 	extern int OutputFileInits; // Unit number for the standard Initialization output file
+	extern std::stringstream toEio; // a stringstream used as intermediate step to generating the EIO file which is also used for adding to the Tabular and SQL output files also
 	extern int OutputFileDebug; // Unit number for debug outputs
 	extern int OutputFileZoneSizing; // Unit number of zone sizing calc output file
 	extern int OutputFileSysSizing; // Unit number of system sizing calc output file

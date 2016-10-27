@@ -121,6 +121,8 @@ namespace SurfaceGeometry {
 	using namespace DataHeatBalance;
 	using namespace DataSurfaces;
 	using DataWindowEquivalentLayer::CFSMAXNL;
+	using std::endl;
+	using std::setprecision;
 
 	// Use statements for access to subroutines in other modules
 	// na
@@ -622,6 +624,8 @@ namespace SurfaceGeometry {
 
 		// Write Zone Information header to the initialization output file
 		gio::write( OutputFileInits, Format_721 );
+		toEio << "! <Zone Information>,Zone Name,North Axis {deg},Origin X-Coordinate {m},Origin Y-Coordinate {m},Origin Z-Coordinate {m},Centroid X-Coordinate {m},Centroid Y-Coordinate {m},Centroid Z-Coordinate {m},Type,Zone Multiplier,Zone List Multiplier,Minimum X {m},Maximum X {m},','Minimum Y {m},Maximum Y {m},Minimum Z {m},Maximum Z {m},Ceiling Height {m},Volume {m3},','Zone Inside Convection Algorithm {Simple-Detailed-CeilingDiffuser-TrombeWall},','Zone Outside Convection Algorithm {Simple-Detailed-Tarp-MoWitt-DOE-2-BLAST},',' Floor Area {m2},Exterior Gross Wall Area {m2},Exterior Net Wall Area {m2},Exterior Window Area {m2}, Number of Surfaces, Number of SubSurfaces, Number of Shading SubSurfaces, Part of Total Building Area" << endl;
+
 
 		for ( ZoneNum = 1; ZoneNum <= NumOfZones; ++ZoneNum ) {
 			// Write Zone Information to the initialization output file
@@ -664,6 +668,7 @@ namespace SurfaceGeometry {
 			}
 
 			gio::write( OutputFileInits, Format_720 ) << Zone( ZoneNum ).Name << RoundSigDigits( Zone( ZoneNum ).RelNorth, 1 ) << RoundSigDigits( Zone( ZoneNum ).OriginX, 2 ) << RoundSigDigits( Zone( ZoneNum ).OriginY, 2 ) << RoundSigDigits( Zone( ZoneNum ).OriginZ, 2 ) << RoundSigDigits( Zone( ZoneNum ).Centroid.x, 2 ) << RoundSigDigits( Zone( ZoneNum ).Centroid.y, 2 ) << RoundSigDigits( Zone( ZoneNum ).Centroid.z, 2 ) << RoundSigDigits( Zone( ZoneNum ).OfType ) << RoundSigDigits( Zone( ZoneNum ).Multiplier ) << RoundSigDigits( Zone( ZoneNum ).ListMultiplier ) << RoundSigDigits( Zone( ZoneNum ).MinimumX, 2 ) << RoundSigDigits( Zone( ZoneNum ).MaximumX, 2 ) << RoundSigDigits( Zone( ZoneNum ).MinimumY, 2 ) << RoundSigDigits( Zone( ZoneNum ).MaximumY, 2 ) << RoundSigDigits( Zone( ZoneNum ).MinimumZ, 2 ) << RoundSigDigits( Zone( ZoneNum ).MaximumZ, 2 ) << RoundSigDigits( Zone( ZoneNum ).CeilingHeight, 2 ) << RoundSigDigits( Zone( ZoneNum ).Volume, 2 ) << String1 << String2 << RoundSigDigits( Zone( ZoneNum ).FloorArea, 2 ) << RoundSigDigits( Zone( ZoneNum ).ExtGrossWallArea, 2 ) << RoundSigDigits( Zone( ZoneNum ).ExtNetWallArea, 2 ) << RoundSigDigits( Zone( ZoneNum ).ExtWindowArea, 2 ) << RoundSigDigits( Zone( ZoneNum ).NumSurfaces ) << RoundSigDigits( Zone( ZoneNum ).NumSubSurfaces ) << RoundSigDigits( Zone( ZoneNum ).NumShadingSurfaces ) << String3;
+			toEio << " Zone Information, " << std::fixed  << Zone(ZoneNum).Name << ',' << setprecision(1) << Zone(ZoneNum).RelNorth << ',' << setprecision(2) << Zone(ZoneNum).OriginX << ',' << Zone(ZoneNum).OriginY << ',' << Zone(ZoneNum).OriginZ << ',' << Zone(ZoneNum).Centroid.x << ',' << Zone(ZoneNum).Centroid.y << ',' << Zone(ZoneNum).Centroid.z << ',' << Zone(ZoneNum).OfType << ',' << Zone(ZoneNum).Multiplier << ',' << Zone(ZoneNum).ListMultiplier << ',' << Zone(ZoneNum).MinimumX << ',' << Zone(ZoneNum).MaximumX << ',' << Zone(ZoneNum).MinimumY << ',' << Zone(ZoneNum).MaximumY << ',' << Zone(ZoneNum).MinimumZ << ',' << Zone(ZoneNum).MaximumZ << ',' << Zone(ZoneNum).CeilingHeight << ',' << Zone(ZoneNum).Volume << ',' << String1 << ',' << String2 << ',' << Zone(ZoneNum).FloorArea << ',' << Zone(ZoneNum).ExtGrossWallArea << ',' << Zone(ZoneNum).ExtNetWallArea << ',' << Zone(ZoneNum).ExtWindowArea << ',' << Zone(ZoneNum).NumSurfaces << ',' << Zone(ZoneNum).NumSubSurfaces << ',' << Zone(ZoneNum).NumShadingSurfaces << ',' << String3 << endl;
 
 		} // ZoneNum
 

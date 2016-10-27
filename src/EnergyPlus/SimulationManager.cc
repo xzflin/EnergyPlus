@@ -1546,6 +1546,13 @@ namespace SimulationManager {
 		gio::write( OutputFileInits, EndOfDataFormat );
 		gio::close( OutputFileInits );
 
+		std::ofstream eio_file("testout.eio");
+		eio_file << toEio.rdbuf();
+		std::string eioContents = toEio.str();
+		eio_file.close();
+
+
+
 		// Close the Meters Output File
 		gio::write( OutputFileMeters, EndOfDataFormat );
 		gio::write( OutputFileMeters, fmtLD ) << "Number of Records Written=" << StdMeterRecordCount;
