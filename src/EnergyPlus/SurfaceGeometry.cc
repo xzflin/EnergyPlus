@@ -68,6 +68,9 @@
 #include <ObjexxFCL/member.functions.hh>
 #include <ObjexxFCL/string.functions.hh>
 
+#include <ObjexxFCL/Stream.hh>  // only for testing
+#include <ObjexxFCL/stream.functions.hh>
+
 // EnergyPlus Headers
 #include <SurfaceGeometry.hh>
 #include <DataEnvironment.hh>
@@ -676,6 +679,19 @@ namespace SurfaceGeometry {
 		//  IF (ALLOCATED(ZoneShadingSurfacesCount)) DEALLOCATE(ZoneShadingSurfacesCount)
 
 	}
+
+	Write
+	write2(gio::Unit const unit, gio::Fmt & fmt)
+	{
+		ObjexxFCL::Stream * Stream_p(streams()[unit]);
+		if ((!(Stream_p && Stream_p->is_open())) && gio::open(unit)) Stream_p = streams()[unit]; // Opened a default file on the unit
+		if (Stream_p && Stream_p->is_open()) {
+			auto stream_p(dynamic_cast< std::ostream * >(&Stream_p->stream()));
+			if (stream_p) return Write(*stream_p, fmt, Stream_p->ter());
+		}
+		return Write();
+	}
+
 
 	void
 	AllocateModuleArrays()

@@ -124,6 +124,10 @@ namespace SurfaceGeometry {
 	void
 	SetupZoneGeometry( bool & ErrorsFound );
 
+	Write
+	write2(gio::Unit const unit, gio::Fmt & fmt);
+
+
 	void
 	AllocateModuleArrays();
 
